@@ -3,233 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="TaskMaster Pro - Ultimate Task Management Application">
-    <meta name="theme-color" content="#6366f1">
-    <title>TaskMaster Pro - Modern Task Management</title>
+    <title>TaskMaster Pro - Ultimate Productivity Suite</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="loading-spinner hidden">
-        <div class="spinner"></div>
-        <p>Loading...</p>
-    </div>
-
     <!-- Main Container -->
-    <div class="container">
-        <!-- Header Section -->
-        <header class="header">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
             <div class="header-content">
-                <div class="logo-section">
-                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 11 12 14 22 4"></polyline>
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                    </svg>
+                <div class="logo">
+                    <i class="fas fa-tasks"></i>
                     <h1>TaskMaster Pro</h1>
                 </div>
                 <div class="header-actions">
-                    <button id="syncBtn" class="icon-btn" title="Sync with Backend">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <polyline points="1 20 1 14 7 14"></polyline>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                        </svg>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
                     </button>
-                    <button id="themeToggle" class="icon-btn" title="Toggle Theme">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- Status Bar -->
-        <div id="statusBar" class="status-bar hidden">
-            <span id="statusMessage"></span>
+        <!-- Navigation Tabs -->
+        <nav class="tab-navigation">
+            <button class="tab-btn active" data-tab="tasks">
+                <i class="fas fa-list-check"></i>
+                <span>Tasks</span>
+            </button>
+            <button class="tab-btn" data-tab="generator">
+                <i class="fas fa-magic"></i>
+                <span>Generator</span>
+            </button>
+            <button class="tab-btn" data-tab="ai-chat">
+                <i class="fas fa-robot"></i>
+                <span>AI Chat</span>
+            </button>
+            <button class="tab-btn" data-tab="timer">
+                <i class="fas fa-clock"></i>
+                <span>Timer</span>
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <i class="fas fa-chart-line"></i>
+                <span>Stats</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Tasks Section -->
+            <section id="tasks-section" class="content-section active">
+                <div class="section-header">
+                    <h2>Task Management</h2>
+                    <button class="btn-primary" id="addTaskBtn">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                </div>
+                
+                <div class="task-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="active">Active</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+
+                <div class="task-list" id="taskList">
+                    <!-- Tasks will be dynamically added here -->
+                </div>
+
+                <div class="task-summary">
+                    <span id="taskCount">0 tasks</span>
+                </div>
+            </section>
+
+            <!-- Generator Section -->
+            <section id="generator-section" class="content-section">
+                <div class="section-header">
+                    <h2>Task Generator</h2>
+                </div>
+                
+                <div class="generator-container">
+                    <div class="form-group">
+                        <label for="taskCategory">Category</label>
+                        <select id="taskCategory" class="form-control">
+                            <option value="work">Work</option>
+                            <option value="personal">Personal</option>
+                            <option value="study">Study</option>
+                            <option value="health">Health</option>
+                            <option value="finance">Finance</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority" class="form-control">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numberOfTasks">Number of Tasks</label>
+                        <input type="number" id="numberOfTasks" class="form-control" min="1" max="10" value="3">
+                    </div>
+
+                    <button class="btn-primary" id="generateTasksBtn">
+                        <i class="fas fa-wand-magic-sparkles"></i> Generate Tasks
+                    </button>
+
+                    <div class="generated-tasks" id="generatedTasks">
+                        <!-- Generated tasks will appear here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Chat Section -->
+            <section id="ai-chat-section" class="content-section">
+                <div class="section-header">
+                    <h2>AI Assistant</h2>
+                    <button class="btn-secondary" id="clearChatBtn">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message ai-message">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your AI assistant. How can I help you manage your tasks today?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" class="chat-input" placeholder="Type your message..." />
+                        <button class="btn-send" id="sendMessageBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Timer Section -->
+            <section id="timer-section" class="content-section">
+                <div class="section-header">
+                    <h2>Pomodoro Timer</h2>
+                </div>
+                
+                <div class="timer-container">
+                    <div class="timer-display">
+                        <div class="timer-circle">
+                            <svg class="timer-svg" viewBox="0 0 200 200">
+                                <circle class="timer-circle-bg" cx="100" cy="100" r="90"></circle>
+                                <circle class="timer-circle-progress" cx="100" cy="100" r="90" id="timerProgress"></circle>
+                            </svg>
+                            <div class="timer-time" id="timerDisplay">25:00</div>
+                        </div>
+                    </div>
+
+                    <div class="timer-controls">
+                        <button class="btn-timer" id="startTimerBtn">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="btn-timer" id="pauseTimerBtn" disabled>
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button class="btn-timer" id="resetTimerBtn">
+                            <i class="fas fa-rotate-right"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="timer-presets">
+                        <button class="preset-btn" data-minutes="25">25 min</button>
+                        <button class="preset-btn" data-minutes="15">15 min</button>
+                        <button class="preset-btn" data-minutes="5">5 min</button>
+                    </div>
+
+                    <div class="timer-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Sessions Today:</span>
+                            <span class="stat-value" id="sessionsToday">0</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section id="stats-section" class="content-section">
+                <div class="section-header">
+                    <h2>Statistics & Analytics</h2>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalTasks">0</h3>
+                                <p>Total Tasks</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon completed">
+                                <i class="fas fa-circle-check"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="completedTasks">0</h3>
+                                <p>Completed</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon pending">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="pendingTasks">0</h3>
+                                <p>Pending</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon productivity">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="completionRate">0%</h3>
+                                <p>Completion Rate</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Task Distribution</h3>
+                        <div class="chart" id="taskChart">
+                            <canvas id="statsCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h3>Recent Activity</h3>
+                        <div class="activity-list" id="activityList">
+                            <!-- Activity items will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Add Task Modal -->
+        <div class="modal" id="addTaskModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add New Task</h3>
+                    <button class="modal-close" id="closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title</label>
+                        <input type="text" id="taskTitle" class="form-control" placeholder="Enter task title..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea id="taskDescription" class="form-control" rows="3" placeholder="Enter task description..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskCategoryModal">Category</label>
+                            <select id="taskCategoryModal" class="form-control">
+                                <option value="work">Work</option>
+                                <option value="personal">Personal</option>
+                                <option value="study">Study</option>
+                                <option value="health">Health</option>
+                                <option value="finance">Finance</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="taskPriorityModal">Priority</label>
+                            <select id="taskPriorityModal" class="form-control">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="cancelTaskBtn">Cancel</button>
+                    <button class="btn-primary" id="saveTaskBtn">Save Task</button>
+                </div>
+            </div>
         </div>
-
-        <!-- Task Input Section -->
-        <section class="task-input-section">
-            <div class="input-container">
-                <input 
-                    type="text" 
-                    id="taskInput" 
-                    class="task-input" 
-                    placeholder="What needs to be done today?"
-                    maxlength="200"
-                    aria-label="Task input"
-                />
-                <select id="prioritySelect" class="priority-select" aria-label="Priority level">
-                    <option value="low">Low Priority</option>
-                    <option value="medium" selected>Medium Priority</option>
-                    <option value="high">High Priority</option>
-                </select>
-                <select id="categorySelect" class="category-select" aria-label="Task category">
-                    <option value="general">General</option>
-                    <option value="work">Work</option>
-                    <option value="personal">Personal</option>
-                    <option value="shopping">Shopping</option>
-                    <option value="health">Health</option>
-                </select>
-                <button id="addTaskBtn" class="add-btn" aria-label="Add task">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    <span>Add Task</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Filter and Sort Section -->
-        <section class="controls-section">
-            <div class="filter-controls">
-                <button class="filter-btn active" data-filter="all">
-                    <span>All</span>
-                    <span class="count" id="countAll">0</span>
-                </button>
-                <button class="filter-btn" data-filter="active">
-                    <span>Active</span>
-                    <span class="count" id="countActive">0</span>
-                </button>
-                <button class="filter-btn" data-filter="completed">
-                    <span>Completed</span>
-                    <span class="count" id="countCompleted">0</span>
-                </button>
-            </div>
-            <div class="sort-controls">
-                <select id="sortSelect" class="sort-select" aria-label="Sort tasks">
-                    <option value="date-desc">Newest First</option>
-                    <option value="date-asc">Oldest First</option>
-                    <option value="priority">Priority</option>
-                    <option value="name">Alphabetical</option>
-                </select>
-                <button id="clearCompletedBtn" class="clear-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                    <span>Clear Completed</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Tasks List Section -->
-        <section class="tasks-section">
-            <div id="tasksList" class="tasks-list" role="list">
-                <!-- Tasks will be dynamically inserted here -->
-            </div>
-            <div id="emptyState" class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                <h3>No tasks yet</h3>
-                <p>Add your first task to get started!</p>
-            </div>
-        </section>
-
-        <!-- Statistics Section -->
-        <section class="stats-section">
-            <div class="stat-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <div class="stat-info">
-                    <span class="stat-value" id="totalTasks">0</span>
-                    <span class="stat-label">Total Tasks</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                <div class="stat-info">
-                    <span class="stat-value" id="completedTasks">0</span>
-                    <span class="stat-label">Completed</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <div class="stat-info">
-                    <span class="stat-value" id="pendingTasks">0</span>
-                    <span class="stat-label">Pending</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-                </svg>
-                <div class="stat-info">
-                    <span class="stat-value" id="completionRate">0%</span>
-                    <span class="stat-label">Completion Rate</span>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Edit Task Modal -->
-    <div id="editModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Edit Task</h2>
-                <button class="modal-close" id="closeModal" aria-label="Close modal">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="editTaskInput">Task Description</label>
-                    <input 
-                        type="text" 
-                        id="editTaskInput" 
-                        class="modal-input"
-                        placeholder="Enter task description"
-                        maxlength="200"
-                    />
-                </div>
-                <div class="form-group">
-                    <label for="editPrioritySelect">Priority</label>
-                    <select id="editPrioritySelect" class="modal-select">
-                        <option value="low">Low Priority</option>
-                        <option value="medium">Medium Priority</option>
-                        <option value="high">High Priority</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editCategorySelect">Category</label>
-                    <select id="editCategorySelect" class="modal-select">
-                        <option value="general">General</option>
-                        <option value="work">Work</option>
-                        <option value="personal">Personal</option>
-                        <option value="shopping">Shopping</option>
-                        <option value="health">Health</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="cancelEdit" class="btn-secondary">Cancel</button>
-                <button id="saveEdit" class="btn-primary">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden" role="alert" aria-live="polite">
-        <span id="toastMessage"></span>
     </div>
 
     <script src="script.js"></script>
