@@ -2,19 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>TaskMaster Pro - AI Study Assistant</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
     <meta name="theme-color" content="#667eea">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 </head>
 <body class="dark-mode">
-    <!-- Hidden haptic trigger for iOS -->
-    <input type="checkbox" style="display:none;" id="haptic-trigger"/>
+    
+    <!-- Hidden haptic trigger for iOS PWA -->
+    <input type="checkbox" switch style="display:none;" id="haptic-trigger"/>
     <label for="haptic-trigger" id="haptic-label" style="display:none;"></label>
+
     <!-- Floating Header -->
     <header class="app-header glass-card">
         <div class="header-content">
@@ -23,59 +25,79 @@
                 <span class="logo-text">TaskMaster Pro</span>
             </div>
             <div class="header-controls">
-                <select id="language-selector" class="control-button">
+                <select id="language-selector" class="control-btn">
                     <option value="en">EN</option>
                     <option value="si">සිං</option>
                 </select>
-                <button id="theme-toggle" class="control-button" aria-label="Toggle theme">
+                <button id="theme-toggle" class="control-btn theme-btn" aria-label="Toggle theme">
                     <span class="theme-icon">🌙</span>
                 </button>
             </div>
         </div>
     </header>
+
+    <!-- Main Content -->
     <main class="main-content">
+        
+        <!-- SECTION 1: Tasks -->
         <section id="tasks-view" class="view-section">
             <div class="section-header">
                 <h2 class="section-title">📝 Tasks</h2>
-                <button class="btn-primary add-task-btn" id="add-task-btn"><span>+</span> Add Task</button>
+                <button class="btn-primary" id="add-task-btn">
+                    <span>+</span> Add Task
+                </button>
             </div>
-            <div class="tasks-list" id="tasks-container"></div>
+            <div class="content-wrapper glass-card">
+                <div class="tasks-list" id="tasks-container">
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <h3>No tasks yet</h3>
+                        <p>Create your first task to get started</p>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <!-- SECTION 2: Generator (Flashcards) -->
         <section id="generator-view" class="view-section active">
             <div class="section-header">
                 <h2 class="section-title">🎴 Flashcard Generator</h2>
             </div>
-            <div class="generator-controls glass-card">
-                <div class="control-group">
+            <div class="generator-panel glass-card">
+                <div class="form-group">
                     <label for="gen-subject">Subject</label>
-                    <select id="gen-subject" class="form-select">
+                    <select id="gen-subject" class="form-control">
                         <option value="Chemistry">Chemistry</option>
                         <option value="Physics">Physics</option>
                         <option value="Biology">Biology</option>
                         <option value="Mathematics">Mathematics</option>
                     </select>
                 </div>
-                <div class="control-group">
+                <div class="form-group">
                     <label for="gen-topic">Topic</label>
-                    <input type="text" id="gen-topic" class="form-input" placeholder="e.g., S-block elements">
+                    <input type="text" id="gen-topic" class="form-control" placeholder="e.g., S-block elements">
                 </div>
-                <div class="control-group">
-                    <label for="gen-count">Card Count</label>
-                    <select id="gen-count" class="form-select">
+                <div class="form-group">
+                    <label for="gen-count">Number of Cards</label>
+                    <select id="gen-count" class="form-control">
                         <option value="5">5 Cards</option>
                         <option value="10">10 Cards</option>
                         <option value="15">15 Cards</option>
                     </select>
                 </div>
-                <button class="btn-primary btn-block" id="generate-cards-btn"><span>✨</span> Generate with AI</button>
+                <button class="btn-primary btn-block" id="generate-cards-btn">
+                    <span>✨</span> Generate with AI
+                </button>
             </div>
             <div class="cards-grid" id="cards-container"></div>
         </section>
+
+        <!-- SECTION 3: AI Chat -->
         <section id="chat-view" class="view-section">
-            <div class="chat-container glass-card">
+            <div class="chat-wrapper glass-card">
                 <div class="chat-header">
-                    <h2 class="section-title">💬 AI Study Assistant</h2>
-                    <select id="chat-subject" class="form-select">
+                    <h2 class="section-title">💬 AI Assistant</h2>
+                    <select id="chat-subject" class="form-control">
                         <option value="General">General</option>
                         <option value="Mathematics">Mathematics</option>
                         <option value="Physics">Physics</option>
@@ -93,77 +115,106 @@
                 </div>
                 <div class="chat-input-area">
                     <textarea id="chat-input" class="chat-input" placeholder="Ask a question..." rows="2"></textarea>
-                    <button id="send-btn" class="btn-send"><span>➤</span></button>
+                    <button id="send-btn" class="btn-send" aria-label="Send">
+                        <span>➤</span>
+                    </button>
                 </div>
             </div>
         </section>
+
+        <!-- SECTION 4: Timer -->
         <section id="timer-view" class="view-section">
-            <div class="timer-container glass-card">
+            <div class="timer-wrapper glass-card">
                 <div class="timer-display">
-                    <svg class="timer-ring" viewBox="0 0 200 200">
-                        ircle cx="100" cy="100" r="85" classss="timer-track"></circle>
-                        ircle cx="100" cy="100" r="85" class="timer-progress" idid="timer-progress"></circle>
+                    <svg class="timer-circle" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="85" class="timer-bg"></circle>
+                        <circle cx="100" cy="100" r="85" class="timer-bar" id="timer-progress"></circle>
                     </svg>
-                    <div class="timer-content">
+                    <div class="timer-inner">
                         <div class="timer-time" id="timer-display">25:00</div>
                         <div class="timer-label">Focus Session</div>
                     </div>
                 </div>
                 <div class="timer-controls">
-                    <button class="btn-timer" id="timer-start"><span>▶️</span> Start</button>
-                    <button class="btn-timer btn-secondary" id="timer-reset"><span>↻</span> Reset</button>
+                    <button class="btn-timer" id="timer-start">
+                        <span>▶️</span> Start
+                    </button>
+                    <button class="btn-timer btn-secondary" id="timer-reset">
+                        <span>↻</span> Reset
+                    </button>
                 </div>
-                <div class="timer-stats">
-                    <div class="timer-stat-item">
-                        <div class="stat-value" id="timer-round">1</div>
-                        <div class="stat-label">Round</div>
+                <div class="timer-info">
+                    <div class="timer-stat">
+                        <div class="stat-val" id="timer-round">1</div>
+                        <div class="stat-lbl">Round</div>
                     </div>
-                    <div class="timer-stat-item">
-                        <div class="stat-value" id="timer-sessions">0</div>
-                        <div class="stat-label">Sessions</div>
+                    <div class="timer-stat">
+                        <div class="stat-val" id="timer-sessions">0</div>
+                        <div class="stat-lbl">Completed</div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- SECTION 5: Stats -->
         <section id="stats-view" class="view-section">
-            <div class="stats-container">
+            <div class="section-header">
                 <h2 class="section-title">📊 Your Progress</h2>
-                <div class="stats-grid">
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">✅</div>
-                        <div class="stat-value" id="stat-tasks">0</div>
-                        <div class="stat-label">Tasks Completed</div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">🎴</div>
-                        <div class="stat-value" id="stat-cards">0</div>
-                        <div class="stat-label">Cards Learned</div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">⏱️</div>
-                        <div class="stat-value" id="stat-time">0h</div>
-                        <div class="stat-label">Study Time</div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">🔥</div>
-                        <div class="stat-value" id="stat-streak">0</div>
-                        <div class="stat-label">Day Streak</div>
-                    </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="stat-tasks">0</div>
+                    <div class="stat-label">Tasks Done</div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">🎴</div>
+                    <div class="stat-value" id="stat-cards">0</div>
+                    <div class="stat-label">Cards Learned</div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value" id="stat-time">0h</div>
+                    <div class="stat-label">Study Time</div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="stat-streak">0</div>
+                    <div class="stat-label">Day Streak</div>
                 </div>
             </div>
         </section>
+
     </main>
+
+    <!-- Floating Bottom Navigation -->
     <nav class="bottom-nav glass-card">
-        <button class="nav-item" data-view="tasks" aria-label="Tasks"><span class="nav-icon">📝</span><span class="nav-label">Tasks</span></button>
-        <button class="nav-item active" data-view="generator" aria-label="Generator"><span class="nav-icon">🎴</span><span class="nav-label">Generator</span></button>
-        <button class="nav-item" data-view="chat" aria-label="Chat"><span class="nav-icon">💬</span><span class="nav-label">Chat</span></button>
-        <button class="nav-item" data-view="timer" aria-label="Timer"><span class="nav-icon">⏱️</span><span class="nav-label">Timer</span></button>
-        <button class="nav-item" data-view="stats" aria-label="Stats"><span class="nav-icon">📊</span><span class="nav-label">Stats</span></button>
+        <button class="nav-item" data-view="tasks" aria-label="Tasks">
+            <span class="nav-icon">📝</span>
+            <span class="nav-label">Tasks</span>
+        </button>
+        <button class="nav-item active" data-view="generator" aria-label="Generator">
+            <span class="nav-icon">🎴</span>
+            <span class="nav-label">Generator</span>
+        </button>
+        <button class="nav-item" data-view="chat" aria-label="Chat">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Chat</span>
+        </button>
+        <button class="nav-item" data-view="timer" aria-label="Timer">
+            <span class="nav-icon">⏱️</span>
+            <span class="nav-label">Timer</span>
+        </button>
+        <button class="nav-item" data-view="stats" aria-label="Stats">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Stats</span>
+        </button>
     </nav>
+
     <!-- Task Modal -->
     <div id="task-modal" class="modal">
         <div class="modal-overlay"></div>
-        <div class="modal-content glass-card">
+        <div class="modal-box glass-card">
             <div class="modal-header">
                 <h3>Add New Task</h3>
                 <button class="modal-close" aria-label="Close">&times;</button>
@@ -171,15 +222,15 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label for="task-title">Task Title</label>
-                    <input type="text" id="task-title" class="form-input" placeholder="Enter task title">
+                    <input type="text" id="task-title" class="form-control" placeholder="Enter task title">
                 </div>
                 <div class="form-group">
                     <label for="task-desc">Description (Optional)</label>
-                    <textarea id="task-desc" class="form-input" rows="3" placeholder="Add details..."></textarea>
+                    <textarea id="task-desc" class="form-control" rows="3" placeholder="Add details..."></textarea>
                 </div>
                 <div class="form-group">
                     <label for="task-subject">Subject</label>
-                    <select id="task-subject" class="form-select">
+                    <select id="task-subject" class="form-control">
                         <option value="general">General</option>
                         <option value="chemistry">Chemistry</option>
                         <option value="physics">Physics</option>
@@ -189,7 +240,7 @@
                 </div>
                 <div class="form-group">
                     <label for="task-priority">Priority</label>
-                    <select id="task-priority" class="form-select">
+                    <select id="task-priority" class="form-control">
                         <option value="low">Low</option>
                         <option value="medium" selected>Medium</option>
                         <option value="high">High</option>
@@ -202,10 +253,12 @@
             </div>
         </div>
     </div>
-    <!-- Loading Indicator -->
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
