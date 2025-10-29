@@ -1,173 +1,216 @@
-// TaskMaster Pro - Frontend logic
+// TaskMaster Pro - script.js
 (function(){
-  const root = document.documentElement;
-  const themeToggle = createEl('#themeToggle');
-  const navButtons = qsa('.nav-btn');
-  const views = {
-    tasks: byId('tasksView'),
-    chat: byId('chatView')
-  };
-  // Elements - Tasks
-  const taskInput = byId('taskInput');
-  const addTaskBtn = byId('addTaskBtn');
-  const tasksList = byId('tasksList');
-  const emptyState = byId('emptyState');
-  const filters = qsa('.filter-btn');
-  const stats = {
-    total: byId('totalTasks'),
-    active: byId('activeTasks'),
-    completed: byId('completedTasks')
-  };
-  // Elements - Chat
-  const chatInput = byId('chatInput');
-  const sendChatBtn = byId('sendChatBtn');
-  const chatMessages = byId('chatMessages');
+  const $ = (s,root=document)=>root.querySelector(s);
+  const $$ = (s,root=document)=>Array.from(root.querySelectorAll(s));
 
-  // State
-  let state = loadState() || { tasks: [], filter: 'all', theme: loadTheme() };
-  applyTheme(state.theme);
-  render();
+  // Views
+  const views = {
+    tasks: $('#tasksView'),
+    cards: $('#cardsView'),
+    chat: $('#chatView'),
+    timer: $('#timerView'),
+    stats: $('#statsView')
+  };
+  const navButtons = $$('.nav-btn');
+  function showView(key){
+    Object.values(views).forEach(v=>v.classList.remove('active'));
+    views[key].classList.add('active');
+    navButtons.forEach(b=>b.classList.toggle('active', b.dataset.view===key));
+  }
 
   // Theme
-  on('click', '#themeToggle', () => {
-    state.theme = state.theme === 'light' ? 'dark' : 'light';
-    applyTheme(state.theme);
-    persist();
+  const themeToggle = $('#themeToggle');
+  const savedTheme = localStorage.getItem('tm_theme');
+  if(savedTheme==='light') document.body.classList.add('light');
+  themeToggle?.addEventListener('click',()=>{
+    document.body.classList.toggle('light');
+    localStorage.setItem('tm_theme', document.body.classList.contains('light')?'light':'dark');
   });
-  function applyTheme(theme){
-    const isLight = theme === 'light';
-    root.classList.toggle('light', isLight);
-    saveTheme(theme);
-  }
-  function loadTheme(){
-    return localStorage.getItem('tm_theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  }
-  function saveTheme(t){ localStorage.setItem('tm_theme', t); }
 
-  // Navigation
-  navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
-  function switchView(view){
-    qsa('.view').forEach(v => v.classList.remove('active'));
-    views[view].classList.add('active');
-    navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  // Language button (placeholder)
+  $('#langBtn')?.addEventListener('click',()=>{
+    alert('Language switching will be available soon.');
+  });
+
+  // State
+  let tasks = JSON.parse(localStorage.getItem('tm_tasks')||'[]');
+  let stats = JSON.parse(localStorage.getItem('tm_stats')||'{"tasksCompleted":0,"studyHours":0,"cardsLearned":0,"streak":0}');
+
+  function save(){
+    localStorage.setItem('tm_tasks', JSON.stringify(tasks));
+    localStorage.setItem('tm_stats', JSON.stringify(stats));
   }
 
-  // Tasks
-  addTaskBtn?.addEventListener('click', addTaskFromInput);
-  taskInput?.addEventListener('keydown', e => { if(e.key === 'Enter') addTaskFromInput(); });
-  filters.forEach(f => f.addEventListener('click', () => { state.filter = f.dataset.filter; updateFilters(); renderTasks(); persist(); }));
-
-  function addTaskFromInput(){
-    const title = (taskInput.value || '').trim();
-    if(!title) return;
-    const task = { id: uid(), title, completed: false, createdAt: Date.now() };
-    state.tasks.unshift(task);
-    taskInput.value = '';
-    renderTasks();
-    persist();
+  // Render tasks
+  const tasksContainer = $('#tasksContainer');
+  function taskBadge(priority){
+    const map={high:'priority-high',medium:'priority-medium',low:'priority-low'};
+    return `<span class="badge ${map[priority]||'priority-medium'}">${priority[0].toUpperCase()+priority.slice(1)}</span>`;
   }
-  function toggleTask(id){
-    const t = state.tasks.find(x => x.id === id);
-    if(t){ t.completed = !t.completed; renderTasks(); persist(); }
+  function subjectBadge(subject){
+    return `<span class="badge">${subject?subject[0].toUpperCase()+subject.slice(1):'General'}</span>`;
   }
-  function deleteTask(id){
-    state.tasks = state.tasks.filter(t => t.id !== id);
-    renderTasks();
-    persist();
-  }
-  function updateFilters(){
-    filters.forEach(f => f.classList.toggle('active', f.dataset.filter === state.filter));
-  }
-  function filteredTasks(){
-    if(state.filter === 'active') return state.tasks.filter(t => !t.completed);
-    if(state.filter === 'completed') return state.tasks.filter(t => t.completed);
-    return state.tasks;
-  }
-  function renderTasks(){
-    updateFilters();
-    const tasks = filteredTasks();
-    tasksList.innerHTML = '';
-    emptyState.style.display = state.tasks.length ? 'none' : 'flex';
-
-    tasks.forEach(t => {
-      const li = document.createElement('div');
-      li.className = 'task-item' + (t.completed ? ' completed' : '');
-      li.innerHTML = `
-        <input type="checkbox" ${t.completed ? 'checked' : ''} aria-label="Toggle task" />
-        <div class="task-title">${escapeHtml(t.title)}</div>
-        <div class="task-actions">
-          <button class="btn done" aria-label="Mark done">${t.completed ? 'Undo' : 'Done'}</button>
-          <button class="btn delete" aria-label="Delete">Delete</button>
+  function renderTasks(filter='all'){
+    tasksContainer.innerHTML = '';
+    const list = tasks.filter(t=> filter==='all' || t.subject===filter);
+    if(list.length===0){
+      tasksContainer.innerHTML = `<div class="empty-state"><p>No tasks yet</p><p class="empty-subtitle">Create your first task to get started</p><button class="btn btn-primary" id="addTaskBtnEmpty2">Add Task</button></div>`;
+      $('#addTaskBtnEmpty2')?.addEventListener('click', openAddModal);
+      return;
+    }
+    list.forEach((t,i)=>{
+      const el = document.createElement('div');
+      el.className='task';
+      el.innerHTML = `
+        <div class="task-row">
+          <strong>${t.title}</strong>
+          <div style="display:flex;gap:6px;align-items:center">
+            ${taskBadge(t.priority)}
+            ${subjectBadge(t.subject)}
+            ${t.dueDate?`<span class="badge">Due: ${t.dueDate}</span>`:''}
+          </div>
         </div>
-      `;
-      const [checkbox, , actions] = li.children;
-      checkbox.addEventListener('change', () => toggleTask(t.id));
-      actions.children[0].addEventListener('click', () => toggleTask(t.id));
-      actions.children[1].addEventListener('click', () => deleteTask(t.id));
-      tasksList.appendChild(li);
+        <div class="task-row">
+          <span style="color:var(--muted)">${t.description||''}</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" data-action="done">${t.done?'Undone':'Done'}</button>
+            <button class="btn btn-secondary" data-action="delete">Delete</button>
+          </div>
+        </div>`;
+      el.addEventListener('click',(e)=>{
+        const target = e.target;
+        if(!(target instanceof HTMLElement)) return;
+        if(target.dataset.action==='delete'){
+          const idx = tasks.indexOf(t);
+          if(idx>-1) tasks.splice(idx,1);
+          save();
+          renderTasks(currentFilter);
+        }
+        if(target.dataset.action==='done'){
+          t.done = !t.done;
+          if(t.done) stats.tasksCompleted = (stats.tasksCompleted||0)+1; else stats.tasksCompleted = Math.max(0,(stats.tasksCompleted||0)-1);
+          save();
+          renderTasks(currentFilter);
+          renderStats();
+        }
+      });
+      tasksContainer.appendChild(el);
     });
-
-    // Stats
-    const total = state.tasks.length;
-    const completed = state.tasks.filter(t => t.completed).length;
-    const active = total - completed;
-    stats.total.textContent = total;
-    stats.active.textContent = active;
-    stats.completed.textContent = completed;
   }
 
-  // Chat
-  sendChatBtn?.addEventListener('click', sendChat);
-  chatInput?.addEventListener('keydown', e => { if(e.key === 'Enter') sendChat(); });
-  function sendChat(){
-    const text = (chatInput.value || '').trim();
-    if(!text) return;
-    appendMessage('user', text);
-    chatInput.value = '';
-    // Simple local helper responses; no backend dependency
-    setTimeout(() => {
-      const reply = aiReply(text);
-      appendMessage('ai', reply);
-    }, 400);
-  }
-  function appendMessage(sender, text){
+  // Filters
+  let currentFilter = 'all';
+  $$('.filter-btn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      $$('.filter-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      currentFilter = b.dataset.filter||'all';
+      renderTasks(currentFilter);
+    })
+  });
+
+  // Modal add task
+  const addTaskModal = $('#addTaskModal');
+  function openAddModal(){ addTaskModal.classList.add('show'); $('#taskTitle').focus(); }
+  function closeAddModal(){ addTaskModal.classList.remove('show'); }
+  $('#addTaskBtn')?.addEventListener('click', openAddModal);
+  $('#addTaskBtnEmpty')?.addEventListener('click', openAddModal);
+  $('#cancelTaskBtn')?.addEventListener('click', closeAddModal);
+  $('#addTaskForm')?.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const title = $('#taskTitle').value.trim();
+    if(!title) return;
+    const description = $('#taskDescription').value.trim();
+    const subject = $('#taskSubject').value;
+    const priority = $('#taskPriority').value||'medium';
+    const dueDate = $('#taskDueDate').value;
+    tasks.push({title, description, subject, priority, dueDate, done:false, id:crypto.randomUUID?.()||String(Date.now())});
+    save();
+    closeAddModal();
+    renderTasks(currentFilter);
+  });
+
+  // Cards - mock AI generation
+  $('#generateCardsBtn')?.addEventListener('click', ()=>{
+    const subject = $('#cardSubject').value;
+    const topic = $('#cardTopic').value.trim();
+    const count = parseInt($('#cardCount').value||'5',10);
+    const container = $('#cardsContainer');
+    if(!topic){ alert('Please enter a topic'); return; }
+    const items = Array.from({length:count}, (_,i)=>({q:`${i+1}. ${topic} - key point`, a:`Explanation for ${topic} (${subject||'general'})`}));
+    stats.cardsLearned = (stats.cardsLearned||0) + items.length;
+    save();
+    renderStats();
+    container.innerHTML = '';
+    items.forEach(it=>{
+      const c = document.createElement('div');
+      c.className='task';
+      c.innerHTML = `<strong>${it.q}</strong><div style="color:var(--muted);margin-top:6px">${it.a}</div>`;
+      container.appendChild(c);
+    })
+  });
+
+  // Chat - mock
+  const chatMessages = $('#chatMessages');
+  const chatInput = $('#chatInput');
+  function pushMessage(role,text){
     const wrap = document.createElement('div');
-    wrap.className = 'message ' + (sender === 'ai' ? 'ai-message' : 'user-message');
-    wrap.innerHTML = `
-      <div class="message-avatar">${sender === 'ai' ? '🤖' : '🧑'}</div>
-      <div class="message-content">${formatMessage(text)}</div>
-    `;
+    wrap.className='task';
+    wrap.innerHTML = `<div class="task-row"><strong>${role==='user'?'You':'AI'}</strong></div><div style="color:var(--muted)">${text}</div>`;
     chatMessages.appendChild(wrap);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
-  function aiReply(input){
-    const lower = input.toLowerCase();
-    if(/breakdown|steps|how to/.test(lower)){
-      return 'Here is a quick breakdown:\n1) Define the goal\n2) List tasks\n3) Prioritize\n4) Schedule\n5) Execute and review';
+  $('#sendChatBtn')?.addEventListener('click',()=>{
+    const q = chatInput.value.trim();
+    if(!q) return;
+    pushMessage('user', q);
+    chatInput.value='';
+    setTimeout(()=>{
+      pushMessage('ai', `Here's a helpful explanation about: ${q}.\n\n• Key idea 1\n• Key idea 2\n• Tip: break complex problems into steps.`);
+    }, 400);
+  });
+
+  // Timer
+  let seconds = 25*60, timerId=null, round=1, completed=0;
+  const display = $('#timerDisplay');
+  const startBtn = $('#startTimerBtn');
+  const resetBtn = $('#resetTimerBtn');
+  function fmt(s){ const m=Math.floor(s/60), ss=String(s%60).padStart(2,'0'); return `${String(m).padStart(2,'0')}:${ss}`; }
+  function tick(){
+    seconds--; display.textContent = fmt(seconds);
+    if(seconds<=0){
+      clearInterval(timerId); timerId=null; completed++; stats.studyHours=(stats.studyHours||0)+ (25/60); save(); renderStats(); alert('Session complete!');
+      seconds = 5*60; // short break
+      display.textContent = fmt(seconds);
+      round++;
+      $('#currentRound').textContent = String(round);
+      $('#sessionsCompleted').textContent = String(completed);
     }
-    if(/tip|productivity|focus/.test(lower)){
-      return 'Tip: Use the 25/5 Pomodoro cycle and batch similar tasks to reduce context switching.';
-    }
-    if(/time|plan|schedule/.test(lower)){
-      return 'Try time blocking: group tasks into focused blocks with short breaks between.';
-    }
-    return 'I can help with task ideas, breakdowns, and productivity tips. Ask me anything!';
+  }
+  startBtn?.addEventListener('click',()=>{
+    if(timerId) return; timerId=setInterval(tick,1000);
+  });
+  resetBtn?.addEventListener('click',()=>{
+    clearInterval(timerId); timerId=null; seconds=25*60; display.textContent=fmt(seconds);
+  });
+  display.textContent = fmt(seconds);
+
+  // Stats render
+  function renderStats(){
+    $('#tasksCompletedStat').textContent = String(stats.tasksCompleted||0);
+    $('#studyHoursStat').textContent = `${(stats.studyHours||0).toFixed(1)}h`;
+    $('#cardsLearnedStat').textContent = String(stats.cardsLearned||0);
+    $('#streakStat').textContent = String(stats.streak||0);
   }
 
-  // Persistence
-  function persist(){ localStorage.setItem('tm_state', JSON.stringify({ ...state })); }
-  function loadState(){ try{ return JSON.parse(localStorage.getItem('tm_state')); } catch{ return null; } }
+  // Navigation
+  navButtons.forEach(b=> b.addEventListener('click', ()=> showView(b.dataset.view)) );
 
-  // Utils
-  function byId(id){ return document.getElementById(id); }
-  function qsa(sel){ return Array.from(document.querySelectorAll(sel)); }
-  function on(ev, sel, fn){ document.addEventListener(ev, e => { if(e.target && (e.target.matches(sel) || e.target.closest(sel))) fn(e); }); }
-  function uid(){ return Math.random().toString(36).slice(2, 10); }
-  function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
-  function createEl(sel){ return document.querySelector(sel); }
-  function formatMessage(t){
-    // Basic formatting: newline to <br>, bullet points detection
-    const esc = escapeHtml(t).replace(/\n/g, '<br>');
-    return esc;
-  }
+  // Import button placeholder
+  $('#importBtn')?.addEventListener('click', ()=> alert('Import will be available soon.'));
+
+  // Initial renders
+  renderTasks('all');
+  renderStats();
+  showView('tasks');
 })();
