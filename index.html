@@ -3,200 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskMaster Pro - AI Study Assistant</title>
+    <title>TaskMaster Pro - Advanced Task Management</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-left">
-            <h1>TaskMaster Pro</h1>
-            <span class="subtitle">AI Study Assistant</span>
-        </div>
-        <div class="header-right">
-            <button class="lang-btn" id="langBtn">EN</button>
-            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path class="sun" d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>
-                    <path class="moon" d="M10 7C10 10.866 13.134 14 17 14C18.9584 14 20.729 13.1957 21.9995 11.8995C22 11.933 22 11.9665 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C12.0335 2 12.067 2 12.1005 2.00049C10.8043 3.27098 10 5.04157 10 7Z"/>
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-        <!-- Tasks View -->
-        <div class="view active" id="tasksView">
-            <div class="view-header">
-                <button class="btn btn-primary" id="addTaskBtn">Add Task</button>
-                <button class="btn btn-secondary" id="importBtn">Import</button>
-            </div>
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">All Tasks</button>
-                <button class="filter-btn" data-filter="chemistry">Chemistry</button>
-                <button class="filter-btn" data-filter="physics">Physics</button>
-                <button class="filter-btn" data-filter="biology">Biology</button>
-                <button class="filter-btn" data-filter="mathematics">Mathematics</button>
-            </div>
-            <div class="tasks-container" id="tasksContainer">
-                <div class="empty-state">
-                    <p>No tasks yet</p>
-                    <p class="empty-subtitle">Create your first task to get started</p>
-                    <button class="btn btn-primary" id="addTaskBtnEmpty">Add Task</button>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h1>TaskMaster Pro</h1>
                 </div>
-            </div>
-        </div>
-
-        <!-- Cards View -->
-        <div class="view" id="cardsView">
-            <div class="cards-generator">
-                <h2>Generate Flashcards</h2>
-                <select class="input-select" id="cardSubject">
-                    <option value="">Select Subject</option>
-                    <option value="chemistry">Chemistry</option>
-                    <option value="physics">Physics</option>
-                    <option value="biology">Biology</option>
-                    <option value="mathematics">Mathematics</option>
-                </select>
-                <input type="text" class="input-field" id="cardTopic" placeholder="Enter topic (e.g., S-block elements)">
-                <select class="input-select" id="cardCount">
-                    <option value="5">5 Cards</option>
-                    <option value="10">10 Cards</option>
-                    <option value="15">15 Cards</option>
-                </select>
-                <button class="btn btn-primary" id="generateCardsBtn">Generate with AI</button>
-            </div>
-            <div class="cards-container" id="cardsContainer">
-                <div class="empty-state">
-                    <p>No flashcards yet</p>
-                    <p class="empty-subtitle">Generate your first set of flashcards</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Chat View -->
-        <div class="view" id="chatView">
-            <div class="chat-container">
-                <div class="chat-messages" id="chatMessages">
-                    <div class="empty-state">
-                        <p>Start a conversation</p>
-                        <p class="empty-subtitle">Ask me anything about your studies</p>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalTasks">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="activeTasks">0</span>
+                        <span class="stat-label">Active</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="completedTasks">0</span>
+                        <span class="stat-label">Completed</span>
                     </div>
                 </div>
-                <div class="chat-input-container">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question...">
-                    <button class="btn btn-primary" id="sendChatBtn">Send</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Task Input Section -->
+            <section class="task-input-section">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="taskInput" 
+                        class="task-input" 
+                        placeholder="What needs to be done?"
+                        maxlength="200"
+                    >
+                    <div class="input-actions">
+                        <select id="prioritySelect" class="priority-select">
+                            <option value="low">Low Priority</option>
+                            <option value="medium" selected>Medium Priority</option>
+                            <option value="high">High Priority</option>
+                        </select>
+                        <input type="date" id="dueDateInput" class="due-date-input">
+                        <button id="addTaskBtn" class="btn btn-primary">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Add Task
+                        </button>
+                    </div>
                 </div>
+            </section>
+
+            <!-- Filters and Controls -->
+            <section class="controls-section">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">
+                        All Tasks
+                        <span class="filter-count" id="allCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="active">
+                        Active
+                        <span class="filter-count" id="activeCount">0</span>
+                    </button>
+                    <button class="filter-btn" data-filter="completed">
+                        Completed
+                        <span class="filter-count" id="completedCount">0</span>
+                    </button>
+                </div>
+                <div class="control-buttons">
+                    <select id="sortSelect" class="sort-select">
+                        <option value="date-desc">Newest First</option>
+                        <option value="date-asc">Oldest First</option>
+                        <option value="priority">By Priority</option>
+                        <option value="due-date">By Due Date</option>
+                    </select>
+                    <button id="clearCompletedBtn" class="btn btn-secondary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Clear Completed
+                    </button>
+                </div>
+            </section>
+
+            <!-- Tasks List -->
+            <section class="tasks-section">
+                <div id="tasksList" class="tasks-list">
+                    <!-- Tasks will be dynamically inserted here -->
+                </div>
+                <div id="emptyState" class="empty-state">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>No tasks yet</h3>
+                    <p>Add a task above to get started with your productivity journey!</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p class="footer-text">TaskMaster Pro © 2024 - Boost Your Productivity</p>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About</a>
+                    <a href="#" class="footer-link">Help</a>
+                    <a href="#" class="footer-link">Privacy</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Task Item Template -->
+    <template id="taskTemplate">
+        <div class="task-item" data-task-id="">
+            <div class="task-checkbox-wrapper">
+                <input type="checkbox" class="task-checkbox">
+                <span class="checkbox-custom"></span>
+            </div>
+            <div class="task-content">
+                <div class="task-header">
+                    <span class="task-text"></span>
+                    <div class="task-badges">
+                        <span class="priority-badge"></span>
+                        <span class="due-date-badge"></span>
+                    </div>
+                </div>
+                <div class="task-footer">
+                    <span class="task-timestamp"></span>
+                </div>
+            </div>
+            <div class="task-actions">
+                <button class="task-action-btn edit-btn" title="Edit task">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button class="task-action-btn delete-btn" title="Delete task">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
             </div>
         </div>
+    </template>
 
-        <!-- Timer View -->
-        <div class="view" id="timerView">
-            <div class="timer-container">
-                <div class="timer-display" id="timerDisplay">25:00</div>
-                <p class="timer-label">Focus Session</p>
-                <div class="timer-controls">
-                    <button class="btn btn-primary" id="startTimerBtn">Start</button>
-                    <button class="btn btn-secondary" id="resetTimerBtn">Reset</button>
-                </div>
-                <div class="timer-stats">
-                    <h3>Session Progress</h3>
-                    <p>Current Round: <span id="currentRound">1</span></p>
-                    <p>Sessions Completed: <span id="sessionsCompleted">0</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats View -->
-        <div class="view" id="statsView">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3 id="tasksCompletedStat">0</h3>
-                    <p>Tasks Completed</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="studyHoursStat">0h</h3>
-                    <p>Study Hours</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="cardsLearnedStat">0</h3>
-                    <p>Cards Learned</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="streakStat">0</h3>
-                    <p>Current Streak</p>
-                </div>
-            </div>
-            <div class="stats-chart">
-                <h3>This Week</h3>
-                <div class="chart-placeholder">
-                    <p>Daily Goal</p>
-                    <p class="chart-value">65%</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <button class="nav-btn active" data-view="tasks">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M9 1v2h6V1h2v2h3a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1h3V1h2zm11 9H4v9h16v-9z"/>
-            </svg>
-            <span>Tasks</span>
-        </button>
-        <button class="nav-btn" data-view="cards">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 3h18a1 1 0 011 1v16a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1zm17 8H4v8h16v-8z"/>
-            </svg>
-            <span>Cards</span>
-        </button>
-        <button class="nav-btn" data-view="chat">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6.455 19L2 22.5V4a1 1 0 011-1h18a1 1 0 011 1v14a1 1 0 01-1 1H6.455zM7 10v2h2v-2H7zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2z"/>
-            </svg>
-            <span>AI Chat</span>
-        </button>
-        <button class="nav-btn" data-view="timer">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm1-10V7h-2v7h6v-2h-4z"/>
-            </svg>
-            <span>Timer</span>
-        </button>
-        <button class="nav-btn" data-view="stats">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 3h18a1 1 0 011 1v16a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1zm16 13h-2v3h2v-3zm-4-5h-2v8h2v-8zm-4-4H9v12h2V7zm-4 5H5v7h2v-7z"/>
-            </svg>
-            <span>Stats</span>
-        </button>
-    </nav>
-
-    <!-- Add Task Modal -->
-    <div class="modal" id="addTaskModal">
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
         <div class="modal-content">
-            <h2>Add New Task</h2>
-            <form id="addTaskForm">
-                <input type="text" class="input-field" id="taskTitle" placeholder="Task Title" required>
-                <textarea class="input-field" id="taskDescription" placeholder="Description (optional)" rows="3"></textarea>
-                <select class="input-select" id="taskSubject" required>
-                    <option value="">Select subject</option>
-                    <option value="chemistry">Chemistry</option>
-                    <option value="physics">Physics</option>
-                    <option value="biology">Biology</option>
-                    <option value="mathematics">Mathematics</option>
-                </select>
-                <select class="input-select" id="taskPriority">
-                    <option value="medium">Medium Priority</option>
-                    <option value="low">Low Priority</option>
-                    <option value="high">High Priority</option>
-                </select>
-                <input type="date" class="input-field" id="taskDueDate">
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancelTaskBtn">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Task</button>
+            <div class="modal-header">
+                <h2>Edit Task</h2>
+                <button class="modal-close" id="closeEditModal">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editTaskInput">Task Description</label>
+                    <input 
+                        type="text" 
+                        id="editTaskInput" 
+                        class="form-input"
+                        maxlength="200"
+                    >
                 </div>
-            </form>
+                <div class="form-group">
+                    <label for="editPrioritySelect">Priority</label>
+                    <select id="editPrioritySelect" class="form-select">
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDueDateInput">Due Date</label>
+                    <input type="date" id="editDueDateInput" class="form-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelEditBtn" class="btn btn-secondary">Cancel</button>
+                <button id="saveEditBtn" class="btn btn-primary">Save Changes</button>
+            </div>
         </div>
     </div>
 
