@@ -84,7 +84,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-family: 'Inter', -apple-system, 'SF Pro Text', 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -92,6 +92,11 @@ body {
     position: relative;
     min-height: 100vh;
     color: var(--text-primary);
+}
+
+/* Sinhala font for Sinhala locale */
+html[lang="si"] body {
+    font-family: 'Noto Sans Sinhala', 'Inter', -apple-system, 'SF Pro Text', 'Segoe UI', sans-serif;
 }
 
 /* Animated Gradient Background */
@@ -183,6 +188,11 @@ body.reduced-transparency .glass-surface {
 .logo-emoji {
     font-size: 2.2rem;
     animation: logoFloat 3s ease-in-out infinite;
+}
+
+/* Material Symbols settings */
+.material-symbols-rounded {
+    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
 @keyframes logoFloat {
@@ -363,7 +373,7 @@ body.reduced-transparency .glass-surface {
 /* Bottom Navigation Dock */
 .bottom-dock {
     position: fixed;
-    bottom: var(--space-md);
+    bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
     padding: var(--space-sm) var(--space-md);
@@ -372,6 +382,7 @@ body.reduced-transparency .glass-surface {
     z-index: var(--z-float);
     max-width: 540px;
     width: calc(100% - var(--space-xl));
+    padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
 }
 
 .dock-btn {
@@ -455,6 +466,19 @@ body.reduced-transparency .glass-surface {
     font-family: inherit;
     transition: all var(--ease-normal);
     min-height: 48px;
+}
+
+/* Modern mobile select styling */
+select.input-field {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 44px;
 }
 
 .input-field::placeholder {
