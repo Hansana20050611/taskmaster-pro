@@ -1,91 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
-  <meta name="theme-color" content="#0ea5e9" />
-  <link rel="stylesheet" href="styles.css" />
-  <title>TaskMaster Pro — Ultra-modern 5-tab</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
+    <title>TaskMaster Pro - AI Study Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 </head>
-<body>
-  <main id="app">
-    <section id="view-tasks" class="view active" aria-labelledby="tab-tasks">
-      <header class="view-header">
-        <h1>Tasks</h1>
-        <button id="add-task-btn" class="btn primary">Add Task</button>
-      </header>
-      <form id="task-form" class="panel hidden" autocomplete="off">
-        <input id="task-title" placeholder="Task title" required />
-        <input id="task-detail" placeholder="Details (optional)" />
-        <input id="task-due" type="date" />
-        <button type="submit" class="btn success">Save</button>
-        <button type="button" id="task-cancel" class="btn">Cancel</button>
-      </form>
-      <ul id="task-list" class="list" aria-live="polite"></ul>
-    </section>
+<body class="dark-theme">
+    
+    <!-- iOS Haptic Trigger (hidden) -->
+    <input type="checkbox" switch style="display:none;" id="haptic-trigger"/>
+    <label for="haptic-trigger" id="haptic-label" style="display:none;"></label>
 
-    <section id="view-generator" class="view" aria-labelledby="tab-generator">
-      <header class="view-header">
-        <h1>Generator</h1>
-      </header>
-      <form id="gen-form" class="panel">
-        <input id="gen-topic" placeholder="Enter topic (e.g., biology)" required />
-        <button class="btn primary" type="submit">Generate</button>
-      </form>
-      <div id="gen-results" class="cards"></div>
-    </section>
-
-    <section id="view-chat" class="view" aria-labelledby="tab-chat">
-      <header class="view-header">
-        <h1>AI Chat</h1>
-      </header>
-      <div id="chat-box" class="chat-box" aria-live="polite"></div>
-      <form id="chat-form" class="chat-input">
-        <input id="chat-text" placeholder="Type a message" required />
-        <button class="btn primary" type="submit">Send</button>
-      </form>
-    </section>
-
-    <section id="view-timer" class="view" aria-labelledby="tab-timer">
-      <header class="view-header">
-        <h1>Timer</h1>
-      </header>
-      <div class="timer">
-        <div id="timer-display">25:00</div>
-        <div class="timer-controls">
-          <button id="timer-start" class="btn success">Start</button>
-          <button id="timer-pause" class="btn">Pause</button>
-          <button id="timer-reset" class="btn danger">Reset</button>
+    <!-- Floating App Header -->
+    <header class="app-header glass-surface">
+        <div class="header-wrapper">
+            <div class="app-logo">
+                <span class="logo-emoji">🎓</span>
+                <span class="logo-title">TaskMaster Pro</span>
+            </div>
+            <div class="header-actions">
+                <select id="lang-selector" class="header-control" aria-label="Language">
+                    <option value="en">EN</option>
+                    <option value="si">සිං</option>
+                </select>
+                <button id="theme-btn" class="header-control theme-toggle" aria-label="Toggle theme">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
         </div>
-      </div>
-    </section>
+    </header>
 
-    <section id="view-stats" class="view" aria-labelledby="tab-stats">
-      <header class="view-header">
-        <h1>Stats</h1>
-      </header>
-      <div class="stats">
-        <div class="stat-card">
-          <div class="stat-value" id="stat-completed">0</div>
-          <div class="stat-label">Tasks Completed</div>
+    <!-- Main App Content -->
+    <main class="app-main">
+        
+        <!-- TAB 1: Tasks Section -->
+        <section id="view-tasks" class="app-view">
+            <div class="view-header">
+                <h2 class="view-title">📝 My Tasks</h2>
+                <button class="btn-primary" id="btn-add-task">
+                    <span>+</span> New Task
+                </button>
+            </div>
+            <div class="tasks-wrapper glass-surface">
+                <div id="tasks-list" class="tasks-grid"></div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Generator Section (Flashcards) -->
+        <section id="view-generator" class="app-view active-view">
+            <div class="view-header">
+                <h2 class="view-title">🎴 Flashcard Generator</h2>
+            </div>
+            <div class="generator-panel glass-surface">
+                <div class="input-group">
+                    <label for="fc-subject" class="input-label">Subject</label>
+                    <select id="fc-subject" class="input-field">
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Computer Science">Computer Science</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="fc-topic" class="input-label">Topic</label>
+                    <input type="text" id="fc-topic" class="input-field" placeholder="e.g., S-block elements, Newton's Laws">
+                </div>
+                <div class="input-group">
+                    <label for="fc-count" class="input-label">Number of Cards</label>
+                    <select id="fc-count" class="input-field">
+                        <option value="5">5 Cards</option>
+                        <option value="10">10 Cards</option>
+                        <option value="15">15 Cards</option>
+                        <option value="20">20 Cards</option>
+                    </select>
+                </div>
+                <button class="btn-primary btn-full" id="btn-generate">
+                    <span>✨</span> Generate with AI
+                </button>
+            </div>
+            <div id="cards-grid" class="flashcards-grid"></div>
+        </section>
+
+        <!-- TAB 3: AI Chat Section -->
+        <section id="view-chat" class="app-view">
+            <div class="chat-panel glass-surface">
+                <div class="chat-top">
+                    <h2 class="view-title">💬 AI Study Assistant</h2>
+                    <select id="chat-subject" class="input-field">
+                        <option value="General">General</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                    </select>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                    <div class="chat-msg bot-msg">
+                        <div class="msg-avatar">🤖</div>
+                        <div class="msg-bubble">
+                            <p>Hello! I'm your AI study assistant. Ask me anything about your subjects!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-bottom">
+                    <textarea id="chat-input" class="chat-textarea" placeholder="Ask a question or describe a problem..." rows="2"></textarea>
+                    <button id="btn-send" class="btn-send-chat">
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Timer Section (Pomodoro) -->
+        <section id="view-timer" class="app-view">
+            <div class="timer-panel glass-surface">
+                <div class="timer-visual">
+                    <svg class="timer-svg" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="85" class="timer-track"></circle>
+                        <circle cx="100" cy="100" r="85" class="timer-path" id="timer-circle"></circle>
+                    </svg>
+                    <div class="timer-center">
+                        <div class="timer-text" id="timer-text">25:00</div>
+                        <div class="timer-status">Focus Session</div>
+                    </div>
+                </div>
+                <div class="timer-buttons">
+                    <button class="btn-timer" id="btn-timer-start">
+                        <span id="timer-btn-icon">▶️</span> <span id="timer-btn-text">Start</span>
+                    </button>
+                    <button class="btn-timer btn-secondary" id="btn-timer-reset">
+                        <span>↻</span> Reset
+                    </button>
+                </div>
+                <div class="timer-details">
+                    <div class="timer-detail-item">
+                        <div class="detail-value" id="timer-round">1</div>
+                        <div class="detail-label">Current Round</div>
+                    </div>
+                    <div class="timer-detail-item">
+                        <div class="detail-value" id="timer-completed">0</div>
+                        <div class="detail-label">Sessions Done</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: Stats Section -->
+        <section id="view-stats" class="app-view">
+            <div class="view-header">
+                <h2 class="view-title">📊 Your Progress</h2>
+            </div>
+            <div class="stats-container">
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">✅</div>
+                    <div class="stat-num" id="stat-tasks">0</div>
+                    <div class="stat-desc">Tasks Completed</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">🎴</div>
+                    <div class="stat-num" id="stat-cards">0</div>
+                    <div class="stat-desc">Cards Learned</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">⏱️</div>
+                    <div class="stat-num" id="stat-hours">0h</div>
+                    <div class="stat-desc">Study Time</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">🔥</div>
+                    <div class="stat-num" id="stat-streak">0</div>
+                    <div class="stat-desc">Day Streak</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Floating Navigation -->
+    <nav class="bottom-dock glass-surface">
+        <button class="dock-btn" data-tab="tasks" aria-label="Tasks">
+            <span class="dock-emoji">📝</span>
+            <span class="dock-name">Tasks</span>
+        </button>
+        <button class="dock-btn active-tab" data-tab="generator" aria-label="Generator">
+            <span class="dock-emoji">🎴</span>
+            <span class="dock-name">Generator</span>
+        </button>
+        <button class="dock-btn" data-tab="chat" aria-label="Chat">
+            <span class="dock-emoji">💬</span>
+            <span class="dock-name">Chat</span>
+        </button>
+        <button class="dock-btn" data-tab="timer" aria-label="Timer">
+            <span class="dock-emoji">⏱️</span>
+            <span class="dock-name">Timer</span>
+        </button>
+        <button class="dock-btn" data-tab="stats" aria-label="Stats">
+            <span class="dock-emoji">📊</span>
+            <span class="dock-name">Stats</span>
+        </button>
+    </nav>
+
+    <!-- Task Creation Modal -->
+    <div id="task-modal" class="app-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container glass-surface">
+            <div class="modal-top">
+                <h3>Create New Task</h3>
+                <button class="modal-x" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-mid">
+                <div class="input-group">
+                    <label for="inp-task-title" class="input-label">Task Title</label>
+                    <input type="text" id="inp-task-title" class="input-field" placeholder="Enter task title" required>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-desc" class="input-label">Description (Optional)</label>
+                    <textarea id="inp-task-desc" class="input-field" rows="3" placeholder="Add details..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-subj" class="input-label">Subject</label>
+                    <select id="inp-task-subj" class="input-field">
+                        <option value="general">General</option>
+                        <option value="chemistry">Chemistry</option>
+                        <option value="physics">Physics</option>
+                        <option value="biology">Biology</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="computer-science">Computer Science</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-priority" class="input-label">Priority</label>
+                    <select id="inp-task-priority" class="input-field">
+                        <option value="low">Low Priority</option>
+                        <option value="medium" selected>Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-bot">
+                <button class="btn-secondary modal-cancel">Cancel</button>
+                <button class="btn-primary" id="btn-save-task">Save Task</button>
+            </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-focus">0</div>
-          <div class="stat-label">Focus Minutes</div>
-        </div>
-      </div>
-    </section>
-  </main>
+    </div>
 
-  <nav class="tabbar" role="tablist">
-    <button class="tab active" id="tab-tasks" data-target="view-tasks" role="tab" aria-selected="true">Tasks</button>
-    <button class="tab" id="tab-generator" data-target="view-generator" role="tab">Generator</button>
-    <button class="tab" id="tab-chat" data-target="view-chat" role="tab">Chat</button>
-    <button class="tab" id="tab-timer" data-target="view-timer" role="tab">Timer</button>
-    <button class="tab" id="tab-stats" data-target="view-stats" role="tab">Stats</button>
-  </nav>
+    <!-- Loading Spinner Overlay -->
+    <div id="loader-overlay" class="loader-screen">
+        <div class="loader-spin"></div>
+    </div>
 
-  <input id="haptic" type="checkbox" hidden />
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
