@@ -70,11 +70,12 @@
   *{ animation-duration: 0s !important; transition-duration: 0s !important; }
 }
 @media (prefers-reduced-transparency: reduce){
-  :root{ --opacity-surface: .85; --blur: 0px; }
+  :root{ --opacity-surface: .9; --blur: 0px; }
 }
 /* Optional manual toggles via HTML classes */
 html.reduce-motion :where(*){ animation-duration:0s!important; transition-duration:0s!important; }
 html.reduce-transparency :where(*){ backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
+html.high-contrast{ filter: contrast(1.05) saturate(1.05); }
 /* Reset */
 *,*::before,*::after{ box-sizing:border-box; }
 html,body{ height:100%; }
@@ -95,7 +96,7 @@ body{
 /* Focus visibility and keyboard nav */
 :focus-visible{
   outline: 2px solid var(--ring-strong);
-  outline-offset: 2px;
+  outline-offset: 3px;
   border-radius: max(2px, .5rem);
 }
 :where(button, [role="button"], a, input, textarea, select){
@@ -126,16 +127,22 @@ body{
 .btn.success{ background: linear-gradient(135deg,#22c55e,#16a34a); color:#fff; }
 .btn.danger{ background: linear-gradient(135deg,#ef4444,#dc2626); color:#fff; }
 .btn.ghost{ background: transparent; color: var(--fg); border:1px solid var(--card-strong); }
+.btn:focus-visible{ box-shadow: 0 0 0 4px var(--ring); }
 /* Inputs */
 input,textarea,select{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background: var(--card-soft); color: var(--fg); outline:none; transition: box-shadow var(--t-base), background var(--t-base), border-color var(--t-base); }
-input::placeholder, textarea::placeholder{ color: color-mix(in srgb, var(--fg) 50%, transparent); }
+input::placeholder, textarea::placeholder{ color: color-mix(in srgb, var(--fg) 60%, transparent); }
 input:focus,textarea:focus,select:focus{ box-shadow: 0 0 0 4px var(--ring); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
 input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]{ border-color: color-mix(in srgb, var(--danger) 60%, transparent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 35%, transparent); }
 /* Date inputs refined */
-input[type="date"]{ position:relative; color-scheme: dark light; }
-input[type="date"]::-webkit-calendar-picker-indicator{ filter: invert(1); opacity:.8; cursor:pointer; }
+input[type="date"]{ position:relative; color-scheme: dark light; background: var(--card-soft); }
+input[type="date"]::-webkit-calendar-picker-indicator{ filter: invert(1); opacity:.85; cursor:pointer; }
+/* Fallback for browsers not supporting date */
+input[type="date"].has-text{ color: var(--fg); }
 input[type="date"]:invalid{ border-color: color-mix(in srgb, var(--danger) 60%, transparent); }
 input[type="date"]:user-invalid{ border-color: color-mix(in srgb, var(--danger) 60%, transparent); }
+/* Add min/max contrast helper */
+label, .label{ color: color-mix(in oklab, var(--fg) calc(70% * var(--contrast-mult)), black); font-weight:600; }
+.small{ font-size:.9rem; color: var(--muted); }
 /* Lists */
 .list{ list-style:none; padding:0; margin:16px 0; display:flex; flex-direction:column; gap:10px; }
 .list .item{ display:flex; justify-content:space-between; align-items:center; padding:12px; border-radius:12px; background: var(--card-soft); border:1px solid var(--card-strong); gap: var(--gap); }
@@ -174,15 +181,15 @@ input[type="date"]:user-invalid{ border-color: color-mix(in srgb, var(--danger) 
 .navbar .tab:focus-visible{ outline: 2px solid var(--ring); }
 /* Modals */
 .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:24px; }
-.modal[open], .modal[aria-hidden="false"]{ display:flex; }
+.modal[open], .modal[aria-hidden="false"], .modal[aria-modal="true"]{ display:flex; }
 .modal .backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.45); animation: fadeIn var(--t-slow); }
 .modal .dialog{ position:relative; width:min(720px, 96vw); padding:16px; border-radius:16px; background: var(--card); border:1px solid var(--card-strong); box-shadow: var(--elev-lg); }
 .modal .dialog header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
 .modal .dialog footer{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
-.modal [data-cmd="close"], .modal .btn-cancel{ background: transparent; color: var(--fg); border:1px solid var(--card-strong); }
+.modal [data-cmd="close"], .modal .btn-cancel, .modal [data-role="cancel"], .modal [aria-label="Cancel"]{ background: transparent; color: var(--fg); border:1px solid var(--card-strong); }
 .modal .btn-cancel:focus-visible{ outline: 2px solid var(--ring); }
-/* Ensure cancel buttons always feel clickable */
-.btn-cancel, [data-cmd="close"], [data-role="cancel"]{ cursor:pointer; }
+/* Ensure cancel buttons always feel clickable and reset visually */
+.btn-cancel, [data-cmd="close"], [data-role="cancel"], [type="reset"], button.cancel{ cursor:pointer; }
 /* Error/Empty states */
 .empty{ padding:18px; border-radius:14px; background: var(--card-soft); border:1px solid var(--card-strong); color: var(--muted); text-align:center; }
 .error-inline{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; background: color-mix(in srgb, var(--danger) 12%, transparent); border:1px solid color-mix(in srgb, var(--danger) 28%, transparent); color:#fff; }
@@ -194,12 +201,3 @@ input[type="date"]:user-invalid{ border-color: color-mix(in srgb, var(--danger) 
 @keyframes pop{ from{ transform: scale(.98); opacity:0 } to{ transform:none; opacity:1 } }
 .pop{ animation: pop var(--t-base); }
 /* Accessibility helpers */
-.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-[role="status"][aria-live]{ min-height:1rem; }
-[aria-busy="true"]{ cursor: progress; }
-/* Responsive tweaks */
-@media (max-width: 720px){
-  .view{ padding:72px 12px 96px; }
-  .cards{ grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-  .navbar{ width: min(100% - 16px, 820px); }
-}
