@@ -85,6 +85,8 @@
             // Apply reduced motion and transparency preferences
             if (localStorage.getItem('reduce-motion') === 'true') document.body.classList.add('reduce-motion');
             if (localStorage.getItem('reduce-transparency') === 'true') document.body.classList.add('reduced-transparency');
+            // Set initial document language
+            try { document.documentElement.setAttribute('lang', APP_STATE.language); } catch (e) {}
         } catch (e) {}
         applyCurrentTheme();
         renderTasksList();
@@ -143,6 +145,7 @@
                 hapticFeedback('light');
                 APP_STATE.language = e.target.value;
                 localStorage.setItem('app-lang', APP_STATE.language);
+                try { document.documentElement.setAttribute('lang', APP_STATE.language); } catch (err) {}
             });
         }
         
