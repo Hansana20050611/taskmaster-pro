@@ -115,15 +115,10 @@ body{
 /* Content layout */
 .view{ display:none; opacity:0; transform: translateY(10px); transition: opacity var(--t-base), transform var(--t-base); padding:88px 16px 96px; }
 .view.active{ display:block; opacity:1; transform:none; }
-.view-header{ display:flex; justify-content:space-between; align-items:center; margin:8px auto 16px; max-width:var(--content-max); gap: var(--gap);
-}
+.view-header{ display:flex; justify-content:space-between; align-items:center; margin:8px auto 16px; max-width:var(--content-max); gap: var(--gap); }
 .panel,.cards,.chat-box,.timer,.stats,.list{ max-width:var(--content-max); margin:0 auto; }
 /* Buttons */
-.btn{
-  appearance:none; border:0; border-radius:12px; padding:12px 16px; font-weight:650; color:#04101f;
-  background: var(--fg); cursor:pointer; transition: transform var(--t-fast), filter var(--t-base), box-shadow var(--t-base);
-  box-shadow: var(--elev-sm);
-}
+.btn{ appearance:none; border:0; border-radius:12px; padding:12px 16px; font-weight:650; color:#04101f; background: var(--fg); cursor:pointer; transition: transform var(--t-fast), filter var(--t-base), box-shadow var(--t-base); box-shadow: var(--elev-sm); }
 .btn:hover{ filter: brightness(1.04) saturate(1.05); }
 .btn:active{ transform: scale(.98); }
 .btn:disabled{ opacity:.6; cursor:not-allowed; }
@@ -132,32 +127,23 @@ body{
 .btn.danger{ background: linear-gradient(135deg,#ef4444,#dc2626); color:#fff; }
 .btn.ghost{ background: transparent; color: var(--fg); border:1px solid var(--card-strong); }
 /* Inputs */
-input,textarea,select{
-  width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.18);
-  background: var(--card-soft); color: var(--fg); outline:none; transition: box-shadow var(--t-base), background var(--t-base), border-color var(--t-base);
-}
+input,textarea,select{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background: var(--card-soft); color: var(--fg); outline:none; transition: box-shadow var(--t-base), background var(--t-base), border-color var(--t-base); }
 input::placeholder, textarea::placeholder{ color: color-mix(in srgb, var(--fg) 50%, transparent); }
 input:focus,textarea:focus,select:focus{ box-shadow: 0 0 0 4px var(--ring); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
-input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]{
-  border-color: color-mix(in srgb, var(--danger) 60%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 35%, transparent);
-}
+input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"]{ border-color: color-mix(in srgb, var(--danger) 60%, transparent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 35%, transparent); }
 /* Date inputs refined */
 input[type="date"]{ position:relative; color-scheme: dark light; }
 input[type="date"]::-webkit-calendar-picker-indicator{ filter: invert(1); opacity:.8; cursor:pointer; }
 input[type="date"]:invalid{ border-color: color-mix(in srgb, var(--danger) 60%, transparent); }
 input[type="date"]:user-invalid{ border-color: color-mix(in srgb, var(--danger) 60%, transparent); }
-
 /* Lists */
 .list{ list-style:none; padding:0; margin:16px 0; display:flex; flex-direction:column; gap:10px; }
-.list .item{ display:flex; justify-content:space-between; align-items:center; padding:12px; border-radius:12px; background: var(--card-soft); border:1px solid var(--card-strong); gap: var(--gap);
-}
+.list .item{ display:flex; justify-content:space-between; align-items:center; padding:12px; border-radius:12px; background: var(--card-soft); border:1px solid var(--card-strong); gap: var(--gap); }
 .item .meta{ font-size:.9rem; color: var(--muted); }
 .item .actions{ display:flex; gap:8px; align-items:center; }
 /* Cards Grid (Responsive/Bento) */
 .cards{ display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:12px; margin-top:12px; align-items:stretch; }
-.card{ padding:14px; border-radius:14px; background: var(--card-soft); border:1px solid var(--card-strong); display:flex; flex-direction:column; gap: var(--gap);
-}
+.card{ padding:14px; border-radius:14px; background: var(--card-soft); border:1px solid var(--card-strong); display:flex; flex-direction:column; gap: var(--gap); }
 .card.header{ grid-column: span 2; }
 .card.accent{ background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 18%, transparent), transparent); }
 .card.warn{ background: linear-gradient(180deg, color-mix(in srgb, var(--warning) 18%, transparent), transparent); }
@@ -182,27 +168,21 @@ input[type="date"]:user-invalid{ border-color: color-mix(in srgb, var(--danger) 
 .stat .value{ font-size:1.6rem; font-weight:800; }
 .stat .label{ color: var(--muted); font-size:.9rem; }
 /* Navigation (bottom tabs) */
-.navbar{ position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
-  width: min(100% - 24px, 820px); background: var(--card); border:1px solid var(--card-strong); border-radius: 18px; box-shadow: var(--elev);
-  display:flex; align-items:center; justify-content:space-around; padding:8px; backdrop-filter: saturate(160%) blur(var(--blur)); -webkit-backdrop-filter: saturate(160%) blur(var(--blur));
-}
-.navbar .tab{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; color: var(--muted); padding:10px 8px; border-radius:12px; cursor:pointer; transition: color var(--t-base), background var(--t-base);
-}
+.navbar{ position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: min(100% - 24px, 820px); background: var(--card); border:1px solid var(--card-strong); border-radius: 18px; box-shadow: var(--elev); display:flex; align-items:center; justify-content:space-around; padding:8px; backdrop-filter: saturate(160%) blur(var(--blur)); -webkit-backdrop-filter: saturate(160%) blur(var(--blur)); }
+.navbar .tab{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; color: var(--muted); padding:10px 8px; border-radius:12px; cursor:pointer; transition: color var(--t-base), background var(--t-base); }
 .navbar .tab[aria-selected="true"]{ color: var(--fg); background: var(--card-soft); }
 .navbar .tab:focus-visible{ outline: 2px solid var(--ring); }
 /* Modals */
 .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:24px; }
 .modal[open], .modal[aria-hidden="false"]{ display:flex; }
 .modal .backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.45); animation: fadeIn var(--t-slow); }
-.modal .dialog{ position:relative; width:min(720px, 96vw); padding:16px; border-radius:16px; background: var(--card); border:1px solid var(--card-strong); box-shadow: var(--elev-lg);
-}
+.modal .dialog{ position:relative; width:min(720px, 96vw); padding:16px; border-radius:16px; background: var(--card); border:1px solid var(--card-strong); box-shadow: var(--elev-lg); }
 .modal .dialog header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
 .modal .dialog footer{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
 .modal [data-cmd="close"], .modal .btn-cancel{ background: transparent; color: var(--fg); border:1px solid var(--card-strong); }
 .modal .btn-cancel:focus-visible{ outline: 2px solid var(--ring); }
 /* Ensure cancel buttons always feel clickable */
 .btn-cancel, [data-cmd="close"], [data-role="cancel"]{ cursor:pointer; }
-
 /* Error/Empty states */
 .empty{ padding:18px; border-radius:14px; background: var(--card-soft); border:1px solid var(--card-strong); color: var(--muted); text-align:center; }
 .error-inline{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; background: color-mix(in srgb, var(--danger) 12%, transparent); border:1px solid color-mix(in srgb, var(--danger) 28%, transparent); color:#fff; }
@@ -219,4 +199,7 @@ input[type="date"]:user-invalid{ border-color: color-mix(in srgb, var(--danger) 
 [aria-busy="true"]{ cursor: progress; }
 /* Responsive tweaks */
 @media (max-width: 720px){
-  .view{ padding:72px 12px 96px
+  .view{ padding:72px 12px 96px; }
+  .cards{ grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .navbar{ width: min(100% - 16px, 820px); }
+}
