@@ -582,6 +582,12 @@ select.input-field {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Ensure select fits modern iOS look within chat header */
+.chat-top select.input-field {
+    max-width: 240px;
+    font-weight: 700;
+}
+
 .chat-messages {
     flex: 1;
     overflow-y: auto;
