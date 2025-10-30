@@ -31,6 +31,77 @@
         stats: JSON.parse(localStorage.getItem('app-stats') || '{"tasks":0,"cards":0,"hours":0,"streak":0}')
     };
 
+    // ===== I18N STRINGS =====
+    const I18N = {
+        en: {
+            titleTasks: 'My Tasks',
+            titleGenerator: 'Flashcard Generator',
+            titleChat: 'AI Study Assistant',
+            titleStats: 'Your Progress',
+            subject: 'Subject',
+            topic: 'Topic',
+            numCards: 'Number of Cards',
+            generate: 'Generate with AI',
+            chatPlaceholder: 'Ask a question or describe a problem...',
+            modalCreate: 'Create New Task',
+            taskTitle: 'Task Title',
+            description: 'Description (Optional)',
+            priority: 'Priority',
+            cancel: 'Cancel',
+            saveTask: 'Save Task',
+            statTasks: 'Tasks Completed',
+            statCards: 'Cards Learned',
+            statHours: 'Study Time',
+            statStreak: 'Day Streak'
+        },
+        si: {
+            titleTasks: 'මගේ කාර්ය',
+            titleGenerator: 'ෆ්ලෑෂ් කාඩ් ජනකය',
+            titleChat: 'AI අධ්‍යාපන උදව්කරු',
+            titleStats: 'ඔබේ ප්‍රගතිය',
+            subject: 'විෂය',
+            topic: 'මාතෘකාව',
+            numCards: 'කාඩ්පත් ගණන',
+            generate: 'AI මඟින් ජනනය කරන්න',
+            chatPlaceholder: 'ප්‍රශ්නයක් හෝ ගැටලුවක් ලියන්න...',
+            modalCreate: 'නව කාර්යයක් සාදන්න',
+            taskTitle: 'කාර්ය මාතෘකාව',
+            description: 'විස්තර (විකල්පීය)',
+            priority: 'ප්‍රාථමිකතාව',
+            cancel: 'අවලංගු',
+            saveTask: 'කාර්යය සුරකින්න',
+            statTasks: 'සම්පූර්ණ කළ කාර්ය',
+            statCards: 'සිදු කළ කාඩ්පත්',
+            statHours: 'ඉගනිම් වේලාව',
+            statStreak: 'දිනයේ පරාක්‍රමය'
+        }
+    };
+
+    function applyLanguageTexts() {
+        const t = I18N[APP_STATE.language] || I18N.en;
+        try { document.documentElement.setAttribute('lang', APP_STATE.language); } catch (e) {}
+        let el;
+        el = document.getElementById('title-tasks'); if (el) el.innerHTML = '📝 ' + t.titleTasks;
+        el = document.getElementById('title-generator'); if (el) el.innerHTML = '🎴 ' + t.titleGenerator;
+        el = document.getElementById('title-chat'); if (el) el.innerHTML = '💬 ' + t.titleChat;
+        el = document.getElementById('title-stats'); if (el) el.innerHTML = '📊 ' + t.titleStats;
+        el = document.querySelector('label[for="fc-subject"]'); if (el) el.textContent = t.subject;
+        el = document.querySelector('label[for="fc-topic"]'); if (el) el.textContent = t.topic;
+        el = document.querySelector('label[for="fc-count"]'); if (el) el.textContent = t.numCards;
+        el = document.getElementById('btn-generate'); if (el) el.innerHTML = '<span>✨</span> ' + t.generate;
+        el = document.getElementById('chat-input'); if (el) el.placeholder = t.chatPlaceholder;
+        el = document.getElementById('task-modal-title'); if (el) el.textContent = t.modalCreate;
+        el = document.querySelector('label[for="inp-task-title"]'); if (el) el.textContent = t.taskTitle;
+        el = document.querySelector('label[for="inp-task-desc"]'); if (el) el.textContent = t.description;
+        el = document.querySelector('label[for="inp-task-priority"]'); if (el) el.textContent = t.priority;
+        el = document.querySelector('.modal-cancel'); if (el) el.textContent = t.cancel;
+        el = document.getElementById('btn-save-task'); if (el) el.textContent = t.saveTask;
+        el = document.querySelector('#view-stats .stat-box:nth-child(1) .stat-desc'); if (el) el.textContent = t.statTasks;
+        el = document.querySelector('#view-stats .stat-box:nth-child(2) .stat-desc'); if (el) el.textContent = t.statCards;
+        el = document.querySelector('#view-stats .stat-box:nth-child(3) .stat-desc'); if (el) el.textContent = t.statHours;
+        el = document.querySelector('#view-stats .stat-box:nth-child(4) .stat-desc'); if (el) el.textContent = t.statStreak;
+    }
+
     // ===== HAPTIC FEEDBACK =====
     
     function checkIOSPWA() {
@@ -146,7 +217,10 @@
                 APP_STATE.language = e.target.value;
                 localStorage.setItem('app-lang', APP_STATE.language);
                 try { document.documentElement.setAttribute('lang', APP_STATE.language); } catch (err) {}
+                applyLanguageTexts();
             });
+            // Initialize UI text on load
+            applyLanguageTexts();
         }
         
         // Task Modal
