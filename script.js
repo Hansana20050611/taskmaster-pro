@@ -76,8 +76,19 @@
         refreshStats();
         checkBackendHealth();
         refreshTimerDisplay();
+        // Initialize theme from system preference if no user setting
+        try {
+            if (!localStorage.getItem('app-theme')) {
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                APP_STATE.theme = prefersDark ? 'dark' : 'light';
+            }
+            // Apply reduced motion and transparency preferences
+            if (localStorage.getItem('reduce-motion') === 'true') document.body.classList.add('reduce-motion');
+            if (localStorage.getItem('reduce-transparency') === 'true') document.body.classList.add('reduced-transparency');
+        } catch (e) {}
         applyCurrentTheme();
         renderTasksList();
+        initScrollAnimations();
         console.log('✅ TaskMaster Pro ready!');
     }
 
@@ -100,6 +111,29 @@
                 hapticFeedback('light');
                 toggleAppTheme();
             });
+        }
+
+        // Reduced Motion Toggle
+        const btnReduceMotion = document.getElementById('reduce-motion-btn');
+        if (btnReduceMotion) {
+            btnReduceMotion.addEventListener('click', function() {
+                const enabled = document.body.classList.toggle('reduce-motion');
+                localStorage.setItem('reduce-motion', String(enabled));
+                this.setAttribute('aria-pressed', String(enabled));
+            });
+            // init pressed state
+            btnReduceMotion.setAttribute('aria-pressed', String(document.body.classList.contains('reduce-motion')));
+        }
+
+        // Reduced Transparency Toggle
+        const btnReduceTransparency = document.getElementById('reduce-transparency-btn');
+        if (btnReduceTransparency) {
+            btnReduceTransparency.addEventListener('click', function() {
+                const enabled = document.body.classList.toggle('reduced-transparency');
+                localStorage.setItem('reduce-transparency', String(enabled));
+                this.setAttribute('aria-pressed', String(enabled));
+            });
+            btnReduceTransparency.setAttribute('aria-pressed', String(document.body.classList.contains('reduced-transparency')));
         }
         
         // Language Selector
@@ -131,8 +165,15 @@
         
         const modalX = document.querySelector('.modal-x');
         const modalCancel = document.querySelector('.modal-cancel');
+        const modalBackdrop = document.querySelector('#task-modal .modal-backdrop');
         if (modalX) modalX.addEventListener('click', hideTaskModal);
         if (modalCancel) modalCancel.addEventListener('click', hideTaskModal);
+        if (modalBackdrop) modalBackdrop.addEventListener('click', hideTaskModal);
+
+        // Close modal on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') hideTaskModal();
+        });
         
         // Flashcard Generator
         const btnGen = document.getElementById('btn-generate');
@@ -207,6 +248,8 @@
             if (btn.getAttribute('data-tab') === tabName) {
                 btn.classList.add('active-tab');
             }
+            // WAI-ARIA state
+            btn.setAttribute('aria-selected', String(btn.classList.contains('active-tab')));
         });
         
         // Load tab data
@@ -229,6 +272,17 @@
         if (icon) {
             icon.textContent = APP_STATE.theme === 'dark' ? '🌙' : '☀️';
         }
+
+        // Respond to system theme changes when user hasn't explicitly chosen
+        try {
+            const mm = window.matchMedia('(prefers-color-scheme: dark)');
+            if (mm && !localStorage.getItem('app-theme')) {
+                mm.onchange = function(e) {
+                    APP_STATE.theme = e.matches ? 'dark' : 'light';
+                    applyCurrentTheme();
+                };
+            }
+        } catch (e) {}
     }
 
     // ===== BACKEND API =====
@@ -255,15 +309,25 @@
     }
 
     function callAPI(endpoint, method, payload) {
+        const controller = new AbortController();
+        const timeout = setTimeout(function(){ controller.abort(); }, 20000);
         return fetch(CONFIG.API_URL + endpoint, {
             method: method || 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: method !== 'GET' ? JSON.stringify(payload) : undefined
+            body: method !== 'GET' ? JSON.stringify(payload) : undefined,
+            signal: controller.signal
         })
         .then(function(res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();
-        });
+        })
+        .catch(function(err){
+            if (err.name === 'AbortError') {
+                throw new Error('Request timed out');
+            }
+            throw err;
+        })
+        .finally(function(){ clearTimeout(timeout); });
     }
 
     // ===== CHAT FUNCTIONALITY =====
@@ -272,6 +336,7 @@
         const inp = document.getElementById('chat-input');
         const subj = document.getElementById('chat-subject').value;
         const msg = inp.value.trim();
+        const btn = document.getElementById('btn-send');
         
         if (!msg) {
             showToast('Please enter a message', 'warning');
@@ -284,6 +349,7 @@
         
         // Loading indicator
         const loadId = appendChatMsg('🤔 Thinking...', 'bot', true);
+        if (btn) btn.disabled = true;
         
         callAPI('/apichat', 'POST', {
             message: msg,
@@ -306,6 +372,9 @@
             appendChatMsg('❌ Error: ' + err.message, 'bot');
             hapticFeedback('error');
         });
+        
+        // Always re-enable send button after a short delay
+        setTimeout(function(){ if (btn) btn.disabled = false; }, 100);
     }
 
     function appendChatMsg(text, sender, isTemp) {
@@ -340,6 +409,8 @@
         const subj = document.getElementById('fc-subject').value;
         const topic = document.getElementById('fc-topic').value.trim();
         const count = document.getElementById('fc-count').value;
+        const btn = document.getElementById('btn-generate');
+        const container = document.getElementById('cards-grid');
         
         if (!topic) {
             showToast('Please enter a topic', 'warning');
@@ -349,6 +420,16 @@
         
         toggleLoader(true);
         showToast('Generating ' + count + ' flashcards...', 'info');
+        if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+        if (container) {
+            container.innerHTML = '';
+            // skeletons
+            for (var i = 0; i < Math.min(parseInt(count), 6); i++) {
+                var sk = document.createElement('div');
+                sk.className = 'flashcard skeleton';
+                container.appendChild(sk);
+            }
+        }
         
         callAPI('/apichat', 'POST', {
             message: 'Generate ' + count + ' flashcards about ' + topic + ' for ' + subj + '. Format: Q: question | A: answer',
@@ -371,6 +452,7 @@
         })
         .finally(function() {
             toggleLoader(false);
+            if (btn) { btn.disabled = false; btn.textContent = '✨ Generate with AI'; }
         });
     }
 
@@ -421,7 +503,10 @@
         cards.forEach(function(card, idx) {
             const cardEl = document.createElement('div');
             cardEl.className = 'flashcard';
-            cardEl.innerHTML = '<h4>Card ' + (idx + 1) + '</h4>' +
+            cardEl.innerHTML = '<div class="card-actions">' +
+                               '<button class="btn-mini" aria-label="Delete card">🗑️</button>' +
+                               '</div>' +
+                               '<h4>Card ' + (idx + 1) + '</h4>' +
                                '<p><strong>Q:</strong> ' + card.q + '</p>' +
                                '<p><strong>A:</strong> ' + card.a + '</p>';
             
@@ -429,6 +514,15 @@
                 hapticFeedback('light');
                 this.style.transform = this.style.transform === 'rotateY(180deg)' ? '' : 'rotateY(180deg)';
             });
+
+            // Delete card button (stop click propagation)
+            const delBtn = cardEl.querySelector('.btn-mini');
+            if (delBtn) {
+                delBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    cardEl.remove();
+                });
+            }
             
             container.appendChild(cardEl);
         });
@@ -443,6 +537,9 @@
     function showTaskModal() {
         const modal = document.getElementById('task-modal');
         if (modal) modal.classList.add('show-modal');
+        // Focus first field
+        const title = document.getElementById('inp-task-title');
+        if (title) { try { title.focus(); } catch (e) {} }
     }
 
     function hideTaskModal() {
@@ -452,6 +549,13 @@
         // Clear form
         document.getElementById('inp-task-title').value = '';
         document.getElementById('inp-task-desc').value = '';
+        var subjSel = document.getElementById('inp-task-subj');
+        var prioSel = document.getElementById('inp-task-priority');
+        if (subjSel) subjSel.value = 'general';
+        if (prioSel) prioSel.value = 'medium';
+        // Return focus to opener
+        const opener = document.getElementById('btn-add-task');
+        if (opener) { try { opener.focus(); } catch (e) {} }
     }
 
     function saveNewTask() {
@@ -599,6 +703,7 @@
         APP_STATE.timerRound++;
         APP_STATE.timerSecs = CONFIG.TIMER_WORK;
         APP_STATE.stats.hours += 0.42; // 25min = 0.42h
+        if (APP_STATE.stats.streak < 1) APP_STATE.stats.streak = 1; // minimal streak increment placeholder
         
         refreshTimerDisplay();
         refreshStats();
@@ -642,7 +747,7 @@
         
         if (tasksEl) tasksEl.textContent = APP_STATE.stats.tasks;
         if (cardsEl) cardsEl.textContent = APP_STATE.stats.cards;
-        if (hoursEl) hoursEl.textContent = APP_STATE.stats.hours.toFixed(1) + 'h';
+        if (hoursEl) hoursEl.textContent = Math.max(0, APP_STATE.stats.hours).toFixed(1) + 'h';
         if (streakEl) streakEl.textContent = APP_STATE.stats.streak;
     }
 
@@ -672,6 +777,8 @@
                              'backdrop-filter:blur(12px);padding:18px 28px;border-radius:16px;' +
                              'box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:10000;max-width:320px;' +
                              'animation:slideIn 0.3s ease-out;color:white;font-weight:700;';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
         
         if (type === 'success') toast.style.background = 'rgba(16,185,129,0.95)';
         if (type === 'error') toast.style.background = 'rgba(239,68,68,0.95)';
@@ -679,11 +786,37 @@
         if (type === 'info') toast.style.background = 'rgba(59,130,246,0.95)';
         
         document.body.appendChild(toast);
+        // Mirror to aria-live region for SR reliability
+        try {
+            var live = document.getElementById('aria-live');
+            if (live) live.textContent = msg;
+        } catch (e) {}
         
         setTimeout(function() {
             toast.style.animation = 'slideOut 0.3s ease-out';
             setTimeout(function() { toast.remove(); }, 300);
         }, 3500);
+    }
+
+    // ===== SCROLL-BASED ANIMATIONS =====
+    function initScrollAnimations() {
+        try {
+            var observer = new IntersectionObserver(function(entries){
+                entries.forEach(function(entry){
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+
+            document.querySelectorAll('.task-card, .flashcard, .stat-box').forEach(function(el){
+                el.classList.add('pre-in');
+                observer.observe(el);
+            });
+        } catch (e) {
+            // No-op if unsupported
+        }
     }
 
     // Initialize timer circle
@@ -702,5 +835,4 @@
     }
 
 })();
-```
-
+ 
