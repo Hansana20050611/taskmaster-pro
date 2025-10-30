@@ -9,13 +9,12 @@
   <meta name="theme-color" content="#667eea" />
   <title>TaskMaster Pro - AI Study Assistant</title>
   <link rel="stylesheet" href="styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@200..700" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
 </head>
 <body>
   <!-- iOS Haptic Trigger (hidden) -->
-  <input id="haptic-trigger" style="display:none;" switch type="checkbox" />
+  <input id="haptic-trigger" style="display:none;" type="checkbox" />
   <label for="haptic-trigger" id="haptic-label" style="display:none;"></label>
 
   <!-- Floating App Header -->
@@ -45,23 +44,23 @@
 
   <!-- Main App Content -->
   <main class="app-main">
-    <div aria-atomic="true" aria-live="polite" id="aria-live" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"></div>
+    <div id="aria-live" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"></div>
 
     <!-- TAB 1: Tasks Section -->
-    <section aria-labelledby="tab-tasks" class="app-view" id="view-tasks" role="tabpanel">
+    <section id="view-tasks" class="app-view" role="tabpanel" aria-labelledby="tab-tasks">
       <div class="view-header">
-        <h2 class="view-title" id="title-tasks"><ion-icon name="create-outline" aria-hidden="true"></ion-icon> My Tasks</h2>
+        <h2 class="view-title" id="title-tasks"><ion-icon aria-hidden="true" name="create-outline"></ion-icon> My Tasks</h2>
         <button class="btn-primary" id="btn-add-task"><span class="sr-only">Add</span> <ion-icon aria-hidden="true" name="add-outline"></ion-icon> New Task</button>
       </div>
       <div class="tasks-wrapper glass-surface">
-        <div class="tasks-grid" id="tasks-list"></div>
+        <div id="tasks-list" class="tasks-grid"></div>
       </div>
     </section>
 
     <!-- TAB 2: Generator Section (Flashcards) -->
-    <section aria-labelledby="tab-generator" class="app-view active-view" id="view-generator" role="tabpanel">
+    <section id="view-generator" class="app-view active-view" role="tabpanel" aria-labelledby="tab-generator">
       <div class="view-header">
-        <h2 class="view-title" id="title-generator"><ion-icon name="albums-outline" aria-hidden="true"></ion-icon> Flashcard Generator</h2>
+        <h2 class="view-title" id="title-generator"><ion-icon aria-hidden="true" name="albums-outline"></ion-icon> Flashcard Generator</h2>
       </div>
       <div class="generator-panel glass-surface">
         <div class="input-group">
@@ -76,7 +75,7 @@
         </div>
         <div class="input-group">
           <label class="input-label" for="fc-topic">Topic</label>
-          <input class="input-field" id="fc-topic" placeholder="e.g., S-block elements, Newton's Laws" type="text" />
+          <input class="input-field" id="fc-topic" type="text" placeholder="e.g., S-block elements, Newton's Laws" />
         </div>
         <div class="input-group">
           <label class="input-label" for="fc-count">Number of Cards</label>
@@ -89,14 +88,14 @@
         </div>
         <button class="btn-primary btn-full" id="btn-generate"><ion-icon aria-hidden="true" name="sparkles-outline"></ion-icon> Generate with AI</button>
       </div>
-      <div class="flashcards-grid" id="cards-grid"></div>
+      <div id="cards-grid" class="flashcards-grid"></div>
     </section>
 
     <!-- TAB 3: AI Chat Section -->
-    <section aria-labelledby="tab-chat" class="app-view" id="view-chat" role="tabpanel">
+    <section id="view-chat" class="app-view" role="tabpanel" aria-labelledby="tab-chat">
       <div class="chat-panel glass-surface">
         <div class="chat-top">
-          <h2 class="view-title" id="title-chat"><ion-icon name="chatbubble-ellipses-outline" aria-hidden="true"></ion-icon> AI Study Assistant</h2>
+          <h2 class="view-title" id="title-chat"><ion-icon aria-hidden="true" name="chatbubble-ellipses-outline"></ion-icon> AI Study Assistant</h2>
           <select class="input-field" id="chat-subject">
             <option value="General">General</option>
             <option value="Mathematics">Mathematics</option>
@@ -105,17 +104,15 @@
             <option value="Biology">Biology</option>
           </select>
         </div>
-        <div class="chat-messages" id="chat-messages">
+        <div id="chat-messages" class="chat-messages">
           <div class="chat-msg bot-msg">
             <div class="msg-avatar" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></div>
-            <div class="msg-bubble">
-              Hello! I'm your AI study assistant. Ask me anything about your subjects!
-            </div>
+            <div class="msg-bubble">Hello! I'm your AI study assistant. Ask me anything about your subjects!</div>
           </div>
         </div>
         <div class="chat-bottom">
-          <textarea class="chat-textarea" id="chat-input" placeholder="Ask a question or describe a problem..." rows="2"></textarea>
-          <button aria-label="Send" class="btn-send-chat" id="btn-send">
+          <textarea id="chat-input" class="chat-textarea" rows="2" placeholder="Ask a question or describe a problem..."></textarea>
+          <button id="btn-send" class="btn-send-chat" aria-label="Send">
             <ion-icon name="send-outline"></ion-icon>
           </button>
         </div>
@@ -123,31 +120,31 @@
     </section>
 
     <!-- TAB 4: Timer Section (Pomodoro) -->
-    <section aria-labelledby="tab-timer" class="app-view" id="view-timer" role="tabpanel">
+    <section id="view-timer" class="app-view" role="tabpanel" aria-labelledby="tab-timer">
       <div class="timer-panel glass-surface">
         <div class="timer-visual">
           <svg class="timer-svg" viewBox="0 0 200 200">
             <circle class="timer-track" cx="100" cy="100" r="85"></circle>
-            <circle class="timer-path" cx="100" cy="100" id="timer-circle" r="85"></circle>
+            <circle class="timer-path" id="timer-circle" cx="100" cy="100" r="85"></circle>
           </svg>
           <div class="timer-center">
-            <div class="timer-text" id="timer-text">25:00</div>
+            <div id="timer-text" class="timer-text">25:00</div>
             <div class="timer-status">Focus Session</div>
           </div>
         </div>
         <div class="timer-buttons">
-          <button class="btn-timer" id="btn-timer-start">
+          <button id="btn-timer-start" class="btn-timer">
             <span id="timer-btn-icon"><ion-icon name="play-outline"></ion-icon></span> <span id="timer-btn-text">Start</span>
           </button>
-          <button class="btn-timer btn-secondary" id="btn-timer-reset"><ion-icon name="refresh-outline" aria-hidden="true"></ion-icon> Reset</button>
+          <button id="btn-timer-reset" class="btn-timer btn-secondary"><ion-icon aria-hidden="true" name="refresh-outline"></ion-icon> Reset</button>
         </div>
         <div class="timer-details">
           <div class="timer-detail-item">
-            <div class="detail-value" id="timer-round">1</div>
+            <div id="timer-round" class="detail-value">1</div>
             <div class="detail-label">Current Round</div>
           </div>
           <div class="timer-detail-item">
-            <div class="detail-value" id="timer-completed">0</div>
+            <div id="timer-completed" class="detail-value">0</div>
             <div class="detail-label">Sessions Done</div>
           </div>
         </div>
@@ -155,29 +152,29 @@
     </section>
 
     <!-- TAB 5: Stats Section -->
-    <section aria-labelledby="tab-stats" class="app-view" id="view-stats" role="tabpanel">
+    <section id="view-stats" class="app-view" role="tabpanel" aria-labelledby="tab-stats">
       <div class="view-header">
-        <h2 class="view-title" id="title-stats"><ion-icon name="stats-chart-outline" aria-hidden="true"></ion-icon> Your Progress</h2>
+        <h2 class="view-title" id="title-stats"><ion-icon aria-hidden="true" name="stats-chart-outline"></ion-icon> Your Progress</h2>
       </div>
       <div class="stats-container">
         <div class="stat-box glass-surface">
-          <div aria-hidden="true" class="stat-emoji"><ion-icon name="checkmark-done-circle-outline"></ion-icon></div>
-          <div class="stat-num" id="stat-tasks">0</div>
+          <div class="stat-emoji" aria-hidden="true"><ion-icon name="checkmark-done-circle-outline"></ion-icon></div>
+          <div id="stat-tasks" class="stat-num">0</div>
           <div class="stat-desc">Tasks Completed</div>
         </div>
         <div class="stat-box glass-surface">
-          <div aria-hidden="true" class="stat-emoji"><ion-icon name="layers-outline"></ion-icon></div>
-          <div class="stat-num" id="stat-cards">0</div>
+          <div class="stat-emoji" aria-hidden="true"><ion-icon name="layers-outline"></ion-icon></div>
+          <div id="stat-cards" class="stat-num">0</div>
           <div class="stat-desc">Cards Learned</div>
         </div>
         <div class="stat-box glass-surface">
-          <div aria-hidden="true" class="stat-emoji"><ion-icon name="stopwatch-outline"></ion-icon></div>
-          <div class="stat-num" id="stat-hours">0h</div>
+          <div class="stat-emoji" aria-hidden="true"><ion-icon name="stopwatch-outline"></ion-icon></div>
+          <div id="stat-hours" class="stat-num">0h</div>
           <div class="stat-desc">Study Time</div>
         </div>
         <div class="stat-box glass-surface">
-          <div aria-hidden="true" class="stat-emoji"><ion-icon name="flame-outline"></ion-icon></div>
-          <div class="stat-num" id="stat-streak">0</div>
+          <div class="stat-emoji" aria-hidden="true"><ion-icon name="flame-outline"></ion-icon></div>
+          <div id="stat-streak" class="stat-num">0</div>
           <div class="stat-desc">Day Streak</div>
         </div>
       </div>
@@ -185,45 +182,45 @@
   </main>
 
   <!-- Bottom Floating Navigation -->
-  <nav aria-label="Main navigation" class="bottom-dock glass-surface" role="tablist">
-    <button aria-controls="view-tasks" aria-label="Tasks" aria-selected="false" class="dock-btn" data-tab="tasks" id="tab-tasks" role="tab">
-      <span aria-hidden="true" class="dock-emoji"><ion-icon name="create-outline"></ion-icon></span>
+  <nav class="bottom-dock glass-surface" role="tablist" aria-label="Main navigation">
+    <button id="tab-tasks" class="dock-btn" role="tab" aria-controls="view-tasks" aria-label="Tasks" aria-selected="false">
+      <span class="dock-emoji" aria-hidden="true"><ion-icon name="create-outline"></ion-icon></span>
       <span class="dock-name">Tasks</span>
     </button>
-    <button aria-controls="view-generator" aria-label="Generator" aria-selected="true" class="dock-btn active" data-tab="generator" id="tab-generator" role="tab">
-      <span aria-hidden="true" class="dock-emoji"><ion-icon name="sparkles-outline"></ion-icon></span>
+    <button id="tab-generator" class="dock-btn active" role="tab" aria-controls="view-generator" aria-label="Generator" aria-selected="true">
+      <span class="dock-emoji" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></span>
       <span class="dock-name">Generator</span>
     </button>
-    <button aria-controls="view-chat" aria-label="Chat" aria-selected="false" class="dock-btn" data-tab="chat" id="tab-chat" role="tab">
-      <span aria-hidden="true" class="dock-emoji"><ion-icon name="chatbubble-ellipses-outline"></ion-icon></span>
+    <button id="tab-chat" class="dock-btn" role="tab" aria-controls="view-chat" aria-label="Chat" aria-selected="false">
+      <span class="dock-emoji" aria-hidden="true"><ion-icon name="chatbubble-ellipses-outline"></ion-icon></span>
       <span class="dock-name">Chat</span>
     </button>
-    <button aria-controls="view-timer" aria-label="Timer" aria-selected="false" class="dock-btn" data-tab="timer" id="tab-timer" role="tab">
-      <span aria-hidden="true" class="dock-emoji"><ion-icon name="timer-outline"></ion-icon></span>
+    <button id="tab-timer" class="dock-btn" role="tab" aria-controls="view-timer" aria-label="Timer" aria-selected="false">
+      <span class="dock-emoji" aria-hidden="true"><ion-icon name="timer-outline"></ion-icon></span>
       <span class="dock-name">Timer</span>
     </button>
-    <button aria-controls="view-stats" aria-label="Stats" aria-selected="false" class="dock-btn" data-tab="stats" id="tab-stats" role="tab">
-      <span aria-hidden="true" class="dock-emoji"><ion-icon name="stats-chart-outline"></ion-icon></span>
+    <button id="tab-stats" class="dock-btn" role="tab" aria-controls="view-stats" aria-label="Stats" aria-selected="false">
+      <span class="dock-emoji" aria-hidden="true"><ion-icon name="stats-chart-outline"></ion-icon></span>
       <span class="dock-name">Stats</span>
     </button>
   </nav>
 
   <!-- Task Creation Modal -->
-  <div class="app-modal" id="task-modal">
+  <div id="task-modal" class="app-modal">
     <div class="modal-backdrop"></div>
     <div class="modal-container glass-surface" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" aria-describedby="task-modal-desc">
       <div class="modal-top">
         <h3 id="task-modal-title">Create New Task</h3>
-        <button aria-label="Close" class="modal-x">×</button>
+        <button class="modal-x" aria-label="Close">×</button>
       </div>
-      <div class="modal-mid" id="task-modal-desc">
+      <div id="task-modal-desc" class="modal-mid">
         <div class="input-group">
           <label class="input-label" for="inp-task-title">Task Title</label>
-          <input class="input-field" id="inp-task-title" placeholder="Enter task title" required type="text" />
+          <input class="input-field" id="inp-task-title" type="text" placeholder="Enter task title" required />
         </div>
         <div class="input-group">
           <label class="input-label" for="inp-task-desc">Description (Optional)</label>
-          <textarea class="input-field" id="inp-task-desc" placeholder="Add details..." rows="3"></textarea>
+          <textarea class="input-field" id="inp-task-desc" rows="3" placeholder="Add details..."></textarea>
         </div>
         <div class="input-group">
           <label class="input-label" for="inp-task-subj">Subject</label>
@@ -247,14 +244,14 @@
       </div>
       <div class="modal-bot">
         <button class="btn-secondary modal-cancel">Cancel</button>
-        <button class="btn-primary" id="btn-save-task">Save Task</button>
+        <button id="btn-save-task" class="btn-primary">Save Task</button>
       </div>
     </div>
   </div>
 
   <!-- Loading Spinner Overlay -->
-  <div aria-busy="false" aria-live="polite" class="loader-screen" id="loader-overlay">
-    <div aria-label="Loading" class="loader-spin" role="status"></div>
+  <div id="loader-overlay" class="loader-screen" aria-live="polite" aria-busy="false">
+    <div class="loader-spin" role="status" aria-label="Loading"></div>
   </div>
 
   <!-- Ionicons and App Scripts -->
