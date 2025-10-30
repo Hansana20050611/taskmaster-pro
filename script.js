@@ -235,6 +235,48 @@
         } catch(e){}
     }
 
+    // ===== BOTTOM DOCK (simplified active toggle, no sliding calc) =====
+    function initBottomDock() {
+        try {
+            const buttons = qsa('.dock-btn');
+            if (!buttons.length) return;
+
+            function activate(btn) {
+                // remove active from others
+                document.querySelector('.dock-btn.active')?.classList.remove('active');
+                buttons.forEach(b => b.setAttribute('aria-selected', 'false'));
+
+                // add active to clicked
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+
+                // show appropriate view
+                const tab = btn.dataset.tab;
+                if (tab) {
+                    APP_STATE.currentTab = tab;
+                    document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+                    const view = document.getElementById('view-' + tab);
+                    if (view) view.classList.add('active-view');
+                }
+            }
+
+            buttons.forEach(btn => {
+                btn.type = 'button';
+                btn.addEventListener('click', () => activate(btn));
+                btn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(btn); }
+                });
+            });
+
+            // Initialize active state from DOM or APP_STATE
+            const initial = document.querySelector('.dock-btn.active') || document.querySelector('.dock-btn[data-tab="' + APP_STATE.currentTab + '"]');
+            if (initial) activate(initial);
+        } catch (e) {
+            // graceful fail
+            console.warn('initBottomDock error', e);
+        }
+    }
+
     // Init timer circle base
     const timerCircle = document.getElementById('timer-circle');
     if (timerCircle) {
@@ -268,6 +310,8 @@
             live.style.left = '-9999px';
             document.body.appendChild(live);
         }
+        // initialize bottom dock navigation
+        initBottomDock();
     }
 
     if (document.readyState === 'loading') {

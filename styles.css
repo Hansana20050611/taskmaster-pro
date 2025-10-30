@@ -119,6 +119,44 @@ ion-icon, .ionicon, .icon ion-icon {
 .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); transform: translateX(-100%); animation: skeletonFlow 1.2s infinite; }
 @keyframes skeletonFlow { to { transform: translateX(100%); } }
 
+/* Bottom dock per-button indicator (pop-in) */
+.dock-btn {
+  position: relative; /* required for the indicator positioning */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
+}
+
+.dock-btn .indicator {
+  /* Positioning */
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+
+  /* Size & Style */
+  width: 90%;
+  height: 4px;
+  background-color: var(--color-secondary); /* purple accent */
+  border-radius: 2px;
+
+  /* Hidden by default */
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0.5);
+
+  /* Animate */
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dock-btn.active .indicator {
+  opacity: 1;
+  transform: translateX(-50%) scaleX(1);
+}
+
+/* Ensure the dock-name spacing remains consistent */
+.dock-name { display:inline-block; font-size:0.85rem; }
+
 /* Wide-screen Bento grid tweaks */
 @media (min-width: 1200px) {
   .stats-container { grid-template-columns: repeat(4, 1fr); }
