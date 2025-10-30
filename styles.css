@@ -138,6 +138,14 @@ body::before {
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     transition: all var(--ease-normal);
+    will-change: transform, opacity;
+}
+
+/* Reduced Transparency: removes blur and increases opacity */
+body.reduced-transparency .glass-surface {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(20, 24, 38, 0.9);
 }
 
 .glass-surface:hover {
@@ -220,6 +228,18 @@ body::before {
     transform: scale(0.95);
 }
 
+/* Focus-visible ring for keyboard users */
+.header-control:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-send-chat:focus-visible,
+.dock-btn:focus-visible,
+.input-field:focus-visible,
+.modal-x:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.35);
+}
+
 /* Main Content Area */
 .app-main {
     padding: calc(72px + var(--space-xl)) var(--space-md) calc(100px + var(--space-xl));
@@ -236,6 +256,13 @@ body::before {
     display: block;
 }
 
+/* WAI-ARIA tab state hint (works with active-tab class already) */
+.dock-btn[aria-selected="true"] {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
 @keyframes viewFadeIn {
     from {
         opacity: 0;
@@ -245,6 +272,17 @@ body::before {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Scroll-in animation states */
+.pre-in {
+    opacity: 0;
+    transform: translateY(20px);
+}
+.in-view {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity var(--ease-slow), transform var(--ease-slow);
 }
 
 .view-header {
@@ -430,6 +468,16 @@ body::before {
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
 }
 
+/* Ensure sufficient contrast for light theme text over glass */
+.light-theme .input-field,
+.light-theme .msg-bubble,
+.light-theme .task-card,
+.light-theme .flashcard {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #1a202c;
+}
+
 /* Generator Panel */
 .generator-panel {
     padding: var(--space-xl);
@@ -456,6 +504,26 @@ body::before {
     justify-content: center;
     position: relative;
     overflow: hidden;
+    will-change: transform, opacity;
+    contain: layout style paint;
+}
+
+.flashcard .card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+}
+
+.flashcard .btn-mini {
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .flashcard::before {
@@ -754,6 +822,8 @@ body::before {
     justify-content: space-between;
     align-items: center;
     transition: all var(--ease-normal);
+    will-change: transform, opacity;
+    contain: layout style paint;
 }
 
 .task-card:hover {
@@ -897,6 +967,53 @@ body::before {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+    }
+}
+
+/* Backdrop-filter feature detection fallback */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    .glass-surface,
+    .flashcard,
+    .task-card,
+    .chat-panel,
+    .generator-panel,
+    .bottom-dock,
+    .modal-container {
+        background: rgba(20, 24, 38, 0.9);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+/* Skeleton loaders */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+}
+.skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: translateX(-100%);
+    animation: skeletonFlow 1.2s infinite;
+}
+@keyframes skeletonFlow {
+    to { transform: translateX(100%); }
+}
+
+/* Bento grid enhancements on wide screens */
+@media (min-width: 1200px) {
+    .stats-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .stats-container .stat-box:nth-child(1) {
+        grid-column: span 2;
+    }
+    .stats-container .stat-box:nth-child(2) {
+        grid-row: span 2;
     }
 }
 
