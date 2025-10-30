@@ -29,6 +29,8 @@
                     <option value="en">EN</option>
                     <option value="si">සිං</option>
                 </select>
+                <button id="reduce-motion-btn" class="header-control" aria-label="Toggle reduced motion" aria-pressed="false" title="Reduced Motion">🚫🎞️</button>
+                <button id="reduce-transparency-btn" class="header-control" aria-label="Toggle reduced transparency" aria-pressed="false" title="Reduced Transparency">🚫✨</button>
                 <button id="theme-btn" class="header-control theme-toggle" aria-label="Toggle theme">
                     <span id="theme-icon">🌙</span>
                 </button>
@@ -38,6 +40,9 @@
 
     <!-- Main App Content -->
     <main class="app-main">
+        <div id="aria-live" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+            <!-- Screen reader live updates -->
+        </div>
         
         <!-- TAB 1: Tasks Section -->
         <section id="view-tasks" class="app-view">
@@ -184,24 +189,24 @@
     </main>
 
     <!-- Bottom Floating Navigation -->
-    <nav class="bottom-dock glass-surface">
-        <button class="dock-btn" data-tab="tasks" aria-label="Tasks">
+    <nav class="bottom-dock glass-surface" role="tablist" aria-label="Main navigation">
+        <button id="tab-tasks" class="dock-btn" data-tab="tasks" role="tab" aria-selected="false" aria-controls="view-tasks" aria-label="Tasks">
             <span class="dock-emoji">📝</span>
             <span class="dock-name">Tasks</span>
         </button>
-        <button class="dock-btn active-tab" data-tab="generator" aria-label="Generator">
+        <button id="tab-generator" class="dock-btn active-tab" data-tab="generator" role="tab" aria-selected="true" aria-controls="view-generator" aria-label="Generator">
             <span class="dock-emoji">🎴</span>
             <span class="dock-name">Generator</span>
         </button>
-        <button class="dock-btn" data-tab="chat" aria-label="Chat">
+        <button id="tab-chat" class="dock-btn" data-tab="chat" role="tab" aria-selected="false" aria-controls="view-chat" aria-label="Chat">
             <span class="dock-emoji">💬</span>
             <span class="dock-name">Chat</span>
         </button>
-        <button class="dock-btn" data-tab="timer" aria-label="Timer">
+        <button id="tab-timer" class="dock-btn" data-tab="timer" role="tab" aria-selected="false" aria-controls="view-timer" aria-label="Timer">
             <span class="dock-emoji">⏱️</span>
             <span class="dock-name">Timer</span>
         </button>
-        <button class="dock-btn" data-tab="stats" aria-label="Stats">
+        <button id="tab-stats" class="dock-btn" data-tab="stats" role="tab" aria-selected="false" aria-controls="view-stats" aria-label="Stats">
             <span class="dock-emoji">📊</span>
             <span class="dock-name">Stats</span>
         </button>
@@ -210,12 +215,12 @@
     <!-- Task Creation Modal -->
     <div id="task-modal" class="app-modal">
         <div class="modal-backdrop"></div>
-        <div class="modal-container glass-surface">
+        <div class="modal-container glass-surface" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" aria-describedby="task-modal-desc">
             <div class="modal-top">
-                <h3>Create New Task</h3>
+                <h3 id="task-modal-title">Create New Task</h3>
                 <button class="modal-x" aria-label="Close">&times;</button>
             </div>
-            <div class="modal-mid">
+            <div class="modal-mid" id="task-modal-desc">
                 <div class="input-group">
                     <label for="inp-task-title" class="input-label">Task Title</label>
                     <input type="text" id="inp-task-title" class="input-field" placeholder="Enter task title" required>
