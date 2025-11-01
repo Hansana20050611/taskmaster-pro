@@ -301,39 +301,35 @@ const FLASHCARDS = {
     },
 
     async simulateAIRequest({ subject, topic, count }) {
-        // Try real API first
+        // Connect to production backend API
         try {
-            const apiBase = window.TASKMASTER_API_BASE || '';
-            if (apiBase) {
-                const response = await fetch(`${apiBase}/api/generate-flashcards`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subject, topic, count })
-                });
-                if (!response.ok) throw new Error('API Error');
-                const data = await response.json();
-                return data.flashcards || [];
-        }
-      } catch (err) {
+            const response = await fetch('https://taskmaster-backend-fixed.hmethmika2023.repl.co/apiflashcards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject, topic, count })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Handle different response formats
+            if (data.flashcards && Array.isArray(data.flashcards)) {
+                return data.flashcards;
+            } else if (Array.isArray(data)) {
+                return data;
+            } else if (data.cards && Array.isArray(data.cards)) {
+                return data.cards;
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (err) {
+            console.error('Flashcard API Error:', err);
             // API failed, throw error to show failure message
             throw new Error('AI Service Error');
         }
-        
-        // Fallback simulation (only if no API base is configured)
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                // For testing: simulate 10% failure rate
-                if (Math.random() < 0.1) {
-                    reject(new Error('AI Service Error'));
-        return;
-      }
-                const cards = [];
-                for (let i = 0; i < count; i++) {
-                    cards.push({ id: Date.now() + i, front: `${topic} - Concept ${i + 1}`, back: `Explanation for ${topic} (${subject}) — concept ${i + 1}` });
-                }
-                resolve(cards);
-            }, 900);
-        });
     },
 
     async generate() {
@@ -375,10 +371,21 @@ const FLASHCARDS = {
         const container = document.getElementById('cards-grid');
         if (!container) return;
         container.innerHTML = '';
-        this.cards.forEach(card => {
+        
+        if (this.cards.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p data-en="No flashcards yet. Generate some!" data-si="තවමත් ෆ්ලැෂ් කාඩ්පත් නොමැත. එකක් නිර්මාණය කරන්න!">No flashcards yet. Generate some!</p></div>';
+            LANGUAGE.updateDOM();
+            return;
+        }
+        
+        this.cards.forEach((card, index) => {
+            // Handle different card formats from API
+            const front = card.front || card.question || card.term || `Card ${index + 1}`;
+            const back = card.back || card.answer || card.definition || card.explanation || '';
+            
             const cardEl = document.createElement('div');
             cardEl.className = 'flashcard';
-            cardEl.innerHTML = `<div class="fc-front">${escapeHtml(card.front)}</div><div class="fc-back">${escapeHtml(card.back)}</div>`;
+            cardEl.innerHTML = `<div class="fc-front">${escapeHtml(front)}</div><div class="fc-back">${escapeHtml(back)}</div>`;
             cardEl.addEventListener('click', () => cardEl.classList.toggle('flipped'));
             container.appendChild(cardEl);
         });
@@ -390,34 +397,27 @@ const CHAT = {
     messages: [],
 
     async simulateAIReply(userMessage, subject) {
-        // Try real API call first
+        // Connect to production backend API
         try {
-            const apiBase = window.TASKMASTER_API_BASE || '';
-            if (apiBase) {
-                const response = await fetch(`${apiBase}/api/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userMessage, subject })
-                });
-                if (!response.ok) throw new Error('API Error');
-                const data = await response.json();
-                return data.response || data.message || `Response for "${userMessage}" about ${subject}`;
-      }
-    } catch (err) {
+            const response = await fetch('https://taskmaster-backend-fixed.hmethmika2023.repl.co/apichat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userMessage, subject })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Handle different response formats
+            return data.response || data.message || data.reply || data.answer || `Response for "${userMessage}" about ${subject}`;
+        } catch (err) {
+            console.error('Chat API Error:', err);
             // API failed, throw error to show failure message
             throw new Error('AI Service Error');
         }
-        // Fallback simulation (only if no API base is configured)
-        return new Promise((resolve, reject) => {
-      setTimeout(() => {
-                // For testing: simulate 10% failure rate
-                if (Math.random() < 0.1) {
-                    reject(new Error('AI Service Error'));
-                } else {
-                    resolve(`Simulated AI reply for "${userMessage}" about ${subject}`);
-                }
-            }, 600);
-        });
     },
 
     init() {
