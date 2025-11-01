@@ -1,4 +1,4 @@
-// TaskMaster Pro - script.js (Ionicons + accessibility + logic fixes)
+// TaskMaster Pro - Comprehensive Script with All Fixes
 (() => {
   'use strict';
 
@@ -13,164 +13,778 @@
       el.id = 'aria-live';
       el.setAttribute('aria-live', 'polite');
       el.setAttribute('aria-atomic', 'true');
-      Object.assign(el.style, { position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' });
+      Object.assign(el.style, { 
+        position: 'absolute', 
+        left: '-9999px', 
+        width: '1px', 
+        height: '1px', 
+        overflow: 'hidden' 
+      });
       document.body.appendChild(el);
     }
     return el;
   };
 
-  const announce = (msg) => { const el = ensureLive(); el.textContent = ''; setTimeout(() => el.textContent = msg, 10); };
+  const announce = (msg) => { 
+    const el = ensureLive(); 
+    el.textContent = ''; 
+    setTimeout(() => el.textContent = msg, 10); 
+  };
 
-  // Ionicons
+  // Ensure Ionicons are loaded
   function ensureIonicons() {
     if (!qs('script[src*="ionicons.esm.js"],script[src*="ionicons.js"]')) {
-      const m = document.createElement('script'); m.type = 'module'; m.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js'; document.head.appendChild(m);
-      const n = document.createElement('script'); n.noModule = true; n.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js'; document.head.appendChild(n);
+      const m = document.createElement('script'); 
+      m.type = 'module'; 
+      m.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js'; 
+      document.head.appendChild(m);
+      const n = document.createElement('script'); 
+      n.noModule = true; 
+      n.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js'; 
+      document.head.appendChild(n);
     }
   }
 
-  function replaceIcons() {
-    // Dock icons
-    qsa('.bottom-dock .dock-btn').forEach(btn => {
-      const emoji = btn.querySelector('.dock-emoji');
-      if (!emoji) return; emoji.textContent = '';
-      const ic = document.createElement('ion-icon');
-      ic.setAttribute('aria-hidden', 'true');
-      const map = { tasks: 'list-outline', generator: 'layers-outline', chat: 'chatbubbles-outline', timer: 'time-outline', stats: 'stats-chart-outline' };
-      ic.name = map[btn.dataset.tab] || 'apps-outline';
-      emoji.appendChild(ic);
-    });
-
-    // Header + common buttons
-    qsa('.header-actions .header-control, .btn-primary, .btn-secondary, .btn-timer, .btn-send-chat').forEach(btn => {
-      if (btn.querySelector('ion-icon')) return;
-      const ic = document.createElement('ion-icon'); ic.setAttribute('aria-hidden', 'true');
-      const al = (btn.getAttribute('aria-label') || btn.title || '').toLowerCase();
-      if (btn.id === 'btn-send') ic.name = 'send';
-      else if (btn.id === 'btn-generate') ic.name = 'sparkles-outline';
-      else if (btn.id === 'btn-add-task') ic.name = 'add-circle';
-      else if (btn.id === 'btn-save-task') ic.name = 'save-outline';
-      else if (al.includes('reduced motion')) ic.name = 'film-outline';
-      else if (al.includes('reduced transparency')) ic.name = 'contrast-outline';
-      else if (al.includes('language')) ic.name = 'language-outline';
-      else if (al.includes('theme')) ic.name = 'moon';
-      else ic.name = 'ellipse-outline';
-      btn.prepend(ic);
-    });
-
-    // Chat avatar
-    qsa('.msg-avatar').forEach(a => { if (!a.querySelector('ion-icon')) { a.textContent = ''; const i = document.createElement('ion-icon'); i.name = 'sparkles-outline'; a.appendChild(i); } });
-
-    // Timer start/play icon
-    const host = qs('#timer-btn-icon');
-    if (host && !host.querySelector('ion-icon')) { host.textContent=''; const i=document.createElement('ion-icon'); i.name='play'; host.appendChild(i); }
-
-    // Modal cancel button icon
-    qsa('.modal-cancel').forEach(b=>{ if(!b.querySelector('ion-icon')){ const i=document.createElement('ion-icon'); i.name='close-circle'; i.setAttribute('aria-hidden','true'); b.prepend(i);} });
+  // Wait for Ionicons to be ready
+  function waitForIonicons(callback, maxAttempts = 50) {
+    if (window.customElements && window.customElements.get('ion-icon')) {
+      callback();
+      return;
+    }
+    if (maxAttempts > 0) {
+      setTimeout(() => waitForIonicons(callback, maxAttempts - 1), 100);
+    }
   }
 
-  // Tabs
+  // Tab Management with Proper Active States
   function initTabs() {
     const tabs = qsa('[role="tab"]');
     const panels = qsa('[role="tabpanel"]');
-    const selectTab = (id) => {
-      tabs.forEach(t=>{ const sel = t.getAttribute('aria-controls')===id; t.setAttribute('aria-selected', String(sel)); t.tabIndex = sel?0:-1; });
-      panels.forEach(p=>{ const show = p.id===id; p.hidden = !show; p.setAttribute('aria-hidden', String(!show)); });
-      announce('Tab changed');
+    let currentTab = null;
+    let isTransitioning = false;
+
+    const selectTab = (tabId, tabElement) => {
+      if (isTransitioning) return;
+      isTransitioning = true;
+
+      // Update all tabs
+      tabs.forEach(t => {
+        const controls = t.getAttribute('aria-controls');
+        const isSelected = controls === tabId;
+        
+        t.setAttribute('aria-selected', String(isSelected));
+        t.tabIndex = isSelected ? 0 : -1;
+        
+        // Update active class on dock buttons
+        if (isSelected) {
+          t.classList.add('active');
+          currentTab = t;
+        } else {
+          t.classList.remove('active');
+        }
+      });
+
+      // Update all panels
+      panels.forEach(p => {
+        const show = p.id === tabId;
+        p.hidden = !show;
+        p.setAttribute('aria-hidden', String(!show));
+        
+        if (show) {
+          p.classList.add('active-view');
+          const tabName = tabElement?.getAttribute('aria-label') || 'tab';
+          announce(`${tabName} tab selected`);
+        } else {
+          p.classList.remove('active-view');
+        }
+      });
+
+      setTimeout(() => {
+        isTransitioning = false;
+      }, 200);
     };
-    tabs.forEach(t=>{
-      t.addEventListener('click', ()=> selectTab(t.getAttribute('aria-controls')));
-      t.addEventListener('keydown', (e)=>{
-        const i = tabs.indexOf ? tabs.indexOf(t) : tabs.findIndex(x=>x===t);
-        if (e.key==='ArrowRight' || e.key==='ArrowDown') { e.preventDefault(); const n=tabs[(i+1)%tabs.length]; n.focus(); n.click(); }
-        if (e.key==='ArrowLeft' || e.key==='ArrowUp') { e.preventDefault(); const p=tabs[(i-1+tabs.length)%tabs.length]; p.focus(); p.click(); }
-        if (e.key==='Home') { e.preventDefault(); tabs[0].focus(); tabs[0].click(); }
-        if (e.key==='End') { e.preventDefault(); tabs[tabs.length-1].focus(); tabs[tabs.length-1].click(); }
+
+    // Attach click handlers
+    tabs.forEach(t => {
+      t.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tabId = t.getAttribute('aria-controls');
+        selectTab(tabId, t);
+      });
+
+      // Keyboard navigation
+      t.addEventListener('keydown', (e) => {
+        const i = tabs.indexOf(t);
+        let nextTab = null;
+
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          nextTab = tabs[(i + 1) % tabs.length];
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          nextTab = tabs[(i - 1 + tabs.length) % tabs.length];
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          nextTab = tabs[0];
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          nextTab = tabs[tabs.length - 1];
+        }
+
+        if (nextTab) {
+          nextTab.focus();
+          const tabId = nextTab.getAttribute('aria-controls');
+          selectTab(tabId, nextTab);
+        }
       });
     });
-    // Initialize first visible
-    const active = tabs.find?.(t=>t.getAttribute('aria-selected')==='true') || tabs[0];
-    if (active) selectTab(active.getAttribute('aria-controls'));
+
+    // Initialize with first active tab
+    const active = tabs.find(t => t.classList.contains('active') || t.getAttribute('aria-selected') === 'true') || tabs[0];
+    if (active) {
+      const tabId = active.getAttribute('aria-controls');
+      selectTab(tabId, active);
+    }
   }
 
-  // Modal
+  // Modal with Focus Trapping
   function initModal() {
-    const openBtn = qs('[data-open-modal]');
     const modal = qs('#task-modal');
-    const closeX = qs('.modal-close');
-    const cancel = qs('.modal-cancel');
+    const openBtn = qs('#btn-add-task');
+    const closeBtn = qs('#modal-close');
+    const cancelBtn = qs('.modal-cancel');
     const backdrop = qs('.modal-backdrop');
+    const saveBtn = qs('#btn-save-task');
+    
     if (!modal) return;
 
-    const open = () => { modal.classList.add('open'); announce('Dialog opened'); const first = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'); first?.focus(); };
-    const close = () => { modal.classList.remove('open'); announce('Dialog closed'); openBtn?.focus(); };
+    let previousFocus = null;
+    let modalFocusables = null;
+
+    const getFocusables = () => {
+      return qsa(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        modal
+      ).filter(el => !el.disabled && !el.hidden);
+    };
+
+    const trapFocus = (e) => {
+      if (!modal.classList.contains('open')) return;
+
+      if (e.key === 'Tab') {
+        if (!modalFocusables) modalFocusables = getFocusables();
+        if (modalFocusables.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const first = modalFocusables[0];
+        const last = modalFocusables[modalFocusables.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    const open = () => {
+      previousFocus = document.activeElement;
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      
+      // Reset form
+      const title = qs('#inp-task-title');
+      const desc = qs('#inp-task-desc');
+      if (title) title.value = '';
+      if (desc) desc.value = '';
+
+      modalFocusables = getFocusables();
+      const first = modalFocusables[0];
+      if (first) {
+        setTimeout(() => first.focus(), 100);
+      }
+
+      announce('Task creation dialog opened');
+      document.addEventListener('keydown', trapFocus);
+    };
+
+    const close = () => {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', trapFocus);
+      modalFocusables = null;
+
+      if (previousFocus && typeof previousFocus.focus === 'function') {
+        previousFocus.focus();
+      }
+      
+      announce('Dialog closed');
+    };
 
     openBtn?.addEventListener('click', open);
-    closeX?.addEventListener('click', close);
-    cancel?.addEventListener('click', close);
+    closeBtn?.addEventListener('click', close);
+    cancelBtn?.addEventListener('click', close);
+    saveBtn?.addEventListener('click', close);
 
-    backdrop?.addEventListener('click', e=>{ if (e.target===backdrop) close(); });
-    document.addEventListener('keydown', e=>{ if (modal.classList.contains('open') && e.key==='Escape') close(); });
+    backdrop?.addEventListener('click', (e) => {
+      if (e.target === backdrop) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (modal.classList.contains('open') && e.key === 'Escape') {
+        close();
+      }
+    });
   }
 
-  // Theme/motion/transparency
+  // Theme and Accessibility Toggles
   function initA11yToggles() {
     const root = document.body;
     const themeBtn = qs('#theme-btn');
-    const themeIconHost = qs('#theme-icon');
+    const themeIcon = qs('#theme-icon');
     const motionBtn = qs('#reduce-motion-btn');
     const transBtn = qs('#reduce-transparency-btn');
 
-    function syncThemeIcon(){ if (!themeIconHost) return; themeIconHost.innerHTML=''; const i=document.createElement('ion-icon'); i.name = root.classList.contains('dark-theme')?'moon':'sunny'; i.setAttribute('aria-hidden','true'); themeIconHost.appendChild(i); }
+    function syncThemeIcon() {
+      if (!themeIcon) return;
+      waitForIonicons(() => {
+        themeIcon.innerHTML = '';
+        const icon = document.createElement('ion-icon');
+        icon.name = root.classList.contains('dark-theme') ? 'moon-outline' : 'sunny-outline';
+        icon.setAttribute('aria-hidden', 'true');
+        themeIcon.appendChild(icon);
+      });
+    }
 
-    // init from storage
-    const saved = localStorage.getItem('app-theme');
-    if (saved==='light') { root.classList.remove('dark-theme'); root.classList.add('light-theme'); }
-    else { root.classList.add('dark-theme'); root.classList.remove('light-theme'); }
+    // Initialize from storage
+    const savedTheme = localStorage.getItem('app-theme');
+    if (savedTheme === 'light') {
+      root.classList.remove('dark-theme');
+      root.classList.add('light-theme');
+    } else {
+      root.classList.add('dark-theme');
+      root.classList.remove('light-theme');
+    }
+
+    const savedMotion = localStorage.getItem('reduce-motion') === 'true';
+    const savedTrans = localStorage.getItem('reduce-transparency') === 'true';
+    
+    if (savedMotion) root.classList.add('reduce-motion');
+    if (savedTrans) root.classList.add('reduce-transparency');
+
     syncThemeIcon();
 
-    themeBtn?.addEventListener('click', ()=>{ root.classList.toggle('dark-theme'); root.classList.toggle('light-theme'); localStorage.setItem('app-theme', root.classList.contains('dark-theme')?'dark':'light'); syncThemeIcon(); announce('Theme changed'); });
+    // Theme toggle
+    themeBtn?.addEventListener('click', () => {
+      const isDark = root.classList.contains('dark-theme');
+      root.classList.toggle('dark-theme');
+      root.classList.toggle('light-theme');
+      
+      localStorage.setItem('app-theme', isDark ? 'light' : 'dark');
+      syncThemeIcon();
+      
+      const newTheme = isDark ? 'Light' : 'Dark';
+      announce(`Theme changed to ${newTheme} mode`);
+    });
 
-    motionBtn?.addEventListener('click', ()=>{ const on = root.classList.toggle('reduced-motion'); motionBtn.setAttribute('aria-pressed', String(on)); announce(on?'Reduced motion on':'Reduced motion off'); });
+    // Motion toggle
+    motionBtn?.addEventListener('click', () => {
+      const on = root.classList.toggle('reduce-motion');
+      motionBtn.setAttribute('aria-pressed', String(on));
+      localStorage.setItem('reduce-motion', String(on));
+      announce(on ? 'Reduced motion enabled' : 'Reduced motion disabled');
+    });
 
-    transBtn?.addEventListener('click', ()=>{ const on = root.classList.toggle('reduced-transparency'); transBtn.setAttribute('aria-pressed', String(on)); announce(on?'Reduced transparency on':'Reduced transparency off'); });
+    // Transparency toggle
+    transBtn?.addEventListener('click', () => {
+      const on = root.classList.toggle('reduce-transparency');
+      transBtn.setAttribute('aria-pressed', String(on));
+      localStorage.setItem('reduce-transparency', String(on));
+      announce(on ? 'Reduced transparency enabled' : 'Reduced transparency disabled');
+    });
+
+    // Set initial ARIA states
+    if (motionBtn) motionBtn.setAttribute('aria-pressed', String(savedMotion));
+    if (transBtn) transBtn.setAttribute('aria-pressed', String(savedTrans));
   }
 
-  // Flashcards
-  function renderCards(cards){ const grid=qs('#cards-grid'); if(!grid) return; grid.innerHTML=''; cards.forEach(c=>{ const d=document.createElement('div'); d.className='flashcard'; d.innerHTML=`<div class="fc-front">${c.q}</div><div class="fc-back">${c.a}</div>`; d.tabIndex=0; const flip=()=> d.classList.toggle('flipped'); d.addEventListener('click',flip); d.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); flip(); }}); grid.appendChild(d); }); }
-  function initGenerator(){ const subj=qs('#fc-subject'); const topic=qs('#fc-topic'); const count=qs('#fc-count'); const btn=qs('#btn-generate'); btn?.addEventListener('click',()=>{ const n=parseInt(count?.value||'5',10); const t=(topic?.value||'').trim()||'General'; const s=subj?.value||'General'; const base=[{q:`${s}: ${t} - Key concept?`,a:'Definition and core idea.'},{q:`${s}: ${t} - Example?`,a:'Real world application.'},{q:`${s}: ${t} - Formula?`,a:'Important relationship.'},{q:`${s}: ${t} - Pitfall?`,a:'Common mistake.'},{q:`${s}: ${t} - Memory trick?`,a:'Mnemonic.'},]; const cards=Array.from({length:n},(_,i)=> base[i%base.length]); renderCards(cards); announce(`${n} flashcards generated`); const stat=qs('#stat-cards'); if(stat) stat.textContent=String((parseInt(stat.textContent||'0',10)||0)+n); }); }
+  // Flashcard Generator with Loading States
+  function initGenerator() {
+    const subj = qs('#fc-subject');
+    const topic = qs('#fc-topic');
+    const count = qs('#fc-count');
+    const btn = qs('#btn-generate');
+    const grid = qs('#cards-grid');
+    const errorDiv = qs('#generator-error');
 
-  // Chat
-  function initChat(){ const input=qs('#chat-input'); const send=qs('#btn-send'); const messages=qs('#chat-messages'); function addMsg(text,role='user'){ const wrap=document.createElement('div'); wrap.className=`chat-msg ${role==='user'?'user-msg':'bot-msg'}`; wrap.innerHTML=`<div class="msg-avatar"></div><div class="msg-bubble"><p>${text}</p></div>`; const av=wrap.querySelector('.msg-avatar'); const ic=document.createElement('ion-icon'); ic.name= role==='user' ? 'person-circle' : 'sparkles-outline'; av?.appendChild(ic); messages?.appendChild(wrap); messages?.scrollTo({top:messages.scrollHeight,behavior:'smooth'}); }
-    function reply(t){ addMsg(t,'user'); setTimeout(()=> addMsg('Thanks! I will help with: '+t,'bot'),300); }
-    send?.addEventListener('click',()=>{ const v=(input?.value||'').trim(); if(!v) return; input.value=''; reply(v); });
-    input?.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); const v=(input?.value||'').trim(); if(!v) return; input.value=''; reply(v);} }); }
+    function showError(msg) {
+      if (errorDiv) {
+        errorDiv.textContent = msg;
+        errorDiv.classList.add('show');
+        setTimeout(() => errorDiv.classList.remove('show'), 5000);
+      }
+      announce(`Error: ${msg}`);
+    }
 
-  // Tasks
-  function initTasks(){ const list=qs('#tasks-list'); const addBtn=qs('#btn-add-task'); const saveBtn=qs('#btn-save-task'); const title=qs('#inp-task-title'); const desc=qs('#inp-task-desc'); const subj=qs('#inp-task-subj'); const prio=qs('#inp-task-priority');
-    function render(){ if(!list) return; const items=JSON.parse(localStorage.getItem('app-tasks')||'[]'); list.innerHTML=''; items.forEach((t,idx)=>{ const el=document.createElement('div'); el.className='task-item'; el.innerHTML=`<div class="task-title">${t.title}</div><div class="task-meta">${t.subject} • ${t.priority}</div><button class="btn-secondary task-del" aria-label="Delete task ${t.title}"><ion-icon name="trash-outline"></ion-icon></button>`; el.querySelector('.task-del')?.addEventListener('click',()=>{ const arr=JSON.parse(localStorage.getItem('app-tasks')||'[]'); arr.splice(idx,1); localStorage.setItem('app-tasks', JSON.stringify(arr)); render(); announce('Task deleted'); const stat=qs('#stat-tasks'); if(stat) stat.textContent=String(Math.max(0,(parseInt(stat.textContent||'0',10)||0)-1)); }); list.appendChild(el); }); }
-    saveBtn?.addEventListener('click',()=>{ const t=(title?.value||'').trim(); if(!t){ announce('Please provide a task title'); return;} const d=(desc?.value||'').trim(); const s=subj?.value||'general'; const p=prio?.value||'medium'; const arr=JSON.parse(localStorage.getItem('app-tasks')||'[]'); arr.push({title:t,desc:d,subject:s,priority:p,done:false}); localStorage.setItem('app-tasks', JSON.stringify(arr)); render(); announce('Task saved'); qs('#task-modal')?.classList.remove('open'); const stat=qs('#stat-tasks'); if(stat) stat.textContent=String(((parseInt(stat.textContent||'0',10)||0)+1)); });
-    addBtn?.addEventListener('click',()=>{ if(title) title.value=''; if(desc) desc.value=''; });
+    function hideError() {
+      if (errorDiv) errorDiv.classList.remove('show');
+    }
+
+    function renderCards(cards) {
+      if (!grid) return;
+      grid.innerHTML = '';
+      hideError();
+
+      if (cards.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <ion-icon name="albums-outline"></ion-icon>
+            <p>No flashcards generated. Please try again.</p>
+          </div>
+        `;
+        waitForIonicons(() => replaceIcons());
+        return;
+      }
+
+      cards.forEach((c, idx) => {
+        const card = document.createElement('div');
+        card.className = 'flashcard';
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `Flashcard ${idx + 1}. Click to flip`);
+        card.innerHTML = `
+          <div class="fc-front">${c.q}</div>
+          <div class="fc-back">${c.a}</div>
+        `;
+
+        const flip = (e) => {
+          if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          card.classList.toggle('flipped');
+          const isFlipped = card.classList.contains('flipped');
+          card.setAttribute('aria-label', isFlipped ? 
+            `Flashcard ${idx + 1}, answer side` : 
+            `Flashcard ${idx + 1}, question side`);
+        };
+
+        card.addEventListener('click', flip);
+        card.addEventListener('keydown', flip);
+        grid.appendChild(card);
+      });
+
+      announce(`${cards.length} flashcards generated`);
+    }
+
+    btn?.addEventListener('click', async () => {
+      const topicVal = (topic?.value || '').trim();
+      const subjVal = subj?.value || 'General';
+      const countVal = parseInt(count?.value || '5', 10);
+
+      if (!topicVal) {
+        showError('Please enter a topic');
+        topic?.focus();
+        return;
+      }
+
+      // Disable button and show loading
+      btn.disabled = true;
+      btn.classList.add('btn-loading');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span>Generating...</span>';
+
+      hideError();
+
+      try {
+        // Simulate AI generation (replace with actual API call)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const baseCards = [
+          { q: `${subjVal}: ${topicVal} - Key concept?`, a: 'Definition and core idea explaining the fundamental principle.' },
+          { q: `${subjVal}: ${topicVal} - Example?`, a: 'Real world application demonstrating practical usage.' },
+          { q: `${subjVal}: ${topicVal} - Formula?`, a: 'Important mathematical or scientific relationship.' },
+          { q: `${subjVal}: ${topicVal} - Common pitfall?`, a: 'Common mistake students make when learning this topic.' },
+          { q: `${subjVal}: ${topicVal} - Memory trick?`, a: 'Mnemonic device to help remember this concept.' },
+        ];
+
+        const generatedCards = Array.from({ length: Math.min(countVal, 20) }, (_, i) => ({
+          q: baseCards[i % baseCards.length].q.replace(topicVal, `${topicVal} (${Math.floor(i / baseCards.length) + 1})`),
+          a: baseCards[i % baseCards.length].a
+        }));
+
+        renderCards(generatedCards);
+
+        // Update stats
+        const statCards = qs('#stat-cards');
+        if (statCards) {
+          statCards.textContent = String((parseInt(statCards.textContent || '0', 10) || 0) + generatedCards.length);
+        }
+      } catch (err) {
+        showError('Failed to generate flashcards. Please try again.');
+        console.error('Generator error:', err);
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        btn.innerHTML = originalText;
+      }
+    });
+  }
+
+  // Chat with Loading States
+  function initChat() {
+    const input = qs('#chat-input');
+    const send = qs('#btn-send');
+    const messages = qs('#chat-messages');
+    let isProcessing = false;
+
+    function addMessage(text, role = 'user') {
+      const wrap = document.createElement('div');
+      wrap.className = `chat-msg ${role === 'user' ? 'user-msg' : 'bot-msg'}`;
+      
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar';
+      avatar.setAttribute('aria-hidden', 'true');
+      
+      waitForIonicons(() => {
+        const icon = document.createElement('ion-icon');
+        icon.name = role === 'user' ? 'person-circle-outline' : 'sparkles-outline';
+        avatar.appendChild(icon);
+      });
+
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bubble';
+      bubble.innerHTML = `<p>${text}</p>`;
+
+      wrap.appendChild(avatar);
+      wrap.appendChild(bubble);
+      messages?.appendChild(wrap);
+
+      // Scroll to bottom
+      setTimeout(() => {
+        messages?.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+      }, 100);
+    }
+
+    function addLoading() {
+      const loading = document.createElement('div');
+      loading.className = 'chat-msg bot-msg';
+      loading.id = 'chat-loading-indicator';
+      
+      const avatar = document.createElement('div');
+      avatar.className = 'msg-avatar';
+      avatar.setAttribute('aria-hidden', 'true');
+      waitForIonicons(() => {
+        const icon = document.createElement('ion-icon');
+        icon.name = 'sparkles-outline';
+        avatar.appendChild(icon);
+      });
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-loading';
+      bubble.innerHTML = '<span></span><span></span><span></span>';
+
+      loading.appendChild(avatar);
+      loading.appendChild(bubble);
+      messages?.appendChild(loading);
+      messages?.scrollTo({ top: messages.scrollHeight, behavior: 'smooth' });
+    }
+
+    function removeLoading() {
+      const loading = qs('#chat-loading-indicator');
+      if (loading) loading.remove();
+    }
+
+    async function sendMessage() {
+      const text = (input?.value || '').trim();
+      if (!text || isProcessing) return;
+
+      isProcessing = true;
+      addMessage(text, 'user');
+      input.value = '';
+      input.disabled = true;
+      send.disabled = true;
+      send.classList.add('btn-loading');
+
+      addLoading();
+
+      try {
+        // Simulate AI response
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        removeLoading();
+        const response = `I understand you're asking about: "${text}". Here's a helpful explanation and study tip related to this topic.`;
+        addMessage(response, 'bot');
+      } catch (err) {
+        removeLoading();
+        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+        console.error('Chat error:', err);
+      } finally {
+        isProcessing = false;
+        input.disabled = false;
+        send.disabled = false;
+        send.classList.remove('btn-loading');
+        input.focus();
+      }
+    }
+
+    send?.addEventListener('click', sendMessage);
+    
+    input?.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
+
+  // Tasks Management
+  function initTasks() {
+    const list = qs('#tasks-list');
+    const addBtn = qs('#btn-add-task');
+    const saveBtn = qs('#btn-save-task');
+    const title = qs('#inp-task-title');
+    const desc = qs('#inp-task-desc');
+    const subj = qs('#inp-task-subj');
+    const prio = qs('#inp-task-priority');
+
+    function render() {
+      if (!list) return;
+      const items = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      list.innerHTML = '';
+
+      if (items.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <ion-icon name="create-outline"></ion-icon>
+            <p>No tasks yet. Create your first task!</p>
+          </div>
+        `;
+        waitForIonicons(() => replaceIcons());
+        return;
+      }
+
+      items.forEach((t, idx) => {
+        const el = document.createElement('div');
+        el.className = 'task-item';
+        el.innerHTML = `
+          <div style="flex: 1;">
+            <div class="task-title">${t.title}</div>
+            <div class="task-meta">${t.subject} • ${t.priority}</div>
+          </div>
+          <button class="btn-secondary task-del" aria-label="Delete task ${t.title}">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        `;
+
+        const delBtn = el.querySelector('.task-del');
+        delBtn?.addEventListener('click', () => {
+          const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+          arr.splice(idx, 1);
+          localStorage.setItem('app-tasks', JSON.stringify(arr));
+          render();
+          announce('Task deleted');
+          
+          const stat = qs('#stat-tasks');
+          if (stat) {
+            const current = parseInt(stat.textContent || '0', 10) || 0;
+            stat.textContent = String(Math.max(0, current - 1));
+          }
+        });
+
+        list.appendChild(el);
+      });
+
+      waitForIonicons(() => replaceIcons());
+    }
+
+    saveBtn?.addEventListener('click', () => {
+      const titleVal = (title?.value || '').trim();
+      if (!titleVal) {
+        announce('Please provide a task title');
+        title?.focus();
+        return;
+      }
+
+      const descVal = (desc?.value || '').trim();
+      const subjVal = subj?.value || 'general';
+      const prioVal = prio?.value || 'medium';
+
+      const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      arr.push({
+        title: titleVal,
+        desc: descVal,
+        subject: subjVal,
+        priority: prioVal,
+        done: false,
+        created: new Date().toISOString()
+      });
+      
+      localStorage.setItem('app-tasks', JSON.stringify(arr));
+      render();
+      announce('Task saved');
+
+      // Close modal (handled by modal close handler)
+      qs('#task-modal')?.classList.remove('open');
+      document.body.style.overflow = '';
+
+      // Update stats
+      const stat = qs('#stat-tasks');
+      if (stat) {
+        stat.textContent = String((parseInt(stat.textContent || '0', 10) || 0) + 1);
+      }
+    });
+
+    addBtn?.addEventListener('click', () => {
+      if (title) title.value = '';
+      if (desc) desc.value = '';
+      if (subj) subj.value = 'general';
+      if (prio) prio.value = 'medium';
+    });
+
     render();
   }
 
   // Timer
-  function initTimer(){ const circle=qs('#timer-circle'); const text=qs('#timer-text'); const start=qs('#btn-timer-start'); const reset=qs('#btn-timer-reset'); const btnIcon=qs('#timer-btn-icon'); const btnText=qs('#timer-btn-text'); const trackLen=2*Math.PI*85; if(circle) circle.style.strokeDasharray=String(trackLen);
-    let total=25*60; let secs=total; let running=false; let loop;
-    const setIcon=(name)=>{ if(btnIcon){ btnIcon.innerHTML=''; const i=document.createElement('ion-icon'); i.name=name; btnIcon.appendChild(i);} };
-    const fmt=(s)=>{ const m=Math.floor(s/60); const r=s%60; return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`; };
-    const draw=()=>{ if(!circle) return; const p=1-(secs/total); circle.style.strokeDashoffset=String(p*trackLen); };
-    const render=()=>{ if(text) text.textContent=fmt(secs); draw(); };
-    const tick=()=>{ secs--; render(); if(secs<=0){ clearInterval(loop); running=false; setIcon('play'); btnText && (btnText.textContent='Start'); announce('Session complete'); } };
-    const toggle=()=>{ if(running){ clearInterval(loop); running=false; setIcon('play'); btnText && (btnText.textContent='Start'); announce('Timer paused'); } else { running=true; setIcon('pause'); btnText && (btnText.textContent='Pause'); announce('Timer started'); loop=setInterval(tick,1000);} };
-    const resetAll=()=>{ clearInterval(loop); running=false; secs=total; setIcon('play'); btnText&&(btnText.textContent='Start'); render(); announce('Timer reset'); };
-    start?.addEventListener('click', toggle); reset?.addEventListener('click', resetAll);
+  function initTimer() {
+    const circle = qs('#timer-circle');
+    const text = qs('#timer-text');
+    const start = qs('#btn-timer-start');
+    const reset = qs('#btn-timer-reset');
+    const btnIcon = qs('#timer-btn-icon');
+    const btnText = qs('#timer-btn-text');
+    const round = qs('#timer-round');
+    const completed = qs('#timer-completed');
+
+    const trackLen = 2 * Math.PI * 85;
+    if (circle) circle.style.strokeDasharray = String(trackLen);
+
+    let total = 25 * 60;
+    let secs = total;
+    let running = false;
+    let interval = null;
+    let completedCount = parseInt(localStorage.getItem('timer-completed') || '0', 10);
+
+    if (completed) completed.textContent = String(completedCount);
+
+    function setIcon(name) {
+      if (btnIcon) {
+        waitForIonicons(() => {
+          btnIcon.innerHTML = '';
+          const icon = document.createElement('ion-icon');
+          icon.name = name;
+          btnIcon.appendChild(icon);
+        });
+      }
+    }
+
+    function format(s) {
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
+    }
+
+    function draw() {
+      if (!circle) return;
+      const p = 1 - (secs / total);
+      circle.style.strokeDashoffset = String(p * trackLen);
+    }
+
+    function render() {
+      if (text) text.textContent = format(secs);
+      draw();
+    }
+
+    function tick() {
+      secs--;
+      render();
+
+      if (secs <= 0) {
+        clearInterval(interval);
+        interval = null;
+        running = false;
+        setIcon('play-outline');
+        if (btnText) btnText.textContent = 'Start';
+        
+        completedCount++;
+        if (completed) completed.textContent = String(completedCount);
+        localStorage.setItem('timer-completed', String(completedCount));
+        
+        announce('Focus session complete!');
+      }
+    }
+
+    function toggle() {
+      if (running) {
+        clearInterval(interval);
+        interval = null;
+        running = false;
+        setIcon('play-outline');
+        if (btnText) btnText.textContent = 'Start';
+        announce('Timer paused');
+      } else {
+        running = true;
+        setIcon('pause-outline');
+        if (btnText) btnText.textContent = 'Pause';
+        interval = setInterval(tick, 1000);
+        announce('Timer started');
+      }
+    }
+
+    function resetAll() {
+      clearInterval(interval);
+      interval = null;
+      running = false;
+      secs = total;
+      setIcon('play-outline');
+      if (btnText) btnText.textContent = 'Start';
+      render();
+      announce('Timer reset');
+    }
+
+    start?.addEventListener('click', toggle);
+    reset?.addEventListener('click', resetAll);
+
     render();
+    setIcon('play-outline');
   }
 
+  // Icon Replacement Helper
+  function replaceIcons() {
+    waitForIonicons(() => {
+      // This ensures all icons are properly rendered
+      qsa('ion-icon').forEach(icon => {
+        if (!icon.shadowRoot) {
+          // Icon not yet rendered, wait a bit
+          setTimeout(() => {}, 100);
+        }
+      });
+    });
+  }
+
+  // Initialize everything
   function init() {
-    ensureLive(); ensureIonicons(); replaceIcons(); initTabs(); initModal(); initA11yToggles(); initGenerator(); initChat(); initTasks(); initTimer();
+    ensureLive();
+    ensureIonicons();
+    initTabs();
+    initModal();
+    initA11yToggles();
+    initGenerator();
+    initChat();
+    initTasks();
+    initTimer();
+    replaceIcons();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

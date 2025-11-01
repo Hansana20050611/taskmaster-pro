@@ -87,6 +87,7 @@
           </select>
         </div>
         <button class="btn-primary btn-full" id="btn-generate"><ion-icon aria-hidden="true" name="sparkles-outline"></ion-icon> Generate with AI</button>
+        <div class="error-message" id="generator-error" role="alert"></div>
       </div>
       <div id="cards-grid" class="flashcards-grid"></div>
     </section>
@@ -96,7 +97,7 @@
       <div class="chat-panel glass-surface">
         <div class="chat-top">
           <h2 class="view-title" id="title-chat"><ion-icon aria-hidden="true" name="chatbubble-ellipses-outline"></ion-icon> AI Study Assistant</h2>
-          <select class="input-field" id="chat-subject">
+          <select class="input-field" id="chat-subject" aria-label="Select subject for chat">
             <option value="General">General</option>
             <option value="Mathematics">Mathematics</option>
             <option value="Physics">Physics</option>
@@ -186,22 +187,27 @@
     <button id="tab-tasks" class="dock-btn" role="tab" aria-controls="view-tasks" aria-label="Tasks" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="create-outline"></ion-icon></span>
       <span class="dock-name">Tasks</span>
+      <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-generator" class="dock-btn active" role="tab" aria-controls="view-generator" aria-label="Generator" aria-selected="true">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></span>
       <span class="dock-name">Generator</span>
+      <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-chat" class="dock-btn" role="tab" aria-controls="view-chat" aria-label="Chat" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="chatbubble-ellipses-outline"></ion-icon></span>
       <span class="dock-name">Chat</span>
+      <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-timer" class="dock-btn" role="tab" aria-controls="view-timer" aria-label="Timer" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="timer-outline"></ion-icon></span>
       <span class="dock-name">Timer</span>
+      <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-stats" class="dock-btn" role="tab" aria-controls="view-stats" aria-label="Stats" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="stats-chart-outline"></ion-icon></span>
       <span class="dock-name">Stats</span>
+      <span class="indicator" aria-hidden="true"></span>
     </button>
   </nav>
 
@@ -211,7 +217,7 @@
     <div class="modal-container glass-surface" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" aria-describedby="task-modal-desc">
       <div class="modal-top">
         <h3 id="task-modal-title">Create New Task</h3>
-        <button class="modal-x" aria-label="Close">×</button>
+        <button class="modal-x" aria-label="Close modal" id="modal-close">×</button>
       </div>
       <div id="task-modal-desc" class="modal-mid">
         <div class="input-group">
