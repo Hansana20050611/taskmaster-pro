@@ -505,6 +505,14 @@
       const originalText = btn.innerHTML;
       btn.innerHTML = '<span>Generating...</span>';
 
+      // Show loading indicator
+      const loadingIndicator = qs('#loading-indicator');
+      if (loadingIndicator) {
+        loadingIndicator.classList.add('active');
+        loadingIndicator.setAttribute('aria-busy', 'true');
+        loadingIndicator.querySelector('p').textContent = 'Generating flashcards with AI...';
+      }
+
       hideError();
 
       try {
@@ -544,6 +552,13 @@
         btn.disabled = false;
         btn.classList.remove('btn-loading');
         btn.innerHTML = originalText;
+        
+        // Hide loading indicator
+        const loadingIndicator = qs('#loading-indicator');
+        if (loadingIndicator) {
+          loadingIndicator.classList.remove('active');
+          loadingIndicator.setAttribute('aria-busy', 'false');
+        }
       }
     });
   }
@@ -623,6 +638,14 @@
       send.disabled = true;
       send.classList.add('btn-loading');
 
+      // Show loading indicator
+      const loadingIndicator = qs('#loading-indicator');
+      if (loadingIndicator) {
+        loadingIndicator.classList.add('active');
+        loadingIndicator.setAttribute('aria-busy', 'true');
+        loadingIndicator.querySelector('p').textContent = 'AI is thinking...';
+      }
+
       addLoading();
 
       try {
@@ -642,6 +665,13 @@
         send.disabled = false;
         send.classList.remove('btn-loading');
         input.focus();
+        
+        // Hide loading indicator
+        const loadingIndicator = qs('#loading-indicator');
+        if (loadingIndicator) {
+          loadingIndicator.classList.remove('active');
+          loadingIndicator.setAttribute('aria-busy', 'false');
+        }
       }
     }
 

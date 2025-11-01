@@ -61,11 +61,11 @@
   --transition-med: 300ms var(--ease-standard);
   --transition-slow: 500ms var(--ease-decelerate);
   
-  /* Border Radius - Squircle Design */
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
+  /* Border Radius - Squircle Design (iOS 26 Standard) */
+  --radius-sm: 16px;
+  --radius-md: 20px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
   
   /* Z-Index Hierarchy */
   --z-base: 1;
@@ -83,6 +83,70 @@ html, body {
   color: var(--text-primary);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   -webkit-text-size-adjust: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated Gradient Background - iOS 26 Style */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: linear-gradient(
+    135deg,
+    #667eea 0%,
+    #764ba2 25%,
+    #f093fb 50%,
+    #4facfe 75%,
+    #667eea 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  opacity: 0.9;
+}
+
+@keyframes gradientShift {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
+}
+
+/* Dark overlay for better glass effect visibility */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: rgba(15, 15, 15, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Light theme gradient */
+body.light-theme::before {
+  background: linear-gradient(
+    135deg,
+    #f7f8fc 0%,
+    #e0e7ff 25%,
+    #ddd6fe 50%,
+    #e0f2fe 75%,
+    #f7f8fc 100%
+  );
+  opacity: 1;
+}
+
+body.light-theme::after {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* System Theme Detection */
@@ -276,8 +340,12 @@ ion-icon svg {
   left: var(--space-md);
   right: var(--space-md);
   height: var(--header-height);
-  z-index: 900;
+  z-index: var(--z-header);
   padding: 0 var(--space-lg);
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
 .header-wrapper { display:flex; align-items:center; justify-content:space-between; gap: var(--space-md); }
@@ -287,31 +355,38 @@ ion-icon svg {
 /* Main padding ensures no overlap with header & dock */
 .app-main { padding: calc(var(--header-height) + var(--space-xl)) var(--space-md) calc(var(--dock-height) + var(--space-xl)); }
 
-/* Glass surface utility - iOS 26 Premium Glassmorphism */
-.glass-surface {
-  /* Critical: backdrop-filter for glass effect */
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+/* Glass surface utility - iOS 26 Premium Glassmorphism - ENHANCED */
+.glass-surface,
+.generator-panel,
+.chat-panel,
+.timer-panel,
+ 
+.tasks-wrapper,
+.modal-container,
+.app-header,
+.bottom-dock {
+  /* CRITICAL: backdrop-filter for frosted glass effect */
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
   
   /* Background with proper opacity */
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.08) !important;
   background: linear-gradient(180deg, 
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0.08) 100%
-  );
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  ) !important;
   
   /* Border with proper contrast */
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   
   /* Multi-layer depth system */
   box-shadow: 
-    var(--shadow-ambient),
-    var(--shadow-direct),
-    var(--shadow-glass),
-    var(--shadow-specular);
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.08) !important;
   
-  /* Squircle border radius */
-  border-radius: var(--radius-lg);
+  /* Squircle border radius - larger for iOS feel */
+  border-radius: var(--radius-lg) !important;
   
   position: relative;
   overflow: hidden;
@@ -322,6 +397,17 @@ ion-icon svg {
   
   /* Smooth transitions */
   transition: all var(--transition-med);
+}
+
+/* Stat boxes with enhanced glass */
+.stat-box {
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Additional glass effect overlay */
@@ -356,13 +442,27 @@ ion-icon svg {
   transition: opacity var(--transition-fast);
 }
 
-/* Enhanced text contrast on glass */
+/* Enhanced text contrast on glass - WCAG AA Compliant */
 .glass-surface p,
 .glass-surface .task-title,
 .glass-surface .view-title,
 .glass-surface h2,
-.glass-surface h3 {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+.glass-surface h3,
+.view-title,
+.stat-desc,
+.dock-name,
+.task-meta {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Light theme text shadows */
+body.light-theme .view-title,
+body.light-theme .stat-desc,
+body.light-theme .dock-name,
+body.light-theme .task-meta {
+  color: rgba(0, 0, 0, 0.87);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 /* Reduced transparency mode */
@@ -386,18 +486,21 @@ body.dark-theme [data-reduce-transparency="true"] .glass-surface {
   left: 0; 
   right: 0;
   bottom: max(0px, var(--dock-safe-bottom));
-  z-index: 1000;
+  z-index: var(--z-dock);
   height: calc(var(--dock-height) + var(--dock-safe-bottom));
   padding: var(--space-sm) var(--space-md) var(--dock-safe-bottom);
   display: flex; 
   align-items: center; 
   justify-content: space-around;
   gap: var(--space-xs);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
-  border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 
+    0 -8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   /* Prevent layout shift when safe-area changes */
   contain: layout paint;
 }
@@ -447,12 +550,16 @@ textarea:focus-visible {
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 
-/* Focus glow effect */
+/* Focus glow effect - Enhanced */
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+  box-shadow: 
+    0 0 0 4px rgba(102, 126, 234, 0.2),
+    0 8px 24px rgba(102, 126, 234, 0.3);
   border-color: var(--color-primary);
+  transform: translateZ(0);
+  transition: all var(--transition-med);
 }
 
 /* Dock active indicator (pop-in) */
@@ -557,13 +664,28 @@ body.reduce-motion {
 .task-item {
   padding: var(--space-lg);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-md);
   min-height: 80px;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-med);
+}
+
+.task-item:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 12px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .task-title {
@@ -1003,8 +1125,8 @@ body.reduce-motion {
 .app-view {
   display: none;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity var(--transition-med), transform var(--transition-med);
+  transform: translateY(20px);
+  transition: opacity 0.4s var(--ease-decelerate), transform 0.4s var(--ease-decelerate);
 }
 
 .app-view.active-view,
@@ -1012,13 +1134,13 @@ body.reduce-motion {
   display: block;
   opacity: 1;
   transform: translateY(0);
-  animation: fadeIn var(--transition-med) var(--ease-decelerate);
+  animation: fadeIn 0.4s var(--ease-decelerate);
 }
 
 @keyframes fadeIn {
   from { 
     opacity: 0; 
-    transform: translateY(8px); 
+    transform: translateY(20px); 
   }
   to { 
     opacity: 1; 
@@ -1076,12 +1198,22 @@ body.reduce-motion {
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-xl);
-  transform: scale(0.95);
-  transition: transform var(--transition-med) var(--ease-decelerate);
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transform: scale(0.95) translateY(20px);
+  opacity: 0;
+  transition: all var(--transition-med) var(--ease-decelerate);
 }
 
 .app-modal.open .modal-container {
-  transform: scale(1);
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
 
 .modal-top {
@@ -1168,11 +1300,11 @@ body.reduce-motion {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* Button Styles */
+/* Button Styles - Enhanced with Micro-interactions */
 .btn-primary,
 .btn-secondary {
   padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   border: 0;
   font-size: 1rem;
   font-weight: 600;
@@ -1181,21 +1313,59 @@ body.reduce-motion {
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  transition: transform var(--transition-fast), background-color var(--transition-fast), opacity var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-med);
+  /* GPU acceleration */
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.3),
+    0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
+/* Hover lift effect */
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  opacity: 0.9;
+  transform: translateY(-3px) scale(1.02) translateZ(0);
+  box-shadow: 
+    0 12px 40px rgba(102, 126, 234, 0.4),
+    0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
+/* Active press scale */
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98) translateZ(0);
+  box-shadow: 
+    0 2px 8px rgba(102, 126, 234, 0.3),
+    0 1px 4px rgba(102, 126, 234, 0.2);
+  transition: transform 100ms var(--ease-accelerate);
+}
+
+/* Ripple effect */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease, opacity 0.6s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn-primary:active::after {
+  width: 300px;
+  height: 300px;
+  opacity: 0;
 }
 
 .btn-primary:disabled {
@@ -1217,7 +1387,7 @@ body.reduce-motion {
   width: 100%;
 }
 
-/* Loading States */
+/* Loading States - Enhanced */
 .loading,
 .btn-loading {
   position: relative;
@@ -1243,6 +1413,50 @@ body.reduce-motion {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* AI Loading Indicator */
+.loading-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  padding: 24px 32px;
+  border-radius: var(--radius-lg);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  z-index: 10000;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.loading-indicator.active {
+  display: flex;
+  animation: fadeIn 0.3s var(--ease-decelerate);
+}
+
+.loading-indicator .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-indicator p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .error-message {
