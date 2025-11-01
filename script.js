@@ -31,28 +31,104 @@
     setTimeout(() => el.textContent = msg, 10); 
   };
 
-  // Ensure Ionicons are loaded
+  // Ensure Ionicons are loaded - ENHANCED
   function ensureIonicons() {
-    if (!qs('script[src*="ionicons.esm.js"],script[src*="ionicons.js"]')) {
-      const m = document.createElement('script'); 
-      m.type = 'module'; 
-      m.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js'; 
-      document.head.appendChild(m);
-      const n = document.createElement('script'); 
-      n.noModule = true; 
-      n.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js'; 
-      document.head.appendChild(n);
+    // Check if already loaded
+    const existingScript = qs('script[src*="ionicons.esm.js"],script[src*="ionicons.js"]');
+    if (existingScript) {
+      return;
+    }
+
+    // Load ES module version
+    const moduleScript = document.createElement('script'); 
+    moduleScript.type = 'module'; 
+    moduleScript.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js';
+    moduleScript.onerror = () => {
+      console.warn('Ionicons ES module failed, trying fallback');
+    };
+    document.head.appendChild(moduleScript);
+
+    // Load nomodule fallback
+    const nomoduleScript = document.createElement('script'); 
+    nomoduleScript.noModule = true; 
+    nomoduleScript.src = 'https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js';
+    document.head.appendChild(nomoduleScript);
+
+    // Force define if customElements is available
+    if (window.customElements && !window.customElements.get('ion-icon')) {
+      // Wait a bit for the script to load
+      setTimeout(() => {
+        if (window.defineIonIcon) {
+          window.defineIonIcon();
+        }
+      }, 100);
     }
   }
 
-  // Wait for Ionicons to be ready
-  function waitForIonicons(callback, maxAttempts = 50) {
-    if (window.customElements && window.customElements.get('ion-icon')) {
-      callback();
+  // Wait for Ionicons to be ready - ENHANCED with better detection
+  function waitForIonicons(callback, maxAttempts = 100) {
+    // Check multiple ways Ionicons might be ready
+    const isReady = () => {
+      // Method 1: Check if custom element is defined
+      if (window.customElements && window.customElements.get('ion-icon')) {
+        return true;
+      }
+      // Method 2: Check if ion-icon elements have shadowRoot (loaded)
+      const testIcon = qs('ion-icon');
+      if (testIcon && testIcon.shadowRoot) {
+        return true;
+      }
+      // Method 3: Check if defineIonIcon function exists
+      if (window.defineIonIcon && typeof window.defineIonIcon === 'function') {
+        return true;
+      }
+      return false;
+    };
+
+    if (isReady()) {
+      if (callback) callback();
       return;
     }
+
     if (maxAttempts > 0) {
-      setTimeout(() => waitForIonicons(callback, maxAttempts - 1), 100);
+      setTimeout(() => waitForIonicons(callback, maxAttempts - 1), 50);
+    } else {
+      // If still not ready after max attempts, call callback anyway
+      console.warn('Ionicons took longer than expected to load');
+      if (callback) callback();
+    }
+  }
+
+  // Force render all icons immediately
+  function forceRenderIcons() {
+    qsa('ion-icon').forEach(icon => {
+      // Ensure each icon has proper attributes
+      if (!icon.getAttribute('aria-hidden')) {
+        const parent = icon.closest('[aria-label]');
+        if (!parent || parent.querySelector('[aria-label]') !== icon) {
+          icon.setAttribute('aria-hidden', 'true');
+        }
+      }
+      
+      // Ensure icon has name attribute
+      if (!icon.getAttribute('name') && icon.textContent) {
+        // Try to extract name from class or data attribute
+        const name = icon.dataset.icon || icon.className.match(/icon-(\w+)/)?.[1];
+        if (name) icon.setAttribute('name', name);
+      }
+      
+      // Force re-render by toggling visibility (triggers browser reflow)
+      const originalDisplay = icon.style.display;
+      icon.style.display = 'none';
+      icon.offsetHeight; // Force reflow
+      icon.style.display = originalDisplay || '';
+    });
+    
+    // Log icon status for debugging
+    const iconCount = qsa('ion-icon').length;
+    const renderedCount = qsa('ion-icon').filter(i => i.shadowRoot || i.querySelector('svg')).length;
+    if (iconCount > 0 && renderedCount < iconCount) {
+      console.log(`Icons: ${renderedCount}/${iconCount} rendered`);
     }
   }
 
@@ -414,17 +490,23 @@
           { q: `${subjVal}: ${topicVal} - Memory trick?`, a: 'Mnemonic device to help remember this concept.' },
         ];
 
-        const generatedCards = Array.from({ length: Math.min(countVal, 20) }, (_, i) => ({
-          q: baseCards[i % baseCards.length].q.replace(topicVal, `${topicVal} (${Math.floor(i / baseCards.length) + 1})`),
-          a: baseCards[i % baseCards.length].a
-        }));
+        const generatedCards = Array.from({ length: Math.min(countVal, 20) }, (_, i) => {
+          const baseCard = baseCards[i % baseCards.length];
+          return {
+            q: `${baseCard.q}`,
+            a: `${baseCard.a}`
+          };
+        });
 
         renderCards(generatedCards);
 
         // Update stats
         const statCards = qs('#stat-cards');
         if (statCards) {
-          statCards.textContent = String((parseInt(statCards.textContent || '0', 10) || 0) + generatedCards.length);
+          const current = parseInt(statCards.textContent || '0', 10) || 0;
+          const newTotal = current + generatedCards.length;
+          statCards.textContent = String(newTotal);
+          localStorage.setItem('flashcards-count', String(newTotal));
         }
       } catch (err) {
         showError('Failed to generate flashcards. Please try again.');
@@ -544,7 +626,7 @@
     });
   }
 
-  // Tasks Management
+  // Tasks Management - ENHANCED
   function initTasks() {
     const list = qs('#tasks-list');
     const addBtn = qs('#btn-add-task');
@@ -554,6 +636,15 @@
     const subj = qs('#inp-task-subj');
     const prio = qs('#inp-task-priority');
 
+    function updateStats() {
+      const items = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      const completedCount = items.filter(t => t.done).length;
+      const stat = qs('#stat-tasks');
+      if (stat) {
+        stat.textContent = String(items.length);
+      }
+    }
+
     function render() {
       if (!list) return;
       const items = JSON.parse(localStorage.getItem('app-tasks') || '[]');
@@ -561,12 +652,17 @@
 
       if (items.length === 0) {
         list.innerHTML = `
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            <ion-icon name="create-outline"></ion-icon>
-            <p>No tasks yet. Create your first task!</p>
+          <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
+            <ion-icon name="create-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
+            <p style="font-size: 1.1rem; color: var(--text-secondary);">No tasks yet.</p>
+            <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 0.5rem;">Click "New Task" to get started!</p>
           </div>
         `;
-        waitForIonicons(() => replaceIcons());
+        waitForIonicons(() => {
+          replaceIcons();
+          forceRenderIcons();
+        });
+        updateStats();
         return;
       }
 
@@ -575,8 +671,9 @@
         el.className = 'task-item';
         el.innerHTML = `
           <div style="flex: 1;">
-            <div class="task-title">${t.title}</div>
-            <div class="task-meta">${t.subject} • ${t.priority}</div>
+            <div class="task-title">${t.title || 'Untitled Task'}</div>
+            <div class="task-meta">${t.subject || 'general'} • ${t.priority || 'medium'} priority</div>
+            ${t.desc ? `<div style="font-size: 0.875rem; color: var(--text-tertiary); margin-top: 0.25rem;">${t.desc}</div>` : ''}
           </div>
           <button class="btn-secondary task-del" aria-label="Delete task ${t.title}">
             <ion-icon name="trash-outline"></ion-icon>
@@ -590,18 +687,16 @@
           localStorage.setItem('app-tasks', JSON.stringify(arr));
           render();
           announce('Task deleted');
-          
-          const stat = qs('#stat-tasks');
-          if (stat) {
-            const current = parseInt(stat.textContent || '0', 10) || 0;
-            stat.textContent = String(Math.max(0, current - 1));
-          }
         });
 
         list.appendChild(el);
       });
 
-      waitForIonicons(() => replaceIcons());
+      waitForIonicons(() => {
+        replaceIcons();
+        forceRenderIcons();
+      });
+      updateStats();
     }
 
     saveBtn?.addEventListener('click', () => {
@@ -630,15 +725,21 @@
       render();
       announce('Task saved');
 
-      // Close modal (handled by modal close handler)
-      qs('#task-modal')?.classList.remove('open');
-      document.body.style.overflow = '';
-
-      // Update stats
-      const stat = qs('#stat-tasks');
-      if (stat) {
-        stat.textContent = String((parseInt(stat.textContent || '0', 10) || 0) + 1);
+      // Close modal
+      const modal = qs('#task-modal');
+      if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
       }
+
+      // Reset form
+      if (title) title.value = '';
+      if (desc) desc.value = '';
+      if (subj) subj.value = 'general';
+      if (prio) prio.value = 'medium';
+      
+      // Re-render to show new task
+      render();
     });
 
     addBtn?.addEventListener('click', () => {
@@ -751,27 +852,72 @@
     start?.addEventListener('click', toggle);
     reset?.addEventListener('click', resetAll);
 
+    // Initialize stats from localStorage
+    if (completed) {
+      const savedCompleted = parseInt(localStorage.getItem('timer-completed') || '0', 10);
+      completed.textContent = String(savedCompleted);
+    }
+
     render();
     setIcon('play-outline');
   }
 
-  // Icon Replacement Helper
-  function replaceIcons() {
-    waitForIonicons(() => {
-      // This ensures all icons are properly rendered
-      qsa('ion-icon').forEach(icon => {
-        if (!icon.shadowRoot) {
-          // Icon not yet rendered, wait a bit
-          setTimeout(() => {}, 100);
-        }
-      });
-    });
+  // Initialize Stats on Load
+  function initStats() {
+    // Tasks count
+    const tasks = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+    const statTasks = qs('#stat-tasks');
+    if (statTasks) {
+      statTasks.textContent = String(tasks.length);
+    }
+
+    // Cards count from localStorage if saved
+    const cardsCount = parseInt(localStorage.getItem('flashcards-count') || '0', 10);
+    const statCards = qs('#stat-cards');
+    if (statCards && cardsCount > 0) {
+      statCards.textContent = String(cardsCount);
+    }
+
+    // Timer sessions are handled in initTimer()
+    // Just ensure the stat display exists
   }
 
-  // Initialize everything
+  // Icon Replacement Helper - ENHANCED
+  function replaceIcons() {
+    waitForIonicons(() => {
+      // Force render all icons
+      forceRenderIcons();
+      
+      // Double-check all icons are rendering
+      setTimeout(() => {
+        qsa('ion-icon').forEach(icon => {
+          // If icon still doesn't have shadowRoot, try to refresh it
+          if (!icon.shadowRoot && icon.parentElement) {
+            const name = icon.getAttribute('name');
+            if (name) {
+              // Clone and replace to force re-render
+              const newIcon = document.createElement('ion-icon');
+              newIcon.setAttribute('name', name);
+              if (icon.getAttribute('aria-hidden')) {
+                newIcon.setAttribute('aria-hidden', 'true');
+              }
+              icon.parentElement.replaceChild(newIcon, icon);
+            }
+          }
+        });
+        forceRenderIcons();
+      }, 300);
+    }, 200);
+  }
+
+  // Initialize everything - ENHANCED with icon priority
   function init() {
     ensureLive();
+    
+    // Load Ionicons IMMEDIATELY and wait for them
     ensureIonicons();
+    
+    // Initialize core functionality first
     initTabs();
     initModal();
     initA11yToggles();
@@ -779,12 +925,70 @@
     initChat();
     initTasks();
     initTimer();
-    replaceIcons();
+    initStats();
+    
+    // Then ensure icons render properly
+    waitForIonicons(() => {
+      replaceIcons();
+      forceRenderIcons();
+      
+      // Final check after a short delay
+      setTimeout(() => {
+        forceRenderIcons();
+        announce('Application ready');
+      }, 500);
+    }, 150);
+    
+    // Also try rendering icons after page fully loads
+    if (document.readyState === 'complete') {
+      setTimeout(() => {
+        waitForIonicons(() => {
+          replaceIcons();
+          forceRenderIcons();
+        }, 50);
+      }, 1000);
+    } else {
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          waitForIonicons(() => {
+            replaceIcons();
+            forceRenderIcons();
+          }, 50);
+        }, 500);
+      });
+    }
+  }
+
+  // Verification and Debugging
+  function verifyApp() {
+    const checks = {
+      icons: qsa('ion-icon').length > 0,
+      tabs: qsa('[role="tab"]').length === 5,
+      panels: qsa('[role="tabpanel"]').length === 5,
+      modal: !!qs('#task-modal'),
+      ariaLive: !!qs('#aria-live'),
+      stats: !!qs('#stat-tasks') && !!qs('#stat-cards'),
+    };
+    
+    const allGood = Object.values(checks).every(v => v === true);
+    
+    if (allGood) {
+      console.log('✅ TaskMaster Pro initialized successfully');
+      console.log(`✅ ${qsa('ion-icon').length} icons found`);
+    } else {
+      console.warn('⚠️ Some components may not be initialized:', checks);
+    }
+    
+    return allGood;
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
+      setTimeout(verifyApp, 1000);
+    });
   } else {
     init();
+    setTimeout(verifyApp, 1000);
   }
 })();

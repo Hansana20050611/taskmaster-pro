@@ -65,14 +65,36 @@ html, body {
    IONICON STYLING - PREMIUM iOS DESIGN
 ================================================ */
 
-/* Base Ionicon styling */
+/* Base Ionicon styling - CRITICAL for rendering */
 ion-icon {
+  font-size: inherit;
   vertical-align: middle;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: inherit;
   flex-shrink: 0;
+  pointer-events: none;
+  position: relative;
+  /* Ensure icons render even before Ionicons loads */
+  min-width: 1em;
+  min-height: 1em;
+}
+
+/* Force rendering and prevent layout shift */
+ion-icon::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+/* Ensure Ionicons SVG renders */
+ion-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* Logo Icon */
@@ -180,7 +202,7 @@ ion-icon {
   align-items: center;
 }
 
-/* Floating header sizing & compaction */
+/* Floating header sizing & compaction - ENHANCED */
 .app-header {
   position: fixed;
   top: var(--space-md);
@@ -188,6 +210,7 @@ ion-icon {
   right: var(--space-md);
   height: var(--header-height);
   z-index: 900;
+  padding: 0 var(--space-lg);
 }
 
 .header-wrapper { display:flex; align-items:center; justify-content:space-between; gap: var(--space-md); }
@@ -197,30 +220,52 @@ ion-icon {
 /* Main padding ensures no overlap with header & dock */
 .app-main { padding: calc(var(--header-height) + var(--space-xl)) var(--space-md) calc(var(--dock-height) + var(--space-xl)); }
 
-/* Glass surface utility */
+/* Glass surface utility - ENHANCED visibility */
 .glass-surface {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--glass-shadow), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   border-radius: 18px;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Bottom dock stabilization */
+/* Additional glass effect overlay */
+.glass-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: 18px;
+  z-index: 0;
+}
+
+.glass-surface > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Bottom dock stabilization - ENHANCED */
 .bottom-dock {
   position: fixed;
-  left: 0; right: 0;
+  left: 0; 
+  right: 0;
   bottom: max(0px, var(--dock-safe-bottom));
   z-index: 1000;
   height: calc(var(--dock-height) + var(--dock-safe-bottom));
-  padding-bottom: var(--dock-safe-bottom);
-  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-sm) var(--space-md) var(--dock-safe-bottom);
+  display: flex; 
+  align-items: center; 
+  justify-content: space-around;
+  gap: var(--space-xs);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
   border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -8px 24px rgba(0,0,0,0.25);
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   /* Prevent layout shift when safe-area changes */
   contain: layout paint;
 }
@@ -1008,11 +1053,16 @@ ion-icon {
   }
 }
 
-/* Empty State */
+/* Empty State - ENHANCED */
 .empty-state {
   text-align: center;
   padding: var(--space-xl);
   color: var(--text-tertiary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
 }
 
 .empty-state ion-icon {
@@ -1021,6 +1071,17 @@ ion-icon {
   height: 3rem;
   margin-bottom: var(--space-md);
   opacity: 0.5;
+  color: var(--color-primary);
+}
+
+.empty-state p {
+  margin: 0.5rem 0;
+}
+
+.empty-state p:first-of-type {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Ensure no layout shift when virtual keyboard appears */
