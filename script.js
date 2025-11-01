@@ -1,3 +1,6 @@
+// ===== API CONFIGURATION =====
+const API_BASE_URL = 'https://cf4e438a-918a-4688-b580-7ffdddc8aeb6-00-1yt01c3w3vp09.sisko.replit.dev';
+
 // ===== LANGUAGE & TRANSLATION =====
 const AI_FAILURE_MSG = 'Respond Failed ( AI සේවා දෝෂයක්. කරුණාකර පසුව නැවත උත්සාහ කරන්න. )';
 
@@ -301,9 +304,9 @@ const FLASHCARDS = {
     },
 
     async simulateAIRequest({ subject, topic, count }) {
-        // Connect to production backend API
+        // Connect to Replit backend API
         try {
-            const response = await fetch('https://taskmaster-backend-fixed.hmethmika2023.repl.co/apiflashcards', {
+            const response = await fetch(`${API_BASE_URL}/apiflashcards`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ subject, topic, count })
@@ -397,9 +400,9 @@ const CHAT = {
     messages: [],
 
     async simulateAIReply(userMessage, subject) {
-        // Connect to production backend API
+        // Connect to Replit backend API
         try {
-            const response = await fetch('https://taskmaster-backend-fixed.hmethmika2023.repl.co/apichat', {
+            const response = await fetch(`${API_BASE_URL}/apichat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMessage, subject })
