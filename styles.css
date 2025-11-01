@@ -1796,6 +1796,29 @@ body.reduce-motion {
   align-items: center;
   justify-content: center;
   min-height: 200px;
+  width: 100%;
+}
+
+#tasks-empty {
+  display: none; /* Hidden by default, shown via JS */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  margin: 2rem 0;
+}
+
+#tasks-empty h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+#tasks-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-tertiary);
 }
 
 .empty-state ion-icon {
@@ -2573,6 +2596,13 @@ body.light-theme .btn-icon:hover {
 
 /* Task Groups */
 .tasks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+#tasks-grouped {
   display: flex;
   flex-direction: column;
   gap: 16px;

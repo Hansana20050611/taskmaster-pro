@@ -320,6 +320,9 @@
       document.body.style.overflow = '';
       document.removeEventListener('keydown', trapFocus);
       modalFocusables = null;
+      
+      // Reset task edit ID when closing
+      taskEditId = null;
 
       if (previousFocus && typeof previousFocus.focus === 'function') {
         previousFocus.focus();
@@ -327,17 +330,8 @@
       
       announce('Dialog closed');
     };
-
-    openBtn?.addEventListener('click', open);
-    closeBtn?.addEventListener('click', close);
-    cancelBtn?.addEventListener('click', close);
-    saveBtn?.addEventListener('click', close);
-
-    backdrop?.addEventListener('click', (e) => {
-      if (e.target === backdrop) close();
-    });
-
-    // Escape key handler - CRITICAL FIX
+    
+    // Escape key handler
     const escapeHandler = (e) => {
       if (modal.classList.contains('open') && e.key === 'Escape') {
         e.preventDefault();
@@ -345,15 +339,17 @@
         close();
       }
     };
+
+    openBtn?.addEventListener('click', open);
+    closeBtn?.addEventListener('click', close);
+    cancelBtn?.addEventListener('click', close);
     
+    // Don't close on save - let save handler close it
+    backdrop?.addEventListener('click', (e) => {
+      if (e.target === backdrop) close();
+    });
+
     document.addEventListener('keydown', escapeHandler);
-    
-    // Cleanup on modal close
-    const originalClose = close;
-    close = () => {
-      document.removeEventListener('keydown', escapeHandler);
-      originalClose();
-    };
   }
 
   // Theme and Accessibility Toggles
@@ -1144,8 +1140,11 @@
         categoryBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        if (typeof renderTasks === 'function') {
-          renderTasks();
+        // Update TaskManager filter if needed
+        if (window.TaskManager && window.TaskManager.renderTasks) {
+          window.TaskManager.renderTasks();
+        } else if (window.renderTasks) {
+          window.renderTasks();
         }
         
         announce(`Switched to ${category} tasks`);
@@ -1231,8 +1230,10 @@
         this.classList.add('active');
         
         // Apply filter logic
-        if (typeof renderTasks === 'function') {
-          renderTasks();
+        if (window.TaskManager && window.TaskManager.renderTasks) {
+          window.TaskManager.renderTasks();
+        } else if (window.renderTasks) {
+          window.renderTasks();
         }
         
         announce(`Filter applied: ${filter}`);
@@ -1253,8 +1254,11 @@
         sortOrder = orders[nextIndex];
         localStorage.setItem('taskSortOrder', sortOrder);
         
-        if (typeof renderTasks === 'function') {
-          renderTasks();
+        // Re-render tasks with new sort order
+        if (window.TaskManager && window.TaskManager.renderTasks) {
+          window.TaskManager.renderTasks();
+        } else if (window.renderTasks) {
+          window.renderTasks();
         }
         
         announce(`Sorted by ${sortOrder}`);
@@ -1267,63 +1271,91 @@
 
   // Helper functions for task actions (getLabelColor moved to initTasks scope)
 
+  // Legacy global functions - delegate to TaskManager with fallback
   window.toggleTaskComplete = function(taskId) {
-    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-    const task = arr.find(t => t.id === taskId || t.id === taskId.toString());
-    if (task) {
-      task.done = !task.done;
-      localStorage.setItem('app-tasks', JSON.stringify(arr));
-      if (window.renderTasks) window.renderTasks();
-      announce(task.done ? 'Task completed' : 'Task uncompleted');
+    if (window.TaskManager && window.TaskManager.toggleTask) {
+      window.TaskManager.toggleTask(taskId);
+    } else {
+      // Fallback for compatibility
+      const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      const task = arr.find(t => String(t.id) === String(taskId));
+      if (task) {
+        task.done = !task.done;
+        localStorage.setItem('app-tasks', JSON.stringify(arr));
+        if (window.renderTasks) window.renderTasks();
+        announce(task.done ? 'Task completed' : 'Task uncompleted');
+      }
     }
   };
 
   window.editTask = function(taskId) {
-    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-    const task = arr.find(t => t.id === taskId || t.id === taskId.toString());
-    if (!task) return;
-    
-    taskEditId = taskId;
-    qs('#inp-task-title').value = task.title || '';
-    qs('#inp-task-desc').value = task.desc || '';
-    qs('#inp-task-subj').value = task.subject || 'general';
-    qs('#inp-task-priority').value = task.priority || 'medium';
-    if (qs('#inp-task-date')) qs('#inp-task-date').value = task.date || '';
-    if (qs('#inp-task-time')) qs('#inp-task-time').value = task.time || '';
-    if (qs('#inp-task-deadline')) qs('#inp-task-deadline').value = task.deadline || '';
-    if (qs('#inp-task-location')) qs('#inp-task-location').value = task.location || '';
-    
-    // Set labels
-    qsa('.label-btn').forEach(btn => {
-      btn.classList.toggle('active', task.labels && task.labels.includes(btn.getAttribute('data-label')));
-    });
-    
-    // Open modal
-    qs('#task-modal')?.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    if (window.TaskManager && window.TaskManager.editTask) {
+      window.TaskManager.editTask(taskId);
+    } else {
+      // Fallback
+      const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      const task = arr.find(t => String(t.id) === String(taskId));
+      if (!task) return;
+      
+      taskEditId = String(taskId);
+      const titleInput = qs('#inp-task-title');
+      const descInput = qs('#inp-task-desc');
+      const subjInput = qs('#inp-task-subj');
+      const prioInput = qs('#inp-task-priority');
+      
+      if (titleInput) titleInput.value = task.title || '';
+      if (descInput) descInput.value = task.desc || '';
+      if (subjInput) subjInput.value = task.subject || 'general';
+      if (prioInput) prioInput.value = task.priority || 'medium';
+      if (qs('#inp-task-date')) qs('#inp-task-date').value = task.date || '';
+      if (qs('#inp-task-time')) qs('#inp-task-time').value = task.time || '';
+      if (qs('#inp-task-deadline')) qs('#inp-task-deadline').value = task.deadline || '';
+      if (qs('#inp-task-location')) qs('#inp-task-location').value = task.location || '';
+      
+      qs('#task-modal')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
   };
 
   window.duplicateTask = function(taskId) {
-    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-    const task = arr.find(t => t.id === taskId || t.id === taskId.toString());
-    if (task) {
-      const newTask = { ...task, id: Date.now().toString(), done: false, created: new Date().toISOString() };
-      arr.push(newTask);
-      localStorage.setItem('app-tasks', JSON.stringify(arr));
-      if (window.renderTasks) window.renderTasks();
-      announce('Task duplicated');
+    if (window.TaskManager && window.TaskManager.tasks) {
+      const task = window.TaskManager.tasks.find(t => String(t.id) === String(taskId));
+      if (task) {
+        const newTask = { ...task, id: Date.now().toString(), done: false, created: new Date().toISOString() };
+        window.TaskManager.tasks.push(newTask);
+        window.TaskManager.saveTasks();
+        window.TaskManager.renderTasks();
+        if (window.updateStats) window.updateStats();
+        announce('Task duplicated');
+      }
+    } else {
+      // Fallback
+      const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      const task = arr.find(t => String(t.id) === String(taskId));
+      if (task) {
+        const newTask = { ...task, id: Date.now().toString(), done: false, created: new Date().toISOString() };
+        arr.push(newTask);
+        localStorage.setItem('app-tasks', JSON.stringify(arr));
+        if (window.renderTasks) window.renderTasks();
+        announce('Task duplicated');
+      }
     }
   };
 
   window.deleteTask = function(taskId) {
-    if (!confirm('Are you sure you want to delete this task?')) return;
-    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-    const index = arr.findIndex(t => t.id === taskId || t.id === taskId.toString());
-    if (index !== -1) {
-      arr.splice(index, 1);
-      localStorage.setItem('app-tasks', JSON.stringify(arr));
-      if (window.renderTasks) window.renderTasks();
-      announce('Task deleted');
+    if (window.TaskManager && window.TaskManager.deleteTask) {
+      window.TaskManager.deleteTask(taskId);
+    } else {
+      // Fallback
+      if (!confirm('Are you sure you want to delete this task?')) return;
+      const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      const index = arr.findIndex(t => String(t.id) === String(taskId));
+      if (index !== -1) {
+        arr.splice(index, 1);
+        localStorage.setItem('app-tasks', JSON.stringify(arr));
+        if (window.renderTasks) window.renderTasks();
+        announce('Task deleted');
+      }
     }
   };
 
@@ -1394,16 +1426,51 @@
         projects: []
       };
       
+      if (!Array.isArray(this.tasks) || this.tasks.length === 0) {
+        return groups;
+      }
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      this.tasks.forEach(task => {
+      // Apply current filter if set
+      let filteredTasks = [...this.tasks];
+      
+      if (this.currentFilter && this.currentFilter !== 'all') {
+        if (this.currentFilter === 'today') {
+          filteredTasks = filteredTasks.filter(task => {
+            if (!task.date) return false;
+            const taskDate = new Date(task.date);
+            taskDate.setHours(0, 0, 0, 0);
+            return taskDate.getTime() === today.getTime();
+          });
+        } else if (this.currentFilter === 'overdue') {
+          filteredTasks = filteredTasks.filter(task => {
+            if (!task.date || task.done) return false;
+            const taskDate = new Date(task.date);
+            taskDate.setHours(0, 0, 0, 0);
+            return taskDate < today;
+          });
+        } else if (this.currentFilter === 'upcoming') {
+          filteredTasks = filteredTasks.filter(task => {
+            if (!task.date) return false;
+            const taskDate = new Date(task.date);
+            taskDate.setHours(0, 0, 0, 0);
+            return taskDate > today;
+          });
+        }
+      }
+      
+      filteredTasks.forEach(task => {
         // Apply search filter
         if (this.searchQuery) {
-          const query = this.searchQuery.toLowerCase();
-          if (!task.title.toLowerCase().includes(query) && 
-              !(task.desc && task.desc.toLowerCase().includes(query))) {
-            return;
+          const query = this.searchQuery.toLowerCase().trim();
+          if (query) {
+            const matchesTitle = task.title && task.title.toLowerCase().includes(query);
+            const matchesDesc = task.desc && task.desc.toLowerCase().includes(query);
+            if (!matchesTitle && !matchesDesc) {
+              return;
+            }
           }
         }
         
@@ -1429,17 +1496,36 @@
     },
     
     renderTasks() {
+      // Ensure tasks are loaded
+      if (!this.tasks || !Array.isArray(this.tasks)) {
+        this.loadTasks();
+      }
+      
       const groups = this.groupTasksByDate();
       const container = qs('#tasks-grouped');
       const emptyState = qs('#tasks-empty');
       
-      if (!container) return;
+      if (!container) {
+        console.warn('Tasks container #tasks-grouped not found');
+        // Try to use old tasks-list as fallback
+        const oldList = qs('#tasks-list');
+        if (oldList) {
+          console.info('Using fallback tasks-list container');
+          this.renderTasksLegacy(oldList);
+          return;
+        }
+        return;
+      }
       
       let totalTasks = 0;
       
+      // Render each group
       Object.keys(groups).forEach(groupName => {
         const groupEl = qs(`#group-${groupName}`);
-        if (!groupEl) return;
+        if (!groupEl) {
+          console.warn(`Group element #group-${groupName} not found`);
+          return;
+        }
         
         const contentEl = groupEl.querySelector('.task-group-content');
         const countEl = groupEl.querySelector('.group-count');
@@ -1448,27 +1534,39 @@
         const count = tasks.length;
         totalTasks += count;
         
-        if (countEl) countEl.textContent = String(count);
+        // Update count
+        if (countEl) {
+          countEl.textContent = String(count);
+        }
+        
+        // Render tasks
         if (contentEl) {
           contentEl.innerHTML = '';
           
           if (count === 0) {
-            // Hide empty groups
+            // Hide empty groups (but keep projects visible)
             if (groupName !== 'projects') {
               groupEl.style.display = 'none';
+            } else {
+              groupEl.style.display = 'block';
             }
           } else {
+            // Show group and add tasks
             groupEl.style.display = 'block';
             tasks.forEach(task => {
-              const taskEl = this.createTaskElement(task);
-              contentEl.appendChild(taskEl);
+              try {
+                const taskEl = this.createTaskElement(task);
+                contentEl.appendChild(taskEl);
+              } catch (err) {
+                console.error('Error creating task element:', err, task);
+              }
             });
           }
         }
       });
       
       // Show/hide empty state
-      if (emptyState) {
+      if (emptyState && container) {
         if (totalTasks === 0) {
           emptyState.style.display = 'flex';
           container.style.display = 'none';
@@ -1478,96 +1576,251 @@
         }
       }
       
-      waitForIonicons(() => replaceIcons());
+      // Re-render icons after DOM update
+      waitForIonicons(() => {
+        replaceIcons();
+        forceRenderIcons();
+        
+        // Re-initialize group toggles for dynamically created content
+        setTimeout(() => {
+          qsa('.group-toggle').forEach(btn => {
+            // Only add listener if not already added
+            if (!btn.hasAttribute('data-listener-attached')) {
+              btn.setAttribute('data-listener-attached', 'true');
+              btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                const group = this.closest('.task-group');
+                if (!group) return;
+                
+                const isCollapsed = group.getAttribute('data-collapsed') === 'true';
+                const newState = !isCollapsed;
+                group.setAttribute('data-collapsed', String(newState));
+                this.setAttribute('aria-expanded', String(newState));
+                
+                waitForIonicons(() => {
+                  const icon = this.querySelector('ion-icon');
+                  if (icon) {
+                    icon.setAttribute('name', newState ? 'chevron-down-outline' : 'chevron-up-outline');
+                  }
+                }, 50);
+                
+                announce(newState ? 'Group collapsed' : 'Group expanded');
+              });
+            }
+          });
+        }, 50);
+      }, 100);
     },
     
     createTaskElement(task) {
+      if (!task || !task.id) {
+        console.error('Invalid task data:', task);
+        return null;
+      }
+      
       const el = document.createElement('div');
       el.className = `task-item ${task.done ? 'completed' : ''}`;
+      el.setAttribute('data-task-id', task.id);
       
       const priority = task.priority || 'medium';
       const priorityClass = `priority-${priority}`;
+      const taskId = String(task.id);
+      
+      // Safely escape all user input
+      const safeTitle = this.escapeHtml(task.title || 'Untitled Task');
+      const safeDesc = task.desc ? this.escapeHtml(task.desc) : '';
+      const safeSubject = task.subject ? this.escapeHtml(task.subject) : '';
+      const safePriority = this.escapeHtml(priority);
+      
+      // Format date safely
+      let dateStr = '';
+      if (task.date) {
+        try {
+          const date = new Date(task.date);
+          if (!isNaN(date.getTime())) {
+            dateStr = date.toLocaleDateString();
+          }
+        } catch (err) {
+          console.warn('Invalid date format:', task.date);
+        }
+      }
       
       el.innerHTML = `
         <div class="task-checkbox ${task.done ? 'completed' : ''}" 
-             onclick="TaskManager.toggleTask('${task.id}')"
-             aria-label="${task.done ? 'Mark as incomplete' : 'Mark as complete'}"></div>
+             onclick="TaskManager.toggleTask('${taskId}')"
+             role="checkbox"
+             aria-checked="${task.done}"
+             aria-label="${task.done ? 'Mark as incomplete' : 'Mark as complete'}"
+             tabindex="0"></div>
         
         <div class="task-content">
-          <div class="task-title">${this.escapeHtml(task.title || 'Untitled Task')}</div>
-          ${task.desc ? `<div class="task-desc">${this.escapeHtml(task.desc)}</div>` : ''}
+          <div class="task-title">${safeTitle}</div>
+          ${safeDesc ? `<div class="task-desc">${safeDesc}</div>` : ''}
           <div class="task-meta">
-            ${task.subject ? `<span class="task-meta-tag"><ion-icon name="school-outline"></ion-icon>${this.escapeHtml(task.subject)}</span>` : ''}
-            ${priority ? `<span class="task-meta-tag ${priorityClass}"><ion-icon name="flag-outline"></ion-icon>${this.escapeHtml(priority)}</span>` : ''}
-            ${task.date ? `<span class="task-meta-tag"><ion-icon name="calendar-outline"></ion-icon>${new Date(task.date).toLocaleDateString()}</span>` : ''}
+            ${safeSubject ? `<span class="task-meta-tag"><ion-icon name="school-outline" aria-hidden="true"></ion-icon>${safeSubject}</span>` : ''}
+            ${safePriority ? `<span class="task-meta-tag ${priorityClass}"><ion-icon name="flag-outline" aria-hidden="true"></ion-icon>${safePriority}</span>` : ''}
+            ${dateStr ? `<span class="task-meta-tag"><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>${dateStr}</span>` : ''}
           </div>
         </div>
         
         <div class="task-actions">
-          <button class="task-action-btn" onclick="TaskManager.editTask('${task.id}')" aria-label="Edit task">
-            <ion-icon name="create-outline"></ion-icon>
+          <button class="task-action-btn" onclick="TaskManager.editTask('${taskId}')" aria-label="Edit task" type="button">
+            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
           </button>
-          <button class="task-action-btn" onclick="TaskManager.deleteTask('${task.id}')" aria-label="Delete task">
-            <ion-icon name="trash-outline"></ion-icon>
+          <button class="task-action-btn" onclick="TaskManager.deleteTask('${taskId}')" aria-label="Delete task" type="button">
+            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
           </button>
         </div>
       `;
+      
+      // Add keyboard support for checkbox
+      const checkbox = el.querySelector('.task-checkbox');
+      if (checkbox) {
+        checkbox.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            TaskManager.toggleTask(taskId);
+          }
+        });
+      }
       
       return el;
     },
     
     escapeHtml(text) {
+      if (text == null) return '';
       const div = document.createElement('div');
-      div.textContent = text;
+      div.textContent = String(text);
       return div.innerHTML;
     },
     
+    // Fallback render for old structure
+    renderTasksLegacy(container) {
+      if (!container || !Array.isArray(this.tasks)) return;
+      
+      container.innerHTML = '';
+      
+      if (this.tasks.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
+            <ion-icon name="create-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
+            <p style="font-size: 1.1rem; color: var(--text-secondary);">No tasks yet.</p>
+            <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 0.5rem;">Click "New Task" to get started!</p>
+          </div>
+        `;
+        waitForIonicons(() => replaceIcons());
+        return;
+      }
+      
+      this.tasks.forEach(task => {
+        const taskEl = this.createTaskElement(task);
+        if (taskEl) {
+          container.appendChild(taskEl);
+        }
+      });
+      
+      waitForIonicons(() => replaceIcons());
+    },
+    
     toggleTask(id) {
-      const task = this.tasks.find(t => t.id === id || t.id === id.toString());
+      if (!id) {
+        console.error('ToggleTask called with invalid ID:', id);
+        return;
+      }
+      
+      const taskId = String(id);
+      const task = this.tasks.find(t => String(t.id) === taskId);
+      
       if (task) {
         task.done = !task.done;
         this.saveTasks();
         this.renderTasks();
-        updateStats();
+        if (window.updateStats) window.updateStats();
         announce(task.done ? 'Task completed' : 'Task uncompleted');
+      } else {
+        console.warn('Task not found:', taskId);
       }
     },
     
     deleteTask(id) {
+      if (!id) {
+        console.error('DeleteTask called with invalid ID:', id);
+        return;
+      }
+      
       if (!confirm('Are you sure you want to delete this task?')) return;
-      this.tasks = this.tasks.filter(t => t.id !== id || t.id !== id.toString());
-      this.saveTasks();
-      this.renderTasks();
-      updateStats();
-      announce('Task deleted');
+      
+      const taskId = String(id);
+      const initialLength = this.tasks.length;
+      this.tasks = this.tasks.filter(t => String(t.id) !== taskId);
+      
+      if (this.tasks.length < initialLength) {
+        this.saveTasks();
+        this.renderTasks();
+        if (window.updateStats) window.updateStats();
+        announce('Task deleted');
+      } else {
+        console.warn('Task not found for deletion:', taskId);
+      }
     },
     
     editTask(id) {
-      const task = this.tasks.find(t => t.id === id || t.id === id.toString());
-      if (!task) return;
+      if (!id) {
+        console.error('EditTask called with invalid ID:', id);
+        return;
+      }
       
-      taskEditId = id;
-      qs('#inp-task-title').value = task.title || '';
-      qs('#inp-task-desc').value = task.desc || '';
-      qs('#inp-task-subj').value = task.subject || 'general';
-      qs('#inp-task-priority').value = task.priority || 'medium';
-      if (qs('#inp-task-date')) qs('#inp-task-date').value = task.date || '';
-      if (qs('#inp-task-time')) qs('#inp-task-time').value = task.time || '';
-      if (qs('#inp-task-deadline')) qs('#inp-task-deadline').value = task.deadline || '';
+      const taskId = String(id);
+      const task = this.tasks.find(t => String(t.id) === taskId);
       
-      qs('#task-modal')?.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      if (!task) {
+        console.warn('Task not found for editing:', taskId);
+        return;
+      }
+      
+      taskEditId = taskId;
+      
+      const titleInput = qs('#inp-task-title');
+      const descInput = qs('#inp-task-desc');
+      const subjInput = qs('#inp-task-subj');
+      const prioInput = qs('#inp-task-priority');
+      const dateInput = qs('#inp-task-date');
+      const timeInput = qs('#inp-task-time');
+      const deadlineInput = qs('#inp-task-deadline');
+      
+      if (titleInput) titleInput.value = task.title || '';
+      if (descInput) descInput.value = task.desc || '';
+      if (subjInput) subjInput.value = task.subject || 'general';
+      if (prioInput) prioInput.value = task.priority || 'medium';
+      if (dateInput) dateInput.value = task.date || '';
+      if (timeInput) timeInput.value = task.time || '';
+      if (deadlineInput) deadlineInput.value = task.deadline || '';
+      
+      const modal = qs('#task-modal');
+      if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus first input after modal opens
+        setTimeout(() => {
+          if (titleInput) titleInput.focus();
+        }, 100);
+      }
     }
   };
 
-  // Make TaskManager methods global
+  // Make TaskManager globally accessible
   window.TaskManager = TaskManager;
-  window.toggleTaskComplete = (id) => TaskManager.toggleTask(id);
-  window.editTask = (id) => TaskManager.editTask(id);
-  window.deleteTask = (id) => TaskManager.deleteTask(id);
 
   // Tasks Management - ENHANCED with Grouping
   function initTasks() {
+    // Ensure TaskManager is initialized
+    if (!TaskManager) {
+      console.error('TaskManager not initialized');
+      return;
+    }
+    
     TaskManager.loadTasks();
     
     const addBtn = qs('#btn-add-task');
@@ -1608,12 +1861,43 @@
     // Use TaskManager render instead
     window.renderTasks = () => TaskManager.renderTasks();
     
-    // Initialize search
+    // Initialize search with debounce for performance
     if (searchInput) {
+      let searchTimeout = null;
+      
+      // Clear search handler
+      const handleSearch = (value) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          TaskManager.searchQuery = value;
+          TaskManager.renderTasks();
+        }, 300); // Debounce for 300ms
+      };
+      
       searchInput.addEventListener('input', (e) => {
-        TaskManager.searchQuery = e.target.value;
-        TaskManager.renderTasks();
+        handleSearch(e.target.value);
       });
+      
+      // Also handle Enter key for immediate search
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          clearTimeout(searchTimeout);
+          TaskManager.searchQuery = e.target.value;
+          TaskManager.renderTasks();
+        }
+      });
+      
+      // Clear button (if added later)
+      const clearBtn = searchInput.parentElement.querySelector('.search-clear');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          TaskManager.searchQuery = '';
+          TaskManager.renderTasks();
+          searchInput.focus();
+        });
+      }
     }
     
     // Initialize filter buttons
@@ -1621,9 +1905,14 @@
       btn.addEventListener('click', function() {
         filterBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        TaskManager.currentFilter = this.getAttribute('data-filter');
+        const filter = this.getAttribute('data-filter');
+        TaskManager.currentFilter = filter || 'all';
         TaskManager.renderTasks();
-        announce(`Filtered to ${TaskManager.currentFilter}`);
+        
+        const lang = localStorage.getItem('app-lang') || 'en';
+        const filterName = translations && translations[lang] ? 
+          translations[lang][filter] || filter : filter;
+        announce(`Filtered to ${filterName}`);
       });
     });
     
@@ -1636,25 +1925,63 @@
       });
     }
     
-    // Group toggles
-    qsa('.group-toggle').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const group = this.closest('.task-group');
-        const isCollapsed = group.getAttribute('data-collapsed') === 'true';
-        group.setAttribute('data-collapsed', !isCollapsed);
-        this.setAttribute('aria-expanded', !isCollapsed);
+    // Group toggles - Enhanced with proper initialization
+    function initGroupToggles() {
+      qsa('.group-toggle').forEach(btn => {
+        // Remove existing listeners by cloning
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
         
-        // Update icon
-        const icon = this.querySelector('ion-icon');
-        if (icon) {
-          icon.name = isCollapsed ? 'chevron-up-outline' : 'chevron-down-outline';
-        }
+        newBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          e.preventDefault();
+          const group = this.closest('.task-group');
+          if (!group) return;
+          
+          const isCollapsed = group.getAttribute('data-collapsed') === 'true';
+          const newState = !isCollapsed;
+          group.setAttribute('data-collapsed', String(newState));
+          this.setAttribute('aria-expanded', String(newState));
+          
+          // Update icon properly
+          waitForIonicons(() => {
+            const icon = this.querySelector('ion-icon');
+            if (icon) {
+              icon.setAttribute('name', newState ? 'chevron-down-outline' : 'chevron-up-outline');
+              // Force icon re-render
+              const parent = icon.parentNode;
+              const newIcon = document.createElement('ion-icon');
+              newIcon.setAttribute('name', newState ? 'chevron-down-outline' : 'chevron-up-outline');
+              newIcon.setAttribute('aria-hidden', 'true');
+              parent.replaceChild(newIcon, icon);
+            }
+          }, 50);
+          
+          announce(newState ? 'Group collapsed' : 'Group expanded');
+        });
       });
-    });
+    }
     
-    // Initial render
-    TaskManager.renderTasks();
+    // Initialize group toggles
+    initGroupToggles();
+    
+    // Initial render after a brief delay to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        TaskManager.loadTasks();
+        TaskManager.renderTasks();
+        updateStats();
+        
+        // Verify everything is working
+        const container = qs('#tasks-grouped');
+        if (!container) {
+          console.warn('Tasks container not found - checking for fallback');
+        }
+      } catch (err) {
+        console.error('Error initializing tasks:', err);
+        announce('Error loading tasks. Please refresh the page.');
+      }
+    }, 150);
 
     saveBtn?.addEventListener('click', () => {
       const titleVal = (title?.value || '').trim();
@@ -1708,6 +2035,9 @@
         modal.classList.remove('open');
         document.body.style.overflow = '';
       }
+      
+      // Reset task edit ID
+      taskEditId = null;
 
       // Reset form
       if (title) title.value = '';
@@ -1717,26 +2047,61 @@
       const dateInput = qs('#inp-task-date');
       const timeInput = qs('#inp-task-time');
       const deadlineInput = qs('#inp-task-deadline');
+      const locationInput = qs('#inp-task-location');
       if (dateInput) dateInput.value = '';
       if (timeInput) timeInput.value = '';
       if (deadlineInput) deadlineInput.value = '';
+      if (locationInput) locationInput.value = '';
       
-      // Clear labels
+      // Clear labels and subtasks
       qsa('.label-btn').forEach(btn => btn.classList.remove('active'));
+      const subtasksList = qs('#subtasks-list');
+      if (subtasksList) subtasksList.innerHTML = '';
     });
 
     addBtn?.addEventListener('click', () => {
       taskEditId = null;
+      
+      // Reset all form fields
       if (title) title.value = '';
       if (desc) desc.value = '';
       if (subj) subj.value = 'general';
       if (prio) prio.value = 'medium';
       const dateInput = qs('#inp-task-date');
       const timeInput = qs('#inp-task-time');
+      const deadlineInput = qs('#inp-task-deadline');
+      const locationInput = qs('#inp-task-location');
       if (dateInput) dateInput.value = '';
       if (timeInput) timeInput.value = '';
+      if (deadlineInput) deadlineInput.value = '';
+      if (locationInput) locationInput.value = '';
+      
+      // Clear labels and subtasks
       qsa('.label-btn').forEach(btn => btn.classList.remove('active'));
+      const subtasksList = qs('#subtasks-list');
+      if (subtasksList) subtasksList.innerHTML = '';
+      
+      // Update modal title
+      const modalTitle = qs('#task-modal-title');
+      if (modalTitle && translations) {
+        const lang = localStorage.getItem('app-lang') || 'en';
+        const trans = translations[lang] || translations.en;
+        if (trans.newTask) {
+          modalTitle.textContent = trans.newTask;
+        }
+      }
     });
+    
+    // Ensure translations are updated when modal opens
+    const modal = qs('#task-modal');
+    if (modal) {
+      const observer = new MutationObserver(() => {
+        if (modal.classList.contains('open')) {
+          updateTranslations(localStorage.getItem('app-lang') || 'en');
+        }
+      });
+      observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+    }
   }
 
   // Timer
