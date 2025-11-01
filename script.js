@@ -369,23 +369,60 @@
       });
     }
 
-    // Initialize from storage
+    // System-level theme detection FIRST
+    const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Initialize from storage or system preference
     const savedTheme = localStorage.getItem('app-theme');
     if (savedTheme === 'light') {
       root.classList.remove('dark-theme');
       root.classList.add('light-theme');
-    } else {
+    } else if (savedTheme === 'dark') {
       root.classList.add('dark-theme');
       root.classList.remove('light-theme');
+    } else {
+      // No saved preference - use system preference
+      if (systemPrefersDark) {
+        root.classList.add('dark-theme');
+        root.classList.remove('light-theme');
+        localStorage.setItem('app-theme', 'dark');
+      } else {
+        root.classList.remove('dark-theme');
+        root.classList.add('light-theme');
+        localStorage.setItem('app-theme', 'light');
+      }
     }
 
     const savedMotion = localStorage.getItem('reduce-motion') === 'true';
     const savedTrans = localStorage.getItem('reduce-transparency') === 'true';
     
     if (savedMotion) root.classList.add('reduce-motion');
-    if (savedTrans) root.classList.add('reduce-transparency');
+    if (savedTrans) {
+      root.classList.add('reduce-transparency');
+      root.setAttribute('data-reduce-transparency', 'true');
+    }
 
     syncThemeIcon();
+    
+    // Listen for system theme changes
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('app-theme')) {
+          // Only auto-switch if user hasn't manually set a preference
+          if (e.matches) {
+            root.classList.add('dark-theme');
+            root.classList.remove('light-theme');
+            localStorage.setItem('app-theme', 'dark');
+          } else {
+            root.classList.remove('dark-theme');
+            root.classList.add('light-theme');
+            localStorage.setItem('app-theme', 'light');
+          }
+          syncThemeIcon();
+          announce('Theme changed to match system preference');
+        }
+      });
+    }
 
     // Theme toggle
     themeBtn?.addEventListener('click', () => {
@@ -393,11 +430,14 @@
       root.classList.toggle('dark-theme');
       root.classList.toggle('light-theme');
       
-      localStorage.setItem('app-theme', isDark ? 'light' : 'dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      localStorage.setItem('app-theme', newTheme);
+      
+      // Sync icon immediately
       syncThemeIcon();
       
-      const newTheme = isDark ? 'Light' : 'Dark';
-      announce(`Theme changed to ${newTheme} mode`);
+      // Announce with proper theme name
+      announce(`Theme changed to ${isDark ? 'Light' : 'Dark'} mode`);
     });
 
     // Motion toggle

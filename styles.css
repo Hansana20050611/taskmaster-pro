@@ -216,27 +216,29 @@ ion-icon svg {
   display: block;
 }
 
-/* Icon Sizing - iOS 26 Standard */
-/* Logo Icon - 2.2rem */
+/* Icon Sizing - iOS 26 / HyperOS 3 Premium Standard */
+/* Logo Icon - 2.4rem (Prominent) */
 .app-logo .logo-emoji ion-icon,
 .logo-emoji ion-icon {
-  font-size: 2.2rem !important;
-  width: 2.2rem !important;
-  height: 2.2rem !important;
+  font-size: 2.4rem !important;
+  width: 2.4rem !important;
+  height: 2.4rem !important;
   line-height: 1;
+  vertical-align: middle;
 }
 
-/* Header Actions Ionicons - 1.4rem */
+/* Header Actions Ionicons - 1.8rem (Clear & Visible) */
 .header-actions ion-icon,
 .app-header .header-control ion-icon {
-  font-size: 1.4rem !important;
-  width: 1.4rem !important;
-  height: 1.4rem !important;
+  font-size: 1.8rem !important;
+  width: 1.8rem !important;
+  height: 1.8rem !important;
   margin: 0;
   line-height: 1;
+  vertical-align: middle;
 }
 
-/* View Title Icons - 1.5rem */
+/* View Title Icons - 1.5rem (Consistent) */
 .view-title ion-icon {
   font-size: 1.5rem !important;
   width: 1.5rem !important;
@@ -246,29 +248,32 @@ ion-icon svg {
   line-height: 1;
 }
 
-/* Bottom Dock Ionicons - 1.6rem (iOS Standard) */
+/* Bottom Dock Ionicons - 1.8rem (iOS Standard - Enhanced) */
 .dock-btn ion-icon,
 .bottom-dock .dock-emoji ion-icon {
-  font-size: 1.6rem !important;
-  width: 1.6rem !important;
-  height: 1.6rem !important;
-  margin: 0;
+  font-size: 1.8rem !important;
+  width: 1.8rem !important;
+  height: 1.8rem !important;
+  margin: 0 0 2px 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  vertical-align: middle;
 }
 
-/* Stats Panel Ionicons - 2.5rem (Bold) */
+/* Stats Panel Ionicons - 3rem (Bold & Featured) */
 .stat-box ion-icon,
 .stat-emoji ion-icon {
-  font-size: 2.5rem !important;
-  width: 2.5rem !important;
-  height: 2.5rem !important;
+  font-size: 3rem !important;
+  width: 3rem !important;
+  height: 3rem !important;
   margin-bottom: 12px;
   display: block;
   color: var(--color-primary);
   line-height: 1;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Main action buttons - 1.5rem */
@@ -348,12 +353,65 @@ ion-icon svg {
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-.header-wrapper { display:flex; align-items:center; justify-content:space-between; gap: var(--space-md); }
-.header-actions { display:flex; align-items:center; gap: var(--space-sm); }
-.header-control { min-width: 44px; min-height: 44px; border-radius: var(--radius-sm); }
+/* App Logo Styling */
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
 
-/* Main padding ensures no overlap with header & dock */
-.app-main { padding: calc(var(--header-height) + var(--space-xl)) var(--space-md) calc(var(--dock-height) + var(--space-xl)); }
+.logo-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header-wrapper { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: var(--space-md); 
+  padding: 0;
+  width: 100%;
+}
+
+.header-actions { 
+  display: flex; 
+  align-items: center; 
+  gap: var(--space-sm); 
+  flex-shrink: 0;
+}
+
+.header-control { 
+  min-width: 44px; 
+  min-height: 44px; 
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-med);
+}
+
+.header-control:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateZ(0);
+}
+
+.header-control:active {
+  transform: scale(0.95) translateZ(0);
+}
+
+/* Main padding ensures no overlap with header & dock - Perfect Spacing */
+.app-main { 
+  padding: calc(var(--header-height) + var(--space-xl)) var(--space-lg) calc(var(--dock-height) + var(--space-xl)); 
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
 
 /* Glass surface utility - iOS 26 Premium Glassmorphism - ENHANCED */
 .glass-surface,
@@ -731,15 +789,22 @@ body.reduce-motion {
   height: 100%;
   padding: var(--space-lg);
   border-radius: var(--radius-md);
+  /* Enhanced glassmorphism for flashcards */
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  transition: transform 0.6s;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .flashcard .fc-front {
@@ -816,7 +881,7 @@ body.reduce-motion {
   40% { transform: scale(1); }
 }
 
-/* Stats Container */
+/* Stats Container - Bento Grid Layout (iOS 26 / HyperOS 3 Style) */
 .stats-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -824,10 +889,68 @@ body.reduce-motion {
   padding: var(--space-lg);
 }
 
+/* Bento Grid - Asymmetric Layout for Visual Interest */
+@media (min-width: 768px) {
+  .stats-container {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, auto);
+  }
+  
+  /* Featured card - Tasks (spans 2 columns) */
+  .stats-container .stat-box:nth-child(1) {
+    grid-column: span 2;
+    padding: var(--space-2xl);
+    min-height: 180px;
+  }
+  
+  /* Tall card - Cards Learned (spans 2 rows) */
+  .stats-container .stat-box:nth-child(2) {
+    grid-row: span 2;
+    padding: var(--space-2xl);
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* Regular cards */
+  .stats-container .stat-box:nth-child(3),
+  .stats-container .stat-box:nth-child(4) {
+    padding: var(--space-xl);
+  }
+}
+
+@media (min-width: 1200px) {
+  .stats-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .stats-container .stat-box:nth-child(1) {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+}
+
 .stat-box {
   padding: var(--space-xl);
   text-align: center;
   border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-med);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+}
+
+/* Hover effect for stat boxes */
+.stat-box:hover {
+  transform: translateY(-4px) translateZ(0);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 .stat-num {
@@ -902,6 +1025,17 @@ body.reduce-motion {
     padding: var(--space-md);
   }
   
+  /* Mobile: Reset bento layout to uniform grid */
+  .stats-container .stat-box:nth-child(1),
+  .stats-container .stat-box:nth-child(2),
+  .stats-container .stat-box:nth-child(3),
+  .stats-container .stat-box:nth-child(4) {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+    min-height: 140px !important;
+    padding: var(--space-lg) !important;
+  }
+  
   .timer-visual { 
     width: 260px; 
     height: 260px; 
@@ -932,10 +1066,7 @@ body.reduce-motion {
   }
 }
 
-/* Wide-screen Bento grid tweaks */
-@media (min-width: 1200px) {
-  .stats-container { grid-template-columns: repeat(4, 1fr); }
-}
+/* Bento grid already handled above - this section removed */
 
 /* Screen reader only text */
 .sr-only {
@@ -1121,26 +1252,39 @@ body.reduce-motion {
   color: var(--text-tertiary);
 }
 
-/* App View Management - Smooth Transitions */
+/* App View Management - Smooth Transitions (iOS 26 Style) */
 .app-view {
   display: none;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.4s var(--ease-decelerate), transform 0.4s var(--ease-decelerate);
+  transform: translateY(20px) scale(0.98);
+  transition: opacity 0.4s var(--ease-decelerate), 
+              transform 0.4s var(--ease-decelerate);
+  will-change: opacity, transform;
 }
 
 .app-view.active-view,
 .app-view[aria-hidden="false"] {
   display: block;
   opacity: 1;
-  transform: translateY(0);
-  animation: fadeIn 0.4s var(--ease-decelerate);
+  transform: translateY(0) scale(1);
+  animation: fadeInSlide 0.4s var(--ease-decelerate);
+}
+
+@keyframes fadeInSlide {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.98); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
 }
 
 @keyframes fadeIn {
   from { 
     opacity: 0; 
-    transform: translateY(20px); 
+    transform: translateY(8px); 
   }
   to { 
     opacity: 1; 
