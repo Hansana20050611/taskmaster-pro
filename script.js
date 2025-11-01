@@ -132,7 +132,7 @@
     }
   }
 
-  // Tab Management - STABLE: Only ONE Tab Visible at a Time
+  // Tab Management - FIXED: Only ONE Tab Visible at a Time
   function initTabs() {
     const tabs = qsa('[role="tab"]');
     const panels = qsa('[role="tabpanel"]');
@@ -143,21 +143,17 @@
       if (isTransitioning) return;
       isTransitioning = true;
 
-      // Step 1: Hide ALL views - FORCE HIDE
+      // Step 1: Hide ALL views
       panels.forEach(view => {
         view.classList.remove('active-view');
-        view.style.display = 'none';
         view.setAttribute('aria-hidden', 'true');
-        view.hidden = true;
       });
 
       // Step 2: Show ONLY selected view
       const targetView = document.getElementById(`view-${tabName}`);
       if (targetView) {
         targetView.classList.add('active-view');
-        targetView.style.display = 'block';
         targetView.setAttribute('aria-hidden', 'false');
-        targetView.hidden = false;
       }
 
       // Step 3: Update dock buttons
@@ -177,17 +173,10 @@
       // Announce to screen reader
       announce(`Switched to ${tabName} tab`);
 
-      // Final verification - force hide any stray visible panels
+      // Reset transition flag
       setTimeout(() => {
-        panels.forEach(p => {
-          if (p.id !== `view-${tabName}` && !p.classList.contains('active-view')) {
-            p.style.display = 'none';
-            p.hidden = true;
-            p.setAttribute('aria-hidden', 'true');
-          }
-        });
         isTransitioning = false;
-      }, 100);
+      }, 300);
     };
 
     const selectTab = (tabId, tabElement) => {
@@ -251,8 +240,10 @@
       });
     });
 
-    // Initialize: Start with Generator tab visible (CRITICAL)
-    switchTab('generator');
+    // Initialize: Start with Generator tab visible
+    setTimeout(() => {
+      switchTab('generator');
+    }, 50);
   }
 
   // Modal with Focus Trapping
@@ -392,19 +383,23 @@
     if (savedTheme === 'light') {
       root.classList.remove('dark-theme');
       root.classList.add('light-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
     } else if (savedTheme === 'dark') {
       root.classList.add('dark-theme');
       root.classList.remove('light-theme');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       // No saved preference - use system preference
       if (systemPrefersDark) {
         root.classList.add('dark-theme');
         root.classList.remove('light-theme');
         localStorage.setItem('app-theme', 'dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
       } else {
         root.classList.remove('dark-theme');
         root.classList.add('light-theme');
         localStorage.setItem('app-theme', 'light');
+        document.documentElement.setAttribute('data-theme', 'light');
       }
     }
 
@@ -439,7 +434,7 @@
       });
     }
 
-    // STABLE THEME MANAGEMENT - NO LOOPS
+    // STABLE THEME MANAGEMENT - Updates all surfaces instantly
     let isTogglingTheme = false;
     
     const toggleTheme = (e) => {
@@ -458,14 +453,31 @@
         root.classList.remove('dark-theme');
         root.classList.add('light-theme');
         localStorage.setItem('app-theme', 'light');
+        document.documentElement.setAttribute('data-theme', 'light');
       } else {
         root.classList.remove('light-theme');
         root.classList.add('dark-theme');
         localStorage.setItem('app-theme', 'dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
       }
       
-      // Update icon
+      // Force update all glass surfaces
+      qsa('.glass-surface').forEach(surface => {
+        surface.style.transition = 'background-color 0.2s ease, border-color 0.2s ease';
+      });
+      
+      // Update all icons immediately
       syncThemeIcon();
+      setTimeout(() => {
+        qsa('ion-icon').forEach(icon => {
+          // Force icon color update
+          if (isDark) {
+            icon.style.color = '#000000';
+          } else {
+            icon.style.color = '#ffffff';
+          }
+        });
+      }, 50);
       
       // Announce to screen reader
       announce(`Theme changed to ${isDark ? 'Light' : 'Dark'} mode`);
@@ -488,19 +500,53 @@
       }
     }
 
-    // Motion toggle
+    // Motion toggle - FIXED: Visual confirmation
     motionBtn?.addEventListener('click', () => {
       const on = root.classList.toggle('reduce-motion');
       motionBtn.setAttribute('aria-pressed', String(on));
       localStorage.setItem('reduce-motion', String(on));
+      
+      // Visual confirmation
+      if (motionBtn) {
+        motionBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          motionBtn.style.transform = '';
+        }, 150);
+      }
+      
       announce(on ? 'Reduced motion enabled' : 'Reduced motion disabled');
     });
 
-    // Transparency toggle
+    // Transparency toggle - FIXED: Visual confirmation
     transBtn?.addEventListener('click', () => {
       const on = root.classList.toggle('reduce-transparency');
+      root.setAttribute('data-reduce-transparency', String(on));
       transBtn.setAttribute('aria-pressed', String(on));
       localStorage.setItem('reduce-transparency', String(on));
+      
+      // Visual confirmation - update glass surfaces immediately
+      qsa('.glass-surface').forEach(surface => {
+        if (on) {
+          surface.style.backdropFilter = 'none';
+          surface.style.webkitBackdropFilter = 'none';
+          surface.style.background = root.classList.contains('dark-theme') 
+            ? 'rgba(15, 15, 15, 0.95)' 
+            : 'rgba(255, 255, 255, 0.95)';
+        } else {
+          surface.style.backdropFilter = '';
+          surface.style.webkitBackdropFilter = '';
+          surface.style.background = '';
+        }
+      });
+      
+      // Button visual feedback
+      if (transBtn) {
+        transBtn.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          transBtn.style.transform = '';
+        }, 150);
+      }
+      
       announce(on ? 'Reduced transparency enabled' : 'Reduced transparency disabled');
     });
 
@@ -532,15 +578,45 @@
     }
 
     function renderCards(cards) {
-      if (!grid) return;
-      grid.innerHTML = '';
-      hideError();
+      if (!grid) {
+        console.error('Flashcards grid container not found');
+        showError('Flashcards container not available');
+        return;
+      }
+      
+      try {
+        grid.innerHTML = '';
+        hideError();
 
-      if (cards.length === 0) {
+        if (!Array.isArray(cards)) {
+          showError('Invalid flashcard data');
+          grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              <p>Error: Invalid flashcard data.</p>
+            </div>
+          `;
+          waitForIonicons(() => replaceIcons());
+          return;
+        }
+
+        if (cards.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <ion-icon name="albums-outline"></ion-icon>
+              <p>No flashcards generated. Please try again.</p>
+            </div>
+          `;
+          waitForIonicons(() => replaceIcons());
+          return;
+        }
+      } catch (err) {
+        console.error('Error rendering flashcards:', err);
+        showError('Failed to render flashcards. Please try again.');
         grid.innerHTML = `
           <div class="empty-state" style="grid-column: 1 / -1;">
-            <ion-icon name="albums-outline"></ion-icon>
-            <p>No flashcards generated. Please try again.</p>
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <p>Error: ${err.message}</p>
           </div>
         `;
         waitForIonicons(() => replaceIcons());
@@ -745,8 +821,10 @@
         addMessage(response, 'bot');
       } catch (err) {
         removeLoading();
-        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+        const errorMsg = err.message || 'An unknown error occurred';
+        addMessage(`Sorry, I encountered an error: ${errorMsg}. Please try again.`, 'bot');
         console.error('Chat error:', err);
+        announce('Error sending message. Please try again.');
       } finally {
         isProcessing = false;
         input.disabled = false;
@@ -773,11 +851,27 @@
     });
   }
 
-  // Font Switcher
+  // Font Switcher - FIXED: Updates all text elements
   function initFontSwitcher() {
     const fontBtns = qsa('.font-btn');
     const savedFont = localStorage.getItem('fontType') || 'en';
     document.body.setAttribute('data-font', savedFont);
+    document.documentElement.setAttribute('data-font', savedFont);
+    
+    // Apply font immediately to all elements
+    const applyFont = (fontType) => {
+      document.body.setAttribute('data-font', fontType);
+      document.documentElement.setAttribute('data-font', fontType);
+      
+      // Force update on all text elements
+      qsa('input, textarea, select, button, h1, h2, h3, h4, p, span, div').forEach(el => {
+        if (fontType === 'si') {
+          el.style.fontFamily = "'Noto Sans Sinhala', sans-serif";
+        } else {
+          el.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif";
+        }
+      });
+    };
     
     fontBtns.forEach(btn => {
       if (btn.getAttribute('data-font') === savedFont) {
@@ -785,7 +879,7 @@
       }
       btn.addEventListener('click', function() {
         const fontType = this.getAttribute('data-font');
-        document.body.setAttribute('data-font', fontType);
+        applyFont(fontType);
         localStorage.setItem('fontType', fontType);
         
         fontBtns.forEach(b => b.classList.remove('active'));
@@ -794,6 +888,9 @@
         announce(`Font switched to ${fontType === 'en' ? 'English' : 'Sinhala'}`);
       });
     });
+    
+    // Apply initial font
+    applyFont(savedFont);
   }
 
   // Calendar Functionality
@@ -1212,23 +1309,61 @@
     }
 
     function render() {
-      if (!list) return;
-      const items = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-      list.innerHTML = '';
+      if (!list) {
+        console.error('Tasks list container not found');
+        return;
+      }
+      
+      try {
+        const items = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+        list.innerHTML = '';
 
-      if (items.length === 0) {
+        if (!Array.isArray(items)) {
+          console.error('Tasks data is not an array');
+          list.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
+              <ion-icon name="alert-circle-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
+              <p style="font-size: 1.1rem; color: var(--text-secondary);">Error loading tasks.</p>
+              <button class="btn-secondary" onclick="window.location.reload()" style="margin-top: 1rem;">Reload Page</button>
+            </div>
+          `;
+          waitForIonicons(() => {
+            replaceIcons();
+            forceRenderIcons();
+          });
+          return;
+        }
+
+        if (items.length === 0) {
+          list.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
+              <ion-icon name="create-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
+              <p style="font-size: 1.1rem; color: var(--text-secondary);">No tasks yet.</p>
+              <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 0.5rem;">Click "New Task" to get started!</p>
+            </div>
+          `;
+          waitForIonicons(() => {
+            replaceIcons();
+            forceRenderIcons();
+          });
+          updateStats();
+          return;
+        }
+      } catch (err) {
+        console.error('Error rendering tasks:', err);
         list.innerHTML = `
           <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
-            <ion-icon name="create-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
-            <p style="font-size: 1.1rem; color: var(--text-secondary);">No tasks yet.</p>
-            <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 0.5rem;">Click "New Task" to get started!</p>
+            <ion-icon name="alert-circle-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
+            <p style="font-size: 1.1rem; color: var(--text-secondary);">Error loading tasks.</p>
+            <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 0.5rem;">${err.message}</p>
+            <button class="btn-secondary" onclick="window.location.reload()" style="margin-top: 1rem;">Reload Page</button>
           </div>
         `;
         waitForIonicons(() => {
           replaceIcons();
           forceRenderIcons();
         });
-        updateStats();
+        announce('Error loading tasks. Please try reloading the page.');
         return;
       }
 
@@ -1513,24 +1648,50 @@
     setIcon('play-outline');
   }
 
-  // Initialize Stats on Load
+  // Initialize Stats on Load - FIXED: Proper error handling
   function initStats() {
-    // Tasks count
-    const tasks = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-    const statTasks = qs('#stat-tasks');
-    if (statTasks) {
-      statTasks.textContent = String(tasks.length);
-    }
+    try {
+      // Tasks count
+      const tasks = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+      const statTasks = qs('#stat-tasks');
+      if (statTasks) {
+        statTasks.textContent = Array.isArray(tasks) ? String(tasks.length) : '0';
+      }
 
-    // Cards count from localStorage if saved
-    const cardsCount = parseInt(localStorage.getItem('flashcards-count') || '0', 10);
-    const statCards = qs('#stat-cards');
-    if (statCards && cardsCount > 0) {
-      statCards.textContent = String(cardsCount);
-    }
+      // Cards count from localStorage if saved
+      const cardsCount = parseInt(localStorage.getItem('flashcards-count') || '0', 10);
+      const statCards = qs('#stat-cards');
+      if (statCards) {
+        statCards.textContent = String(cardsCount);
+      }
 
-    // Timer sessions are handled in initTimer()
-    // Just ensure the stat display exists
+      // Timer sessions count
+      const timerCompleted = parseInt(localStorage.getItem('timer-completed') || '0', 10);
+      const statHours = qs('#stat-hours');
+      if (statHours) {
+        // Convert sessions to hours (25 min per session)
+        const hours = Math.floor((timerCompleted * 25) / 60);
+        statHours.textContent = `${hours}h`;
+      }
+
+      // Streak (stored separately or calculated)
+      const statStreak = qs('#stat-streak');
+      if (statStreak) {
+        const streak = parseInt(localStorage.getItem('streak-count') || '0', 10);
+        statStreak.textContent = String(streak);
+      }
+    } catch (err) {
+      console.error('Error initializing stats:', err);
+      // Set defaults on error
+      const statTasks = qs('#stat-tasks');
+      const statCards = qs('#stat-cards');
+      const statHours = qs('#stat-hours');
+      const statStreak = qs('#stat-streak');
+      if (statTasks) statTasks.textContent = '0';
+      if (statCards) statCards.textContent = '0';
+      if (statHours) statHours.textContent = '0h';
+      if (statStreak) statStreak.textContent = '0';
+    }
   }
 
   // Icon Replacement Helper - ENHANCED
@@ -1570,6 +1731,13 @@
     }
     window.appInitialized = true;
     
+    // Hide loader overlay immediately
+    const loaderOverlay = qs('#loader-overlay');
+    if (loaderOverlay) {
+      loaderOverlay.style.display = 'none';
+      loaderOverlay.setAttribute('aria-busy', 'false');
+    }
+    
     ensureLive();
     
     // Load Ionicons IMMEDIATELY
@@ -1592,28 +1760,24 @@
     initTimer();
     initStats();
     
-    // Force generator view visible after initialization
+    // Ensure generator view is visible after initialization
     setTimeout(() => {
-      const allViews = qsa('.app-view');
       const generatorView = qs('#view-generator');
-      
-      // Hide ALL views first
-      allViews.forEach(v => {
-        if (v.id !== 'view-generator') {
-          v.classList.remove('active-view');
-          v.style.display = 'none';
-          v.setAttribute('aria-hidden', 'true');
-          v.hidden = true;
-        }
-      });
-      
-      // Show ONLY generator
       if (generatorView) {
         generatorView.classList.add('active-view');
-        generatorView.style.display = 'block';
         generatorView.setAttribute('aria-hidden', 'false');
-        generatorView.hidden = false;
       }
+      
+      // Ensure all views have proper initial state
+      qsa('.app-view').forEach(view => {
+        if (view.id === 'view-generator') {
+          view.classList.add('active-view');
+          view.setAttribute('aria-hidden', 'false');
+        } else {
+          view.classList.remove('active-view');
+          view.setAttribute('aria-hidden', 'true');
+        }
+      });
     }, 100);
     
     // Ensure icons render properly
@@ -1686,29 +1850,17 @@
     init();
     setTimeout(verifyApp, 1000);
     
-    // Final safeguard: Force ONLY generator visible
+    // Final safeguard: Ensure generator is visible
     setTimeout(() => {
-      const allViews = qsa('.app-view');
-      allViews.forEach(v => {
-        if (v.id !== 'view-generator') {
-          v.style.display = 'none';
-          v.classList.remove('active-view');
-          v.setAttribute('aria-hidden', 'true');
-          v.hidden = true;
-        }
-      });
-      
       const genView = qs('#view-generator');
-      if (genView) {
-        genView.style.display = 'block';
+      if (genView && !genView.classList.contains('active-view')) {
         genView.classList.add('active-view');
         genView.setAttribute('aria-hidden', 'false');
-        genView.hidden = false;
       }
       
       // Update dock button
       const genBtn = qs('#tab-generator');
-      if (genBtn) {
+      if (genBtn && !genBtn.classList.contains('active')) {
         qsa('.dock-btn').forEach(b => {
           b.classList.remove('active');
           b.setAttribute('aria-selected', 'false');

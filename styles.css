@@ -247,23 +247,27 @@ ion-icon svg {
   display: block;
 }
 
-/* Icon Sizing - iOS 26 / HyperOS 3 Premium Standard */
+/* Icon Sizing - iOS 26 / HyperOS 3 Premium Standard - ENFORCED MINIMUM 44px */
 /* Logo Icon - 2.4rem (Prominent) */
 .app-logo .logo-emoji ion-icon,
 .logo-emoji ion-icon {
   font-size: 2.4rem !important;
   width: 2.4rem !important;
   height: 2.4rem !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
   line-height: 1;
   vertical-align: middle;
 }
 
-/* Header Actions Ionicons - 1.8rem (Clear & Visible) */
+/* Header Actions Ionicons - 1.8rem (Clear & Visible) - 44px minimum */
 .header-actions ion-icon,
 .app-header .header-control ion-icon {
   font-size: 1.8rem !important;
   width: 1.8rem !important;
   height: 1.8rem !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
   margin: 0;
   line-height: 1;
   vertical-align: middle;
@@ -279,12 +283,14 @@ ion-icon svg {
   line-height: 1;
 }
 
-/* Bottom Dock Ionicons - 1.8rem (iOS Standard - Enhanced) */
+/* Bottom Dock Ionicons - 1.8rem (iOS Standard - Enhanced) - 44px minimum */
 .dock-btn ion-icon,
 .bottom-dock .dock-emoji ion-icon {
   font-size: 1.8rem !important;
   width: 1.8rem !important;
   height: 1.8rem !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
   margin: 0 0 2px 0;
   display: inline-flex;
   align-items: center;
@@ -293,12 +299,14 @@ ion-icon svg {
   vertical-align: middle;
 }
 
-/* Stats Panel Ionicons - 3rem (Bold & Featured) */
+/* Stats Panel Ionicons - 3rem (Bold & Featured) - 44px minimum */
 .stat-box ion-icon,
 .stat-emoji ion-icon {
   font-size: 3rem !important;
   width: 3rem !important;
   height: 3rem !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
   margin-bottom: 12px;
   display: block;
   color: var(--color-primary);
@@ -449,30 +457,39 @@ ion-icon svg {
 .generator-panel,
 .chat-panel,
 .timer-panel,
- 
 .tasks-wrapper,
 .modal-container,
 .app-header,
-.bottom-dock {
+.bottom-dock,
+.task-categories,
+.layout-switcher,
+.filters-panel,
+.calendar-container,
+.calendar-sidebar {
   /* CRITICAL: backdrop-filter for frosted glass effect */
   backdrop-filter: blur(40px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
   
-  /* Background with proper opacity */
-  background: rgba(255, 255, 255, 0.08) !important;
-  background: linear-gradient(180deg, 
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.06) 100%
-  ) !important;
+  /* Background with proper opacity - multi-layer gradient */
+  background: 
+    linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    ) !important;
+  
+  /* Fallback for browsers without backdrop-filter */
+  background-color: rgba(255, 255, 255, 0.1) !important;
   
   /* Border with proper contrast */
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   
-  /* Multi-layer depth system */
+  /* Multi-layer depth system - enhanced shadows */
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05) !important;
   
   /* Squircle border radius - larger for iOS feel */
   border-radius: var(--radius-lg) !important;
@@ -486,6 +503,9 @@ ion-icon svg {
   
   /* Smooth transitions */
   transition: all var(--transition-med);
+  
+  /* Ensure proper stacking context */
+  isolation: isolate;
 }
 
 /* Stat boxes with enhanced glass */
@@ -625,18 +645,29 @@ button:active,
   transition: transform 100ms var(--ease-accelerate);
 }
 
-/* Focus indicators - WCAG AA Compliant */
+/* Focus indicators - WCAG AA Compliant - ENHANCED */
 .button:focus-visible, 
 button:focus-visible, 
 .btn:focus-visible, 
 .dock-btn:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 3px;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+textarea:focus-visible,
+.category-btn:focus-visible,
+.layout-btn:focus-visible,
+.filter-btn:focus-visible,
+.label-btn:focus-visible,
+.task-action-btn:focus-visible,
+.font-btn:focus-visible,
+.header-control:focus-visible {
+  outline: 3px solid var(--color-primary) !important;
+  outline-offset: 3px !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 
+    0 0 0 4px rgba(102, 126, 234, 0.3) !important,
+    0 0 0 8px rgba(102, 126, 234, 0.1) !important;
+  z-index: 10;
+  position: relative;
 }
 
 /* Focus glow effect - Enhanced */
@@ -1283,47 +1314,39 @@ body.reduce-motion {
   color: var(--text-tertiary);
 }
 
-/* App View Management - EMERGENCY FIX: Force Only ONE Visible */
+/* App View Management - FIXED: Proper visibility control */
 .app-view {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+  display: none;
   position: relative;
   width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transform: translateY(20px) scale(0.98);
-  transition: opacity 0.4s var(--ease-decelerate), 
-              transform 0.4s var(--ease-decelerate),
-              visibility 0s 0.4s;
+  transition: opacity var(--transition-med) var(--ease-decelerate), 
+              transform var(--transition-med) var(--ease-decelerate),
+              visibility 0s var(--transition-med);
   will-change: opacity, transform;
 }
 
 .app-view.active-view {
-  display: block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
   transform: translateY(0) scale(1);
-  transition: opacity 0.4s var(--ease-decelerate), 
-              transform 0.4s var(--ease-decelerate),
+  transition: opacity var(--transition-med) var(--ease-decelerate), 
+              transform var(--transition-med) var(--ease-decelerate),
               visibility 0s;
   animation: fadeInSlide 0.4s var(--ease-decelerate);
 }
 
 /* Initial state: Only Generator view visible on load */
-#view-generator {
-  display: block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
-/* Override: If generator has active-view class, ensure it's visible */
 #view-generator.active-view {
-  display: block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 @keyframes fadeInSlide {
@@ -1348,19 +1371,19 @@ body.reduce-motion {
   }
 }
 
-/* CRITICAL: Ensure only one view is visible - FORCE HIDE OTHERS */
+/* Ensure only one view is visible */
 .app-view:not(.active-view) {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .app-view[aria-hidden="true"]:not(.active-view) {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* ARIA state helpers for focus within */
@@ -1595,6 +1618,34 @@ body.reduce-motion {
 
 .btn-full {
   width: 100%;
+}
+
+/* Loader Overlay - Hidden by default */
+.loader-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.loader-screen[aria-busy="true"] {
+  display: flex;
+}
+
+.loader-spin {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 /* Loading States - Enhanced */
