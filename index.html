@@ -9,7 +9,10 @@
   <meta name="theme-color" content="#667eea" />
   <title>TaskMaster Pro - AI Study Assistant</title>
   <link rel="stylesheet" href="styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Premium Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
 </head>
 <body>
@@ -25,6 +28,16 @@
         <span class="logo-title">TaskMaster Pro</span>
       </div>
       <div class="header-actions">
+        <div class="font-switcher">
+          <button class="font-btn active" data-font="en" aria-label="English Font" title="English Font">
+            <ion-icon name="text-outline"></ion-icon>
+            <span class="font-label">EN</span>
+          </button>
+          <button class="font-btn" data-font="si" aria-label="Sinhala Font" title="Sinhala Font">
+            <ion-icon name="text-outline"></ion-icon>
+            <span class="font-label">සිං</span>
+          </button>
+        </div>
         <select aria-label="Language" class="header-control" id="lang-selector">
           <option value="en">EN</option>
           <option value="si">සිං</option>
@@ -50,11 +63,118 @@
     <section id="view-tasks" class="app-view" role="tabpanel" aria-labelledby="tab-tasks">
       <div class="view-header">
         <h2 class="view-title" id="title-tasks"><ion-icon aria-hidden="true" name="create-outline"></ion-icon> My Tasks</h2>
-        <button class="btn-primary" id="btn-add-task"><span class="sr-only">Add</span> <ion-icon aria-hidden="true" name="add-outline"></ion-icon> New Task</button>
+        <div class="header-actions-tasks">
+          <button class="btn-secondary btn-small" id="btn-filter-tasks" aria-label="Filter tasks">
+            <ion-icon name="filter-outline"></ion-icon>
+          </button>
+          <button class="btn-secondary btn-small" id="btn-sort-tasks" aria-label="Sort tasks">
+            <ion-icon name="swap-vertical-outline"></ion-icon>
+          </button>
+          <button class="btn-primary" id="btn-add-task"><span class="sr-only">Add</span> <ion-icon aria-hidden="true" name="add-outline"></ion-icon> New Task</button>
+        </div>
       </div>
+      
+      <!-- Task Categories -->
+      <div class="task-categories glass-surface">
+        <button class="category-btn active" data-category="today" aria-label="Today tasks">
+          <ion-icon name="today-outline"></ion-icon> Today
+        </button>
+        <button class="category-btn" data-category="upcoming" aria-label="Upcoming tasks">
+          <ion-icon name="calendar-outline"></ion-icon> Upcoming
+        </button>
+        <button class="category-btn" data-category="overdue" aria-label="Overdue tasks">
+          <ion-icon name="alert-circle-outline"></ion-icon> Overdue
+        </button>
+        <button class="category-btn" data-category="home" aria-label="Home tasks">
+          <ion-icon name="home-outline"></ion-icon> Home
+        </button>
+        <button class="category-btn" data-category="routines" aria-label="Routines">
+          <ion-icon name="repeat-outline"></ion-icon> Routines
+        </button>
+        <button class="category-btn" data-category="inspiration" aria-label="Inspiration">
+          <ion-icon name="sparkles-outline"></ion-icon> Inspiration
+        </button>
+      </div>
+
+      <!-- Layout Switcher -->
+      <div class="layout-switcher glass-surface">
+        <button class="layout-btn active" data-layout="list" title="List View" aria-label="List View">
+          <ion-icon name="list-outline"></ion-icon>
+        </button>
+        <button class="layout-btn" data-layout="agenda" title="Agenda View" aria-label="Agenda View">
+          <ion-icon name="document-text-outline"></ion-icon>
+        </button>
+        <button class="layout-btn" data-layout="3day" title="3-Day View" aria-label="3-Day View">
+          <ion-icon name="calendar-number-outline"></ion-icon>
+        </button>
+        <button class="layout-btn" data-layout="calendar" title="Calendar" aria-label="Calendar View">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Filters Panel (Hidden by default) -->
+      <div id="filters-panel" class="filters-panel glass-surface" style="display: none;">
+        <div class="filter-group">
+          <label>Status</label>
+          <div class="filter-options">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+            <button class="filter-btn" data-filter="incomplete">Incomplete</button>
+            <button class="filter-btn" data-filter="overdue">Overdue</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Priority</label>
+          <div class="filter-options">
+            <button class="filter-btn" data-filter="priority-urgent">🔥 Urgent</button>
+            <button class="filter-btn" data-filter="priority-high">🔴 High</button>
+            <button class="filter-btn" data-filter="priority-medium">🟡 Medium</button>
+            <button class="filter-btn" data-filter="priority-low">🟢 Low</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Subject</label>
+          <select class="input-field" id="filter-subject">
+            <option value="">All Subjects</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="physics">Physics</option>
+            <option value="biology">Biology</option>
+            <option value="mathematics">Mathematics</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Date Range</label>
+          <input type="date" class="input-field" id="filter-date-start">
+          <input type="date" class="input-field" id="filter-date-end">
+        </div>
+      </div>
+
+      <!-- Tasks Container -->
       <div class="tasks-wrapper glass-surface">
         <div id="tasks-list" class="tasks-grid"></div>
       </div>
+
+      <!-- Calendar View (Hidden by default) -->
+      <section id="view-calendar" class="calendar-view" style="display: none;">
+        <div class="view-header">
+          <div class="calendar-controls">
+            <button id="prev-month" aria-label="Previous month">
+              <ion-icon name="chevron-back-outline"></ion-icon>
+            </button>
+            <h3 id="current-month">October 2025</h3>
+            <button id="next-month" aria-label="Next month">
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
+          </div>
+        </div>
+        <div class="calendar-container glass-surface">
+          <div id="calendar-grid" class="calendar-grid"></div>
+        </div>
+        <div class="calendar-sidebar glass-surface">
+          <h3 id="calendar-selected-date">Select a date</h3>
+          <div id="date-tasks-list" class="date-tasks-list"></div>
+        </div>
+      </section>
     </section>
 
     <!-- TAB 2: Generator Section (Flashcards) -->
@@ -219,17 +339,17 @@
         <h3 id="task-modal-title">Create New Task</h3>
         <button class="modal-x" aria-label="Close modal" id="modal-close">×</button>
       </div>
-      <div id="task-modal-desc" class="modal-mid">
+      <div id="task-modal-desc" class="modal-mid modal-scroll">
         <div class="input-group">
-          <label class="input-label" for="inp-task-title">Task Title</label>
+          <label class="input-label" for="inp-task-title">Task Title *</label>
           <input class="input-field" id="inp-task-title" type="text" placeholder="Enter task title" required />
         </div>
         <div class="input-group">
-          <label class="input-label" for="inp-task-desc">Description (Optional)</label>
+          <label class="input-label" for="inp-task-desc">Description</label>
           <textarea class="input-field" id="inp-task-desc" rows="3" placeholder="Add details..."></textarea>
         </div>
         <div class="input-group">
-          <label class="input-label" for="inp-task-subj">Subject</label>
+          <label class="input-label" for="inp-task-subj">Subject/Project</label>
           <select class="input-field" id="inp-task-subj">
             <option value="general">General</option>
             <option value="chemistry">Chemistry</option>
@@ -242,10 +362,75 @@
         <div class="input-group">
           <label class="input-label" for="inp-task-priority">Priority</label>
           <select class="input-field" id="inp-task-priority">
-            <option value="low">Low Priority</option>
-            <option value="medium" selected>Medium Priority</option>
-            <option value="high">High Priority</option>
+            <option value="low">🟢 Low</option>
+            <option value="medium" selected>🟡 Medium</option>
+            <option value="high">🔴 High</option>
+            <option value="urgent">🔥 Urgent</option>
           </select>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label" for="inp-task-date">Date</label>
+            <input class="input-field" id="inp-task-date" type="date" />
+          </div>
+          <div class="input-group">
+            <label class="input-label" for="inp-task-time">Time</label>
+            <input class="input-field" id="inp-task-time" type="time" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="inp-task-deadline">Deadline</label>
+          <input class="input-field" id="inp-task-deadline" type="date" />
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="inp-task-location">Location</label>
+          <input class="input-field" id="inp-task-location" type="text" placeholder="e.g., Library, Home" />
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="inp-task-assignee">Assign To</label>
+          <select class="input-field" id="inp-task-assignee">
+            <option value="self">Myself</option>
+            <option value="team">Team Member</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Labels</label>
+          <div class="label-selector" id="label-selector">
+            <button type="button" class="label-btn" data-label="urgent" style="background: #ef4444;">Urgent</button>
+            <button type="button" class="label-btn" data-label="important" style="background: #f59e0b;">Important</button>
+            <button type="button" class="label-btn" data-label="work" style="background: #3b82f6;">Work</button>
+            <button type="button" class="label-btn" data-label="personal" style="background: #8b5cf6;">Personal</button>
+            <button type="button" class="label-btn" data-label="study" style="background: #10b981;">Study</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="inp-task-reminder">Reminder</label>
+          <select class="input-field" id="inp-task-reminder">
+            <option value="none">No Reminder</option>
+            <option value="ontime">On Time</option>
+            <option value="5min">5 Minutes Before</option>
+            <option value="15min">15 Minutes Before</option>
+            <option value="1hour">1 Hour Before</option>
+            <option value="1day">1 Day Before</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="inp-task-recurring">Recurring</label>
+          <select class="input-field" id="inp-task-recurring">
+            <option value="none">One-time Task</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Bi-weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Sub-tasks</label>
+          <div id="subtasks-list" class="subtasks-list"></div>
+          <button type="button" class="btn-secondary btn-small" id="add-subtask-btn">
+            <ion-icon name="add-outline"></ion-icon> Add Sub-task
+          </button>
         </div>
       </div>
       <div class="modal-bot">

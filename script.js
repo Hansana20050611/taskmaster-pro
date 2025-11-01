@@ -418,7 +418,7 @@
     }
 
     syncThemeIcon();
-    
+
     // Listen for system theme changes
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
@@ -773,6 +773,413 @@
     });
   }
 
+  // Font Switcher
+  function initFontSwitcher() {
+    const fontBtns = qsa('.font-btn');
+    const savedFont = localStorage.getItem('fontType') || 'en';
+    document.body.setAttribute('data-font', savedFont);
+    
+    fontBtns.forEach(btn => {
+      if (btn.getAttribute('data-font') === savedFont) {
+        btn.classList.add('active');
+      }
+      btn.addEventListener('click', function() {
+        const fontType = this.getAttribute('data-font');
+        document.body.setAttribute('data-font', fontType);
+        localStorage.setItem('fontType', fontType);
+        
+        fontBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        announce(`Font switched to ${fontType === 'en' ? 'English' : 'Sinhala'}`);
+      });
+    });
+  }
+
+  // Calendar Functionality
+  let currentCalendarMonth = new Date().getMonth();
+  let currentCalendarYear = new Date().getFullYear();
+
+  function generateCalendar(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    const today = new Date();
+    const tasks = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+
+    let html = '';
+    
+    // Day headers
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayNames.forEach(day => {
+      html += `<div class="calendar-day-header" style="font-weight: 600; text-align: center; padding: 8px;">${day}</div>`;
+    });
+
+    // Empty cells for days before month starts
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      html += '<div class="calendar-day empty"></div>';
+    }
+
+    // Days of month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dateStr = date.toISOString().split('T')[0];
+      const tasksForDay = tasks.filter(t => {
+        if (t.date) {
+          const taskDate = new Date(t.date).toISOString().split('T')[0];
+          return taskDate === dateStr;
+        }
+        return false;
+      }).length;
+      
+      const isToday = date.toDateString() === today.toDateString();
+      const dayClass = `calendar-day ${isToday ? 'today' : ''}`;
+
+      html += `
+        <div class="${dayClass}" data-date="${dateStr}">
+          <div class="day-number">${day}</div>
+          ${tasksForDay > 0 ? `<div class="task-count">${tasksForDay}</div>` : ''}
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  function renderCalendar() {
+    const grid = qs('#calendar-grid');
+    const monthHeader = qs('#current-month');
+    
+    if (grid) {
+      grid.innerHTML = generateCalendar(currentCalendarYear, currentCalendarMonth);
+      
+      // Add click handlers
+      qsa('.calendar-day:not(.empty)', grid).forEach(day => {
+        day.addEventListener('click', () => {
+          const date = day.getAttribute('data-date');
+          showTasksForDate(date);
+          qsa('.calendar-day', grid).forEach(d => d.classList.remove('selected'));
+          day.classList.add('selected');
+        });
+      });
+    }
+    
+    if (monthHeader) {
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+      monthHeader.textContent = `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+    }
+  }
+
+  function showTasksForDate(dateStr) {
+    const tasks = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+    const dateTasks = tasks.filter(t => {
+      if (t.date) {
+        const taskDate = new Date(t.date).toISOString().split('T')[0];
+        return taskDate === dateStr;
+      }
+      return false;
+    });
+
+    const sidebar = qs('#calendar-selected-date');
+    const list = qs('#date-tasks-list');
+    
+    if (sidebar) {
+      const date = new Date(dateStr);
+      sidebar.textContent = date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+
+    if (list) {
+      if (dateTasks.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-tertiary); text-align: center;">No tasks for this date</p>';
+      } else {
+        list.innerHTML = dateTasks.map(task => `
+          <div class="task-card" style="margin-bottom: 12px;">
+            <div class="task-header">
+              <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleTaskComplete('${task.id}')">
+              <h4 class="task-title">${task.title}</h4>
+              ${task.priority ? `<div class="task-priority" data-priority="${task.priority}">${task.priority}</div>` : ''}
+            </div>
+            ${task.description ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 8px;">${task.description}</p>` : ''}
+          </div>
+        `).join('');
+      }
+    }
+  }
+
+  function initCalendar() {
+    const prevBtn = qs('#prev-month');
+    const nextBtn = qs('#next-month');
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        currentCalendarMonth--;
+        if (currentCalendarMonth < 0) {
+          currentCalendarMonth = 11;
+          currentCalendarYear--;
+        }
+        renderCalendar();
+      });
+    }
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        currentCalendarMonth++;
+        if (currentCalendarMonth > 11) {
+          currentCalendarMonth = 0;
+          currentCalendarYear++;
+        }
+        renderCalendar();
+      });
+    }
+    
+    renderCalendar();
+  }
+
+  // Task Categories
+  function initTaskCategories() {
+    const categoryBtns = qsa('.category-btn');
+    let activeCategory = localStorage.getItem('activeCategory') || 'today';
+    
+    categoryBtns.forEach(btn => {
+      if (btn.getAttribute('data-category') === activeCategory) {
+        btn.classList.add('active');
+      }
+      
+      btn.addEventListener('click', function() {
+        const category = this.getAttribute('data-category');
+        activeCategory = category;
+        localStorage.setItem('activeCategory', category);
+        
+        categoryBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        if (typeof renderTasks === 'function') {
+          renderTasks();
+        }
+        
+        announce(`Switched to ${category} tasks`);
+      });
+    });
+  }
+
+  // Layout Switcher
+  function initLayoutSwitcher() {
+    const layoutBtns = qsa('.layout-btn');
+    const tasksList = qs('#tasks-list');
+    const tasksWrapper = qs('.tasks-wrapper');
+    const calendarView = qs('#view-calendar');
+    let currentLayout = localStorage.getItem('taskLayout') || 'list';
+    
+    layoutBtns.forEach(btn => {
+      if (btn.getAttribute('data-layout') === currentLayout) {
+        btn.classList.add('active');
+      }
+      
+      btn.addEventListener('click', function() {
+        const layout = this.getAttribute('data-layout');
+        currentLayout = layout;
+        localStorage.setItem('taskLayout', layout);
+        
+        layoutBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        if (layout === 'calendar') {
+          if (tasksList) tasksList.style.display = 'none';
+          if (tasksWrapper) tasksWrapper.style.display = 'none';
+          if (calendarView) calendarView.style.display = 'block';
+          renderCalendar();
+        } else {
+          if (calendarView) calendarView.style.display = 'none';
+          if (tasksList) tasksList.style.display = 'grid';
+          if (tasksWrapper) tasksWrapper.style.display = 'block';
+          
+          // Apply layout styles
+          if (layout === 'agenda') {
+            if (tasksList) {
+              tasksList.style.gridTemplateColumns = '1fr';
+              tasksList.style.gap = '12px';
+            }
+          } else if (layout === '3day') {
+            // 3-day view logic
+          } else {
+            if (tasksList) {
+              tasksList.style.gridTemplateColumns = '';
+              tasksList.style.gap = '';
+            }
+          }
+        }
+        
+        announce(`Switched to ${layout} view`);
+      });
+    });
+  }
+
+  // Filters
+  function initFilters() {
+    const filterBtn = qs('#btn-filter-tasks');
+    const filtersPanel = qs('#filters-panel');
+    const filterBtns = qsa('.filter-btn');
+    
+    if (filterBtn && filtersPanel) {
+      filterBtn.addEventListener('click', () => {
+        const isVisible = filtersPanel.style.display !== 'none';
+        filtersPanel.style.display = isVisible ? 'none' : 'block';
+        announce(isVisible ? 'Filters hidden' : 'Filters shown');
+      });
+    }
+    
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const filter = this.getAttribute('data-filter');
+        
+        // Remove active from siblings in same group
+        const group = this.closest('.filter-options');
+        if (group) {
+          qsa('.filter-btn', group).forEach(b => b.classList.remove('active'));
+        }
+        this.classList.add('active');
+        
+        // Apply filter logic
+        if (typeof renderTasks === 'function') {
+          renderTasks();
+        }
+        
+        announce(`Filter applied: ${filter}`);
+      });
+    });
+  }
+
+  // Sorting
+  function initSorting() {
+    const sortBtn = qs('#btn-sort-tasks');
+    let sortOrder = localStorage.getItem('taskSortOrder') || 'date';
+    
+    if (sortBtn) {
+      sortBtn.addEventListener('click', () => {
+        const orders = ['date', 'priority', 'title'];
+        const currentIndex = orders.indexOf(sortOrder);
+        const nextIndex = (currentIndex + 1) % orders.length;
+        sortOrder = orders[nextIndex];
+        localStorage.setItem('taskSortOrder', sortOrder);
+        
+        if (typeof renderTasks === 'function') {
+          renderTasks();
+        }
+        
+        announce(`Sorted by ${sortOrder}`);
+      });
+    }
+  }
+
+  // Enhanced Task Management with All Features
+  let taskEditId = null;
+
+  // Helper functions for task actions (getLabelColor moved to initTasks scope)
+
+  window.toggleTaskComplete = function(taskId) {
+    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+    const task = arr.find(t => t.id === taskId || t.id === taskId.toString());
+    if (task) {
+      task.done = !task.done;
+      localStorage.setItem('app-tasks', JSON.stringify(arr));
+      if (window.renderTasks) window.renderTasks();
+      announce(task.done ? 'Task completed' : 'Task uncompleted');
+    }
+  };
+
+  window.editTask = function(taskId) {
+    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+    const task = arr.find(t => t.id === taskId || t.id === taskId.toString());
+    if (!task) return;
+    
+    taskEditId = taskId;
+    qs('#inp-task-title').value = task.title || '';
+    qs('#inp-task-desc').value = task.desc || '';
+    qs('#inp-task-subj').value = task.subject || 'general';
+    qs('#inp-task-priority').value = task.priority || 'medium';
+    if (qs('#inp-task-date')) qs('#inp-task-date').value = task.date || '';
+    if (qs('#inp-task-time')) qs('#inp-task-time').value = task.time || '';
+    if (qs('#inp-task-deadline')) qs('#inp-task-deadline').value = task.deadline || '';
+    if (qs('#inp-task-location')) qs('#inp-task-location').value = task.location || '';
+    
+    // Set labels
+    qsa('.label-btn').forEach(btn => {
+      btn.classList.toggle('active', task.labels && task.labels.includes(btn.getAttribute('data-label')));
+    });
+    
+    // Open modal
+    qs('#task-modal')?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.duplicateTask = function(taskId) {
+    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+    const task = arr.find(t => t.id === taskId || t.id === taskId.toString());
+    if (task) {
+      const newTask = { ...task, id: Date.now().toString(), done: false, created: new Date().toISOString() };
+      arr.push(newTask);
+      localStorage.setItem('app-tasks', JSON.stringify(arr));
+      if (window.renderTasks) window.renderTasks();
+      announce('Task duplicated');
+    }
+  };
+
+  window.deleteTask = function(taskId) {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+    const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+    const index = arr.findIndex(t => t.id === taskId || t.id === taskId.toString());
+    if (index !== -1) {
+      arr.splice(index, 1);
+      localStorage.setItem('app-tasks', JSON.stringify(arr));
+      if (window.renderTasks) window.renderTasks();
+      announce('Task deleted');
+    }
+  };
+
+  function initTaskModal() {
+    const labelBtns = qsa('.label-btn');
+    const selectedLabels = new Set();
+    
+    labelBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const label = this.getAttribute('data-label');
+        if (selectedLabels.has(label)) {
+          selectedLabels.delete(label);
+          this.classList.remove('active');
+        } else {
+          selectedLabels.add(label);
+          this.classList.add('active');
+        }
+      });
+    });
+
+    const addSubtaskBtn = qs('#add-subtask-btn');
+    const subtasksList = qs('#subtasks-list');
+    
+    if (addSubtaskBtn && subtasksList) {
+      addSubtaskBtn.addEventListener('click', () => {
+        const subtaskDiv = document.createElement('div');
+        subtaskDiv.className = 'subtask-item';
+        subtaskDiv.innerHTML = `
+          <input type="checkbox" class="subtask-checkbox">
+          <input type="text" class="input-field" placeholder="Sub-task title" style="flex: 1;">
+          <button type="button" class="task-action-btn" onclick="this.parentElement.remove()">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        `;
+        subtasksList.appendChild(subtaskDiv);
+        waitForIonicons(() => replaceIcons());
+      });
+    }
+  }
+
   // Tasks Management - ENHANCED
   function initTasks() {
     const list = qs('#tasks-list');
@@ -790,6 +1197,18 @@
       if (stat) {
         stat.textContent = String(items.length);
       }
+    }
+
+    // Helper function for label colors
+    function getLabelColor(label) {
+      const colors = {
+        urgent: '#ef4444',
+        important: '#f59e0b',
+        work: '#3b82f6',
+        personal: '#8b5cf6',
+        study: '#10b981'
+      };
+      return colors[label] || '#667eea';
     }
 
     function render() {
@@ -813,28 +1232,46 @@
         return;
       }
 
+      // Store render function globally for category/filter/sort
+      window.renderTasks = render;
+
       items.forEach((t, idx) => {
         const el = document.createElement('div');
-        el.className = 'task-item';
+        el.className = 'task-card';
+        el.setAttribute('data-task-id', t.id || idx);
+        
+        const priorityEmoji = {
+          'urgent': '🔥',
+          'high': '🔴',
+          'medium': '🟡',
+          'low': '🟢'
+        }[t.priority] || '🟡';
+        
         el.innerHTML = `
-          <div style="flex: 1;">
-            <div class="task-title">${t.title || 'Untitled Task'}</div>
-            <div class="task-meta">${t.subject || 'general'} • ${t.priority || 'medium'} priority</div>
-            ${t.desc ? `<div style="font-size: 0.875rem; color: var(--text-tertiary); margin-top: 0.25rem;">${t.desc}</div>` : ''}
+          <div class="task-header">
+            <input type="checkbox" class="task-checkbox" ${t.done ? 'checked' : ''} onchange="toggleTaskComplete('${t.id || idx}')">
+            <h4 class="task-title">${t.title || 'Untitled Task'}</h4>
+            ${t.priority ? `<div class="task-priority" data-priority="${t.priority}">${priorityEmoji} ${t.priority}</div>` : ''}
           </div>
-          <button class="btn-secondary task-del" aria-label="Delete task ${t.title}">
-            <ion-icon name="trash-outline"></ion-icon>
-          </button>
+          ${t.desc ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin: 8px 0;">${t.desc}</p>` : ''}
+          <div class="task-meta">
+            ${t.date ? `<span class="meta-item"><ion-icon name="calendar-outline"></ion-icon> ${new Date(t.date).toLocaleDateString()}</span>` : ''}
+            ${t.time ? `<span class="meta-item"><ion-icon name="time-outline"></ion-icon> ${t.time}</span>` : ''}
+            ${t.location ? `<span class="meta-item"><ion-icon name="location-outline"></ion-icon> ${t.location}</span>` : ''}
+          </div>
+          ${t.labels && t.labels.length > 0 ? `<div class="task-labels">${t.labels.map(l => `<span class="task-label" style="background: ${getLabelColor(l)}">${l}</span>`).join('')}</div>` : ''}
+          <div class="task-actions">
+            <button class="task-action-btn" title="Edit" onclick="editTask('${t.id || idx}')">
+              <ion-icon name="create-outline"></ion-icon>
+            </button>
+            <button class="task-action-btn" title="Duplicate" onclick="duplicateTask('${t.id || idx}')">
+              <ion-icon name="copy-outline"></ion-icon>
+            </button>
+            <button class="task-action-btn" title="Delete" onclick="deleteTask('${t.id || idx}')">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </div>
         `;
-
-        const delBtn = el.querySelector('.task-del');
-        delBtn?.addEventListener('click', () => {
-          const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-          arr.splice(idx, 1);
-          localStorage.setItem('app-tasks', JSON.stringify(arr));
-          render();
-          announce('Task deleted');
-        });
 
         list.appendChild(el);
       });
@@ -854,23 +1291,77 @@
         return;
       }
 
+      // Get all form values
       const descVal = (desc?.value || '').trim();
       const subjVal = subj?.value || 'general';
       const prioVal = prio?.value || 'medium';
+      const dateVal = qs('#inp-task-date')?.value || '';
+      const timeVal = qs('#inp-task-time')?.value || '';
+      const deadlineVal = qs('#inp-task-deadline')?.value || '';
+      const locationVal = (qs('#inp-task-location')?.value || '').trim();
+      const assigneeVal = qs('#inp-task-assignee')?.value || 'self';
+      const reminderVal = qs('#inp-task-reminder')?.value || 'none';
+      const recurringVal = qs('#inp-task-recurring')?.value || 'none';
+      
+      // Get selected labels
+      const selectedLabels = [];
+      qsa('.label-btn.active').forEach(btn => {
+        selectedLabels.push(btn.getAttribute('data-label'));
+      });
+      
+      // Get subtasks
+      const subtasks = [];
+      qsa('.subtask-item').forEach(item => {
+        const input = qs('input[type="text"]', item);
+        if (input && input.value.trim()) {
+          subtasks.push({
+            title: input.value.trim(),
+            done: qs('.subtask-checkbox', item)?.checked || false
+          });
+        }
+      });
 
       const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-      arr.push({
+      
+      const taskData = {
+        id: taskEditId || Date.now().toString(),
         title: titleVal,
         desc: descVal,
         subject: subjVal,
         priority: prioVal,
+        date: dateVal,
+        time: timeVal,
+        deadline: deadlineVal,
+        location: locationVal,
+        assignee: assigneeVal,
+        labels: selectedLabels,
+        reminder: reminderVal,
+        recurring: recurringVal,
+        subtasks: subtasks,
         done: false,
         created: new Date().toISOString()
-      });
+      };
+
+      const isEditing = taskEditId !== null;
+      
+      if (isEditing) {
+        // Update existing task
+        const index = arr.findIndex(t => t.id === taskEditId);
+        if (index !== -1) {
+          arr[index] = { ...arr[index], ...taskData };
+        }
+      } else {
+        // Add new task
+        arr.push(taskData);
+      }
       
       localStorage.setItem('app-tasks', JSON.stringify(arr));
       render();
-      announce('Task saved');
+      announce(isEditing ? 'Task updated' : 'Task saved');
+      
+      if (isEditing) {
+        taskEditId = null;
+      }
 
       // Close modal
       const modal = qs('#task-modal');
@@ -884,8 +1375,21 @@
       if (desc) desc.value = '';
       if (subj) subj.value = 'general';
       if (prio) prio.value = 'medium';
+      const dateInput = qs('#inp-task-date');
+      const timeInput = qs('#inp-task-time');
+      const deadlineInput = qs('#inp-task-deadline');
+      const locationInput = qs('#inp-task-location');
+      if (dateInput) dateInput.value = '';
+      if (timeInput) timeInput.value = '';
+      if (deadlineInput) deadlineInput.value = '';
+      if (locationInput) locationInput.value = '';
       
-      // Re-render to show new task
+      // Clear labels and subtasks
+      qsa('.label-btn').forEach(btn => btn.classList.remove('active'));
+      const subtasksList = qs('#subtasks-list');
+      if (subtasksList) subtasksList.innerHTML = '';
+      
+      // Re-render to show new/updated task
       render();
     });
 
@@ -951,7 +1455,7 @@
 
     function tick() {
       secs--;
-      render();
+    render();
 
       if (secs <= 0) {
         clearInterval(interval);
@@ -1074,7 +1578,14 @@
     // Initialize core functionality first (CRITICAL ORDER)
     initTabs(); // MUST be first - sets initial tab state
     initA11yToggles(); // Theme must be set early
+    initFontSwitcher(); // Font switching
     initModal();
+    initTaskModal(); // Enhanced task modal with labels/subtasks
+    initTaskCategories(); // Task categories
+    initLayoutSwitcher(); // Layout switcher
+    initFilters(); // Filters
+    initSorting(); // Sorting
+    initCalendar(); // Calendar view
     initGenerator();
     initChat();
     initTasks();

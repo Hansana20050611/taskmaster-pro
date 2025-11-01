@@ -1730,3 +1730,650 @@ body.reduce-motion {
 @supports (height: 100dvh) {
   .app-main { min-height: calc(100dvh - var(--header-height) - var(--dock-height)); }
 }
+
+/* ================================================
+   NEW FEATURES - Premium iOS 26 Style
+   ================================================ */
+
+/* Font Switcher */
+.font-switcher {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.font-btn {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.font-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.font-btn.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.font-btn ion-icon {
+  font-size: 1rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+.font-label {
+  font-weight: 600;
+}
+
+/* Premium Font System */
+body[data-font="en"] {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif !important;
+}
+
+body[data-font="si"] {
+  font-family: 'Noto Sans Sinhala', sans-serif !important;
+}
+
+.view-title, .btn-primary, h1, h2, h3 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+/* Task Categories */
+.task-categories {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  margin: var(--space-md);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.task-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.category-btn {
+  padding: var(--space-md) var(--space-lg);
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  white-space: nowrap;
+  min-width: 44px;
+  min-height: 44px;
+  font-weight: 500;
+}
+
+.category-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.category-btn.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.category-btn ion-icon {
+  font-size: 1.2rem !important;
+  width: 1.2rem !important;
+  height: 1.2rem !important;
+}
+
+/* Layout Switcher */
+.layout-switcher {
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  margin: var(--space-md);
+  border-radius: var(--radius-md);
+  justify-content: center;
+}
+
+.layout-btn {
+  padding: var(--space-md);
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layout-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.layout-btn.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.layout-btn ion-icon {
+  font-size: 1.4rem !important;
+  width: 1.4rem !important;
+  height: 1.4rem !important;
+}
+
+/* Filters Panel */
+.filters-panel {
+  padding: var(--space-lg);
+  margin: var(--space-md);
+  border-radius: var(--radius-md);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.filter-group {
+  margin-bottom: var(--space-lg);
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.filter-btn {
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.875rem;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.filter-btn.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Enhanced Task Modal */
+.modal-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: var(--space-sm);
+}
+
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.label-selector {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.label-btn {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.875rem;
+  min-width: 44px;
+  min-height: 32px;
+}
+
+.label-btn:hover,
+.label-btn.active {
+  border-color: white;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.subtasks-list {
+  margin-bottom: var(--space-md);
+}
+
+.subtask-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+}
+
+.subtask-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.btn-small {
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.875rem;
+  min-height: 36px;
+}
+
+/* Enhanced Task Card */
+.task-card {
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-med);
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 12px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.task-checkbox {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.task-priority {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.task-priority[data-priority="urgent"] {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.task-priority[data-priority="high"] {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.task-priority[data-priority="medium"] {
+  background: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.task-priority[data-priority="low"] {
+  background: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-item ion-icon {
+  font-size: 1rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+.task-labels {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-sm);
+}
+
+.task-label {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.task-actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.task-action-btn {
+  padding: var(--space-xs);
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.task-action-btn ion-icon {
+  font-size: 1.2rem !important;
+  width: 1.2rem !important;
+  height: 1.2rem !important;
+}
+
+/* Calendar View */
+.calendar-view {
+  padding: var(--space-lg);
+}
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+}
+
+.calendar-controls h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.calendar-controls button {
+  padding: var(--space-sm);
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-controls button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.calendar-controls button ion-icon {
+  font-size: 1.4rem !important;
+  width: 1.4rem !important;
+  height: 1.4rem !important;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.calendar-day:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.calendar-day.today {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.calendar-day.selected {
+  border: 2px solid var(--color-primary);
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.calendar-day.empty {
+  background: transparent;
+  cursor: default;
+}
+
+.day-number {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.task-count {
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.holiday-mark {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-danger);
+}
+
+.calendar-sidebar {
+  padding: var(--space-lg);
+  margin-top: var(--space-lg);
+  border-radius: var(--radius-md);
+}
+
+.calendar-sidebar h3 {
+  margin-bottom: var(--space-md);
+  font-size: 1.1rem;
+}
+
+.date-tasks-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Header Actions Tasks */
+.header-actions-tasks {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+/* Fix Dropdown Hover Flickering */
+select.input-field,
+.input-field {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+select.input-field:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  transform: none;
+}
+
+select.input-field:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+  border-color: var(--color-primary);
+}
+
+option {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+option:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+option:checked {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* Enhanced Theme Switching - Instant Updates */
+body.dark-theme,
+body.light-theme {
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+}
+
+body.dark-theme *,
+body.light-theme * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Theme-specific icon colors */
+body.dark-theme ion-icon {
+  color: #ffffff !important;
+}
+
+body.light-theme ion-icon {
+  color: #000000 !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .task-categories {
+    padding: var(--space-sm);
+    margin: var(--space-sm);
+  }
+
+  .category-btn {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.875rem;
+  }
+
+  .input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-grid {
+    gap: 2px;
+    padding: var(--space-sm);
+  }
+
+  .calendar-day {
+    padding: 4px;
+  }
+
+  .day-number {
+    font-size: 0.875rem;
+  }
+
+  .font-switcher {
+    padding: 1px;
+  }
+
+  .font-btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .header-actions-tasks {
+    flex-wrap: wrap;
+  }
+}
