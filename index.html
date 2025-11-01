@@ -2,328 +2,257 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6366f1">
     <title>TaskMaster Pro - AI Study Assistant</title>
-    <meta name="description" content="Complete mobile AI-powered study assistant with real ChatGPT integration and A/L exam preparation features.">
-   
- <script>
-    window.TASKMASTER_API_BASE = "https://cf4e438a-918a-4688-b580-7ffdddc8aeb6-00-1yt01c3w3vp09.sisko.replit.dev";
-</script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e'
-                        },
-                        surface: {
-                            800: '#1e293b',
-                            900: '#0f172a'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
-    <div id="app" class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-white dark:bg-surface-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-            <div class="max-w-md mx-auto px-4 py-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-                            <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-lg font-bold text-gray-900 dark:text-white">TaskMaster Pro</h1>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">AI Study Assistant</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button id="languageToggle" class="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <span class="text-sm font-medium">EN</span>
-                        </button>
-                        <button id="themeToggle" class="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <i data-lucide="moon" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                </div>
+<body class="dark-theme">
+    <input type="checkbox" switch style="display:none;" id="haptic-trigger"/>
+    <label for="haptic-label" id="haptic-label" style="display:none;"></label>
+    
+    <div id="aria-live" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;"></div>
+
+    <header class="app-header glass-surface">
+        <div class="header-wrapper">
+            <div class="app-logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">TaskMaster Pro</span>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="flex-1 max-w-md mx-auto w-full">
-            <!-- Tasks Tab -->
-            <div id="tasksTab" class="tab-content">
-                <div class="p-4 space-y-4">
-                    <!-- Quick Actions -->
-                    <div class="flex space-x-3 mb-6">
-                        <button id="addTaskBtn" class="flex-1 gradient-card border border-primary-200 dark:border-primary-800 text-primary rounded-xl p-4 h-auto hover:bg-primary/10">
-                            <div class="flex flex-col items-center space-y-2">
-                                <i data-lucide="plus" class="w-6 h-6"></i>
-                                <span class="text-sm font-semibold">Add Task</span>
-                            </div>
-                        </button>
-                        <button class="flex-1 gradient-card border border-primary-200 dark:border-primary-800 text-primary rounded-xl p-4 h-auto hover:bg-primary/10">
-                            <div class="flex flex-col items-center space-y-2">
-                                <i data-lucide="file-text" class="w-6 h-6"></i>
-                                <span class="text-sm font-semibold">Import</span>
-                            </div>
-                        </button>
-                    </div>
-
-                    <!-- Task Categories -->
-                    <div class="flex space-x-2 mb-4 overflow-x-auto pb-2">
-                        <button class="category-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-primary text-white" data-category="all">All Tasks</button>
-                        <button class="category-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300" data-category="chemistry">Chemistry</button>
-                        <button class="category-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300" data-category="physics">Physics</button>
-                        <button class="category-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300" data-category="biology">Biology</button>
-                        <button class="category-btn px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300" data-category="mathematics">Mathematics</button>
-                    </div>
-
-                    <!-- Tasks List -->
-                    <div id="tasksList" class="space-y-3">
-                        <!-- Tasks will be loaded here by script.js -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Flashcards Tab -->
-            <div id="flashcardsTab" class="tab-content hidden">
-                <div class="p-4 space-y-4">
-                    <!-- Generate Section -->
-                    <div class="bg-white dark:bg-surface-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-4">Generate Flashcards</h3>
-                        <div class="space-y-3">
-                            <select id="flashcardSubject" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                                <option value="">Select Subject</option>
-                                <option value="chemistry">Chemistry</option>
-                                <option value="physics">Physics</option>
-                                <option value="biology">Biology</option>
-                                <option value="mathematics">Mathematics</option>
-                            </select>
-                            <input id="flashcardTopic" type="text" placeholder="Enter topic (e.g., S-block elements)" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                            <select id="flashcardCount" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                                <option value="5">5 Cards</option>
-                                <option value="10">10 Cards</option>
-                                <option value="15">15 Cards</option>
-                            </select>
-                            <button id="generateFlashcardsBtn" class="w-full gradient-primary text-white py-3 rounded-lg font-semibold">
-                                <i data-lucide="sparkles" class="w-4 h-4 mr-2 inline"></i>Generate with AI
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Flashcards List -->
-                    <div id="flashcardsList" class="space-y-3">
-                        <!-- Flashcards will be loaded here by script.js -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Chat Tab -->
-            <div id="chatTab" class="tab-content hidden">
-                <div class="flex flex-col h-[calc(100vh-200px)]">
-                    <!-- Chat Messages -->
-                    <div id="chatMessages" class="flex-1 p-4 space-y-4 overflow-y-auto">
-                        <!-- Chat messages will be loaded here by script.js -->
-                    </div>
-
-                    <!-- Chat Input -->
-                    <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-800">
-                        <div class="flex space-x-2">
-                            <input id="chatInput" type="text" placeholder="Ask me anything about your studies..." class="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                            <button id="sendChatBtn" class="p-3 gradient-primary text-white rounded-lg">
-                                <i data-lucide="send" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Timer Tab -->
-            <div id="timerTab" class="tab-content hidden">
-                <div class="p-4 space-y-6">
-                    <!-- Timer Display -->
-                    <div class="text-center">
-                        <div class="relative w-48 h-48 mx-auto mb-6">
-                            <svg class="w-48 h-48 timer-circle" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="2" fill="none" class="text-gray-200 dark:text-gray-700" />
-                                <circle id="timerProgress" cx="50" cy="50" r="45" stroke="currentColor" stroke-width="3" fill="none" class="text-primary-500" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round" />
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="text-center">
-                                    <div id="timerDisplay" class="text-4xl font-bold text-gray-900 dark:text-white">25:00</div>
-                                    <div id="timerType" class="text-sm text-gray-600 dark:text-gray-400">Focus Session</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Timer Controls -->
-                        <div class="flex justify-center space-x-4">
-                            <button id="startTimerBtn" class="px-6 py-3 gradient-primary text-white rounded-lg font-semibold">
-                                <i data-lucide="play" class="w-4 h-4 mr-2 inline"></i>Start
-                            </button>
-                            <button id="pauseTimerBtn" class="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hidden">
-                                <i data-lucide="pause" class="w-4 h-4 mr-2 inline"></i>Pause
-                            </button>
-                            <button id="resetTimerBtn" class="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold">
-                                <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2 inline"></i>Reset
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Session Info -->
-                    <div class="bg-white dark:bg-surface-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-3">Session Progress</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Current Round:</span>
-                                <span id="currentRound" class="font-semibold">1</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600 dark:text-gray-400">Sessions Completed:</span>
-                                <span id="sessionsCompleted" class="font-semibold">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Tab -->
-            <div id="analyticsTab" class="tab-content hidden">
-                <div class="p-4 space-y-4">
-                    <!-- Stats Overview -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white dark:bg-surface-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="tasksCompletedStat">0</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Tasks Completed</div>
-                        </div>
-                        <div class="bg-white dark:bg-surface-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="studyHoursStat">0h</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Study Hours</div>
-                        </div>
-                        <div class="bg-white dark:bg-surface-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="flashcardsLearnedStat">0</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Cards Learned</div>
-                        </div>
-                        <div class="bg-white dark:bg-surface-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="currentStreakStat">0</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Current Streak</div>
-                        </div>
-                    </div>
-
-                    <!-- Weekly Overview -->
-                    <div class="bg-white dark:bg-surface-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-4">This Week</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-400">Daily Goal</span>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                        <div class="bg-primary-500 h-2 rounded-full" style="width: 65%"></div>
-                                    </div>
-                                    <span class="text-sm font-semibold">65%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Bottom Navigation -->
-        <nav class="bg-white dark:bg-surface-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
-            <div class="flex justify-around">
-                <button class="nav-btn tab-active flex flex-col items-center py-2 px-3 rounded-lg" data-tab="tasksTab">
-                    <i data-lucide="check-square" class="w-5 h-5 mb-1"></i>
-                    <span class="text-xs font-medium">Tasks</span>
-                </button>
-                <button class="nav-btn tab-inactive flex flex-col items-center py-2 px-3 rounded-lg" data-tab="flashcardsTab">
-                    <i data-lucide="credit-card" class="w-5 h-5 mb-1"></i>
-                    <span class="text-xs font-medium">Cards</span>
-                </button>
-                <button class="nav-btn tab-inactive flex flex-col items-center py-2 px-3 rounded-lg" data-tab="chatTab">
-                    <i data-lucide="message-circle" class="w-5 h-5 mb-1"></i>
-                    <span class="text-xs font-medium">AI Chat</span>
-                </button>
-                <button class="nav-btn tab-inactive flex flex-col items-center py-2 px-3 rounded-lg" data-tab="timerTab">
-                    <i data-lucide="clock" class="w-5 h-5 mb-1"></i>
-                    <span class="text-xs font-medium">Timer</span>
-                </button>
-                <button class="nav-btn tab-inactive flex flex-col items-center py-2 px-3 rounded-lg" data-tab="analyticsTab">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
-                    <span class="text-xs font-medium">Stats</span>
-                </button>
-            </div>
-        </nav>
-    </div>
-
-    <!-- Add Task Modal -->
-    <div id="addTaskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-surface-800 rounded-xl p-6 w-full max-w-md">
-            <h3 class="text-lg font-semibold mb-4">Add New Task</h3>
-            <form id="addTaskForm" class="space-y-4">
-                <input id="taskTitle" type="text" placeholder="Task title" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" required>
-                <textarea id="taskDescription" placeholder="Description (optional)" rows="3" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"></textarea>
-                <select id="taskSubject" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                    <option value="">Select subject</option>
-                    <option value="chemistry">Chemistry</option>
-                    <option value="physics">Physics</option>
-                    <option value="biology">Biology</option>
-                    <option value="mathematics">Mathematics</option>
+            <div class="header-controls">
+                <select id="lang-selector" class="header-btn" aria-label="Language selection">
+                    <option value="en">EN</option>
+                    <option value="si">සිං</option>
                 </select>
-                <select id="taskPriority" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                    <option value="medium">Medium Priority</option>
-                    <option value="low">Low Priority</option>
-                    <option value="high">High Priority</option>
-                </select>
-                <input id="taskDueDate" type="date" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                <div class="flex space-x-3 pt-4">
-                    <button type="button" id="cancelTaskBtn" class="flex-1 py-3 border border-gray-300 dark:border-gray-600 rounded-lg">Cancel</button>
-                    <button type="submit" class="flex-1 py-3 gradient-primary text-white rounded-lg">Add Task</button>
+                <button id="theme-btn" class="header-btn" aria-label="Theme toggle" title="Toggle dark/light mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <button id="reduce-motion-btn" class="header-btn" aria-label="Toggle reduced motion" title="Reduce animations">
+                    <span>⏱️</span>
+                </button>
+                <button id="notifications-btn" class="header-btn" aria-label="Notifications">
+                    <span>🔔</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+
+        <section id="view-tasks" class="app-view" role="tabpanel" aria-labelledby="tab-tasks">
+            <div class="view-header">
+                <h2 class="view-title" data-en="My Tasks" data-si="මගේ කාර්යයන්">My Tasks</h2>
+                <button class="btn-primary" id="btn-add-task" data-en="New Task" data-si="නව කාර්ය">
+                    <span>+</span> New Task
+                </button>
+            </div>
+            <div class="tasks-wrapper glass-surface">
+                <div id="tasks-list" class="tasks-grid"></div>
+            </div>
+        </section>
+
+        <section id="view-generator" class="app-view active-view" role="tabpanel" aria-labelledby="tab-generator">
+            <div class="view-header">
+                <h2 class="view-title" data-en="Flashcard Generator" data-si="ෆ්ලැෂ් කාඩ්පත් උත්පාදකය">Flashcard Generator</h2>
+            </div>
+            <div class="generator-panel glass-surface">
+                <div class="input-group">
+                    <label for="fc-subject" class="input-label" data-en="Subject" data-si="විෂය">Subject</label>
+                    <select id="fc-subject" class="input-field">
+                        <option value="Physics" data-si="භෞතික විද්‍යාව">Physics</option>
+                        <option value="Chemistry" data-si="රසායන විද්‍යාව">Chemistry</option>
+                        <option value="Biology" data-si="ජීව විද්‍යාව">Biology</option>
+                        <option value="Mathematics" data-si="සංයුක්ත ගණිතය">Combined Mathematics</option>
+                    </select>
                 </div>
-            </form>
+                <div class="input-group">
+                    <label for="fc-topic" class="input-label" data-en="Topic" data-si="මාතෘකා">Topic</label>
+                    <input type="text" id="fc-topic" class="input-field" placeholder="e.g., Newton's Laws" data-si-placeholder="උදා. නිউටන්ගේ නීති">
+                </div>
+                <div class="input-group">
+                    <label for="fc-count" class="input-label" data-en="Number of Cards" data-si="කාඩ්පත් ගණන">Number of Cards</label>
+                    <select id="fc-count" class="input-field">
+                        <option value="5">5 Cards</option>
+                        <option value="10">10 Cards</option>
+                        <option value="15">15 Cards</option>
+                        <option value="20">20 Cards</option>
+                    </select>
+                </div>
+                <button class="btn-primary btn-full" id="btn-generate" data-en="Generate with AI" data-si="Generate with AI">
+                    <span>✨</span> Generate with AI
+                </button>
+                <div id="generator-error" class="error-message" style="display: none;"></div>
+            </div>
+            <div id="cards-grid" class="flashcards-grid"></div>
+        </section>
+
+        <section id="view-chat" class="app-view" role="tabpanel" aria-labelledby="tab-chat">
+            <div class="chat-panel glass-surface">
+                <div class="chat-top">
+                    <h2 class="view-title" data-en="AI Study Assistant" data-si="AI සහායක">AI Study Assistant</h2>
+                    <select id="chat-subject" class="input-field">
+                        <option value="General" data-si="සාමාන්‍ය">General</option>
+                        <option value="Physics" data-si="භෞතික විද්‍යාව">Physics</option>
+                        <option value="Chemistry" data-si="රසායන විද්‍යාව">Chemistry</option>
+                        <option value="Biology" data-si="ජීව විද්‍යාව">Biology</option>
+                        <option value="Mathematics" data-si="සංයුක්ත ගණිතය">Mathematics</option>
+                    </select>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                    <div class="chat-msg bot-msg">
+                        <div class="msg-avatar">🤖</div>
+                        <div class="msg-bubble">
+                            <p data-en="Hello! I'm your AI study assistant. Ask me anything about your subjects!" data-si="ආයුබෝවන්! ඔබේ අධ්‍යයනය ගැන ඕනෑම දෙයක් අහන්න...">Hello! I'm your AI study assistant. Ask me anything!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-bottom">
+                    <textarea id="chat-input" class="chat-textarea" placeholder="Ask a question..." data-si-placeholder="ප්‍රශ්නයක් ඇසින්න..."></textarea>
+                    <button id="btn-send" class="btn-send-chat" aria-label="Send message">
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-timer" class="app-view" role="tabpanel" aria-labelledby="tab-timer">
+            <div class="timer-panel glass-surface">
+                <div class="timer-visual">
+                    <svg class="timer-svg" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="85" class="timer-track"></circle>
+                        <circle cx="100" cy="100" r="85" class="timer-path" id="timer-circle"></circle>
+                    </svg>
+                    <div class="timer-center">
+                        <div class="timer-text" id="timer-text">25:00</div>
+                        <div class="timer-status" data-en="Focus Session" data-si="අවධානය දැරීමේ සැසිය">Focus Session</div>
+                    </div>
+                </div>
+                <div class="timer-buttons">
+                    <button class="btn-timer" id="btn-timer-start" data-en="Start" data-si="ආරම්භ කරන්න">
+                        <span>▶️</span> Start
+                    </button>
+                    <button class="btn-timer btn-secondary" id="btn-timer-reset" data-en="Reset" data-si="නැවත සකසන්න">
+                        <span>↻</span> Reset
+                    </button>
+                </div>
+                <div class="timer-details">
+                    <div class="timer-detail-item">
+                        <div class="detail-value" id="timer-round">1</div>
+                        <div class="detail-label" data-en="Current Round" data-si="වර්තමාන වටය">Current Round</div>
+                    </div>
+                    <div class="timer-detail-item">
+                        <div class="detail-value" id="timer-completed">0</div>
+                        <div class="detail-label" data-en="Sessions Done" data-si="සම්පූර්ණ සැසි">Sessions Done</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-stats" class="app-view" role="tabpanel" aria-labelledby="tab-stats">
+            <div class="view-header">
+                <h2 class="view-title" data-en="Your Progress" data-si="ඔබගේ ප්‍රගතිය">Your Progress</h2>
+            </div>
+            <div class="stats-container">
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">✅</div>
+                    <div class="stat-num" id="stat-tasks">0</div>
+                    <div class="stat-desc" data-en="Tasks Completed" data-si="සම්පූර්ණ කරන ලද කාර්යයන්">Tasks Completed</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">🎴</div>
+                    <div class="stat-num" id="stat-cards">0</div>
+                    <div class="stat-desc" data-en="Cards Learned" data-si="ඉගෙන ගත් කාඩ්පත්">Cards Learned</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">⏱️</div>
+                    <div class="stat-num" id="stat-hours">0h</div>
+                    <div class="stat-desc" data-en="Study Time" data-si="අධ්‍යාපන කාලය">Study Time</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">🔥</div>
+                    <div class="stat-num" id="stat-streak">0</div>
+                    <div class="stat-desc" data-en="Day Streak" data-si="දිනේ ස්ට්‍රීක">Day Streak</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="bottom-dock glass-surface" role="tablist" aria-label="Main navigation">
+        <button id="tab-tasks" class="dock-btn" data-tab="tasks" role="tab" aria-selected="false" aria-controls="view-tasks" data-en="Tasks" data-si="කාර්යයන්">
+            <span class="dock-icon">📝</span>
+            <span class="dock-label">Tasks</span>
+        </button>
+        <button id="tab-generator" class="dock-btn active" data-tab="generator" role="tab" aria-selected="true" aria-controls="view-generator" data-en="Generator" data-si="ජනකය">
+            <span class="dock-icon">🎴</span>
+            <span class="dock-label">Generator</span>
+        </button>
+        <button id="tab-chat" class="dock-btn" data-tab="chat" role="tab" aria-selected="false" aria-controls="view-chat" data-en="Chat" data-si="සංවාදය">
+            <span class="dock-icon">💬</span>
+            <span class="dock-label">Chat</span>
+        </button>
+        <button id="tab-timer" class="dock-btn" data-tab="timer" role="tab" aria-selected="false" aria-controls="view-timer" data-en="Timer" data-si="ටයිමර්">
+            <span class="dock-icon">⏱️</span>
+            <span class="dock-label">Timer</span>
+        </button>
+        <button id="tab-stats" class="dock-btn" data-tab="stats" role="tab" aria-selected="false" aria-controls="view-stats" data-en="Stats" data-si="සංඛ්‍යාංකන">
+            <span class="dock-icon">📊</span>
+            <span class="dock-label">Stats</span>
+        </button>
+    </nav>
+
+    <div id="task-modal" class="app-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container glass-surface" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+            <div class="modal-top">
+                <h3 id="task-modal-title" data-en="Create New Task" data-si="නව කාර්ය සකසන්න">Create New Task</h3>
+                <button class="modal-close" aria-label="Close" data-en="Close" data-si="වසන්න">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="inp-task-title" class="input-label" data-en="Task Title" data-si="කාර්ය සිරැසි">Task Title</label>
+                    <input type="text" id="inp-task-title" class="input-field" placeholder="Enter task title" data-si-placeholder="කාර්ය සිරැසි ඇතුළත් කරන්න" required>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-desc" class="input-label" data-en="Description" data-si="විස්තරණය">Description</label>
+                    <textarea id="inp-task-desc" class="input-field" rows="3" placeholder="Add details..." data-si-placeholder="විස්තර එකතු කරන්න..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-subj" class="input-label" data-en="Subject" data-si="විෂය">Subject</label>
+                    <select id="inp-task-subj" class="input-field">
+                        <option value="Physics" data-si="භෞතික විද්‍යාව">Physics</option>
+                        <option value="Chemistry" data-si="රසායන විද්‍යාව">Chemistry</option>
+                        <option value="Biology" data-si="ජීව විද්‍යාව">Biology</option>
+                        <option value="Mathematics" data-si="සංයුක්ත ගණිතය">Mathematics</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-priority" class="input-label" data-en="Priority" data-si="ප්‍රමුඛතාව">Priority</label>
+                    <select id="inp-task-priority" class="input-field">
+                        <option value="low" data-si="අඩු">Low</option>
+                        <option value="medium" selected data-si="මධ්‍යම">Medium</option>
+                        <option value="high" data-si="ඉහළ">High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary modal-cancel" data-en="Cancel" data-si="අවලංගු කරන්න">Cancel</button>
+                <button class="btn-primary" id="btn-save-task" data-en="Save Task" data-si="කාර්ය සුරකින්න">Save Task</button>
+            </div>
         </div>
     </div>
 
-    <!-- Loading Modal -->
-    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-surface-800 rounded-xl p-6 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
-            <p class="text-gray-600 dark:text-gray-400">Processing...</p>
-        </div>
+    <div id="loader-overlay" class="loader-screen">
+        <div class="loader-spin"></div>
     </div>
 
-    <!-- Error Modal -->
-    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white dark:bg-surface-800 rounded-xl p-6 w-full max-w-md">
-            <h3 class="text-lg font-semibold mb-4 text-red-600">Error</h3>
-            <p id="errorMessage" class="text-gray-600 dark:text-gray-400 mb-4"></p>
-            <button id="closeErrorBtn" class="w-full py-3 gradient-primary text-white rounded-lg">Close</button>
-        </div>
-    </div>
-
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

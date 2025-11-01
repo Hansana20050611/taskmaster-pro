@@ -1,542 +1,491 @@
-// Initialize Lucide icons
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
+// ===== LANGUAGE & TRANSLATION =====
+const AI_FAILURE_MSG = 'Respond Failed ( AI සේවා දෝෂයක්. කරුණාකර පසුව නැවත උත්සාහ කරන්න. )';
 
-    // Reinitialize icons when content changes
-    const observer = new MutationObserver(() => {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-});
+const LANGUAGE = {
+    current: localStorage.getItem('lang') || 'en',
 
-// Theme Management
-const ThemeManager = {
-    init() {
-        const themeToggle = document.getElementById('themeToggle');
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        
-        if (savedTheme === 'dark') {
-            document.documentElement.classList.add('dark');
+    // The page uses data-en / data-si attributes. UpdateDOM will apply the right text.
+    setLanguage(lang) {
+        this.current = lang;
+        localStorage.setItem('lang', lang);
+        document.documentElement.setAttribute('lang', lang);
+        this.updateDOM();
+        // Apply premium Sinhala font when Sinhala is selected
+        if (lang === 'si') {
+            document.body.setAttribute('lang', 'si');
+            document.body.style.fontFamily = "'Noto Sans Sinhala', 'Noto Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial";
+    } else {
+            document.body.setAttribute('lang', 'en');
+            document.body.style.fontFamily = "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial";
         }
-        
-        themeToggle?.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            
-            // Update icon
-            const icon = themeToggle.querySelector('i[data-lucide]');
-            if (icon) {
-                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-          }
-        }
-      });
-    }
-};
+    },
 
-// Tab Navigation
-const TabManager = {
-    init() {
-        const navButtons = document.querySelectorAll('.nav-btn');
-        navButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetTab = btn.getAttribute('data-tab');
-                this.switchTab(targetTab);
-            });
-        });
-    },
-    
-    switchTab(tabId) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        
-        // Show target tab
-        const targetTab = document.getElementById(tabId);
-        if (targetTab) {
-            targetTab.classList.remove('hidden');
-        }
-        
-        // Update nav buttons
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('tab-active');
-            btn.classList.add('tab-inactive');
-        });
-        
-        const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
-        if (activeBtn) {
-            activeBtn.classList.remove('tab-inactive');
-            activeBtn.classList.add('tab-active');
-        }
-    }
-};
-
-// Task Management
-const TaskManager = {
-    tasks: JSON.parse(localStorage.getItem('tasks') || '[]'),
-    
-    init() {
-        document.getElementById('addTaskBtn')?.addEventListener('click', () => {
-            document.getElementById('addTaskModal')?.classList.remove('hidden');
-            document.getElementById('addTaskModal')?.classList.add('flex');
-        });
-        
-        document.getElementById('cancelTaskBtn')?.addEventListener('click', () => {
-            document.getElementById('addTaskModal')?.classList.add('hidden');
-            document.getElementById('addTaskModal')?.classList.remove('flex');
-        });
-        
-        document.getElementById('addTaskForm')?.addEventListener('submit', (e) => {
-          e.preventDefault();
-            this.addTask();
-        });
-        
-        // Category filtering
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.category-btn').forEach(b => {
-                    b.classList.remove('active');
-                    b.classList.remove('bg-primary');
-                    b.classList.add('bg-gray-100', 'dark:bg-slate-700');
-                });
-                btn.classList.add('active', 'bg-primary', 'text-white');
-                btn.classList.remove('bg-gray-100', 'dark:bg-slate-700', 'text-gray-700', 'dark:text-gray-300');
-                
-                const category = btn.getAttribute('data-category');
-                this.filterTasks(category);
-            });
-        });
-        
-        this.render();
-        this.updateStats();
-    },
-    
-    addTask() {
-        const title = document.getElementById('taskTitle')?.value;
-        const description = document.getElementById('taskDescription')?.value;
-        const subject = document.getElementById('taskSubject')?.value;
-        const priority = document.getElementById('taskPriority')?.value;
-        const dueDate = document.getElementById('taskDueDate')?.value;
-        
-        if (!title) return;
-        
-        const task = {
-            id: Date.now(),
-            title,
-            description,
-            subject,
-            priority,
-            dueDate,
-            completed: false,
-            createdAt: new Date().toISOString()
-        };
-        
-        this.tasks.push(task);
-        localStorage.setItem('tasks', JSON.stringify(this.tasks));
-        
-        // Reset form
-        document.getElementById('addTaskForm')?.reset();
-        document.getElementById('addTaskModal')?.classList.add('hidden');
-        document.getElementById('addTaskModal')?.classList.remove('flex');
-        
-        this.render();
-        this.updateStats();
-        
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    },
-    
-    filterTasks(category) {
-        let filtered = this.tasks;
-        if (category !== 'all') {
-            filtered = this.tasks.filter(t => t.subject === category);
-        }
-        this.render(filtered);
-    },
-    
-    toggleTask(id) {
-        const task = this.tasks.find(t => t.id === id);
-        if (task) {
-            task.completed = !task.completed;
-            localStorage.setItem('tasks', JSON.stringify(this.tasks));
-            this.render();
-            this.updateStats();
-        }
-    },
-    
-    deleteTask(id) {
-        this.tasks = this.tasks.filter(t => t.id !== id);
-        localStorage.setItem('tasks', JSON.stringify(this.tasks));
-        this.render();
-        this.updateStats();
-    },
-    
-    render(tasks = null) {
-        const container = document.getElementById('tasksList');
-        if (!container) return;
-        
-        const tasksToRender = tasks || this.tasks;
-        
-        if (tasksToRender.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <i data-lucide="check-square" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                    <p>No tasks yet. Create your first task!</p>
-        </div>
-      `;
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-            return;
-        }
-        
-        container.innerHTML = tasksToRender.map(task => `
-            <div class="task-item ${task.completed ? 'completed' : ''}">
-                <div class="flex items-start gap-3">
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} 
-                           onchange="TaskManager.toggleTask(${task.id})"
-                           class="mt-1 w-5 h-5 rounded border-gray-300">
-                    <div class="flex-1">
-                        <div class="task-title font-semibold ${task.completed ? 'line-through' : ''}">
-                            ${task.title}
-            </div>
-                        ${task.description ? `<div class="text-sm text-gray-600 dark:text-gray-400 mt-1">${task.description}</div>` : ''}
-                        <div class="flex items-center gap-2 mt-2">
-                            ${task.subject ? `<span class="text-xs px-2 py-1 bg-primary/10 text-primary rounded">${task.subject}</span>` : ''}
-                            ${task.priority ? `<span class="text-xs px-2 py-1 rounded ${
-                                task.priority === 'high' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
-                                task.priority === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                                'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                            }">${task.priority}</span>` : ''}
-                        </div>
-                    </div>
-                    <button onclick="TaskManager.deleteTask(${task.id})" 
-                            class="text-red-500 hover:text-red-700">
-                        <i data-lucide="trash-2" class="w-5 h-5"></i>
-                    </button>
-                </div>
-          </div>
-        `).join('');
-        
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    },
-    
-    updateStats() {
-        const completed = this.tasks.filter(t => t.completed).length;
-        document.getElementById('tasksCompletedStat').textContent = completed;
-    }
-};
-
-// Flashcard Management
-const FlashcardManager = {
-    flashcards: JSON.parse(localStorage.getItem('flashcards') || '[]'),
-    
-    init() {
-        document.getElementById('generateFlashcardsBtn')?.addEventListener('click', () => {
-            this.generateFlashcards();
-        });
-        
-        this.render();
-    },
-    
-    async generateFlashcards() {
-        const subject = document.getElementById('flashcardSubject')?.value;
-        const topic = document.getElementById('flashcardTopic')?.value;
-        const count = parseInt(document.getElementById('flashcardCount')?.value || '5');
-        
-        if (!subject || !topic) {
-            this.showError('Please select a subject and enter a topic');
-              return;
-        }
-        
-        // Show loading
-        document.getElementById('loadingModal')?.classList.remove('hidden');
-        document.getElementById('loadingModal')?.classList.add('flex');
-        
-        try {
-            const apiBase = window.TASKMASTER_API_BASE || '';
-            const response = await fetch(`${apiBase}/api/generate-flashcards`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subject, topic, count })
-            });
-            
-            if (!response.ok) throw new Error('Failed to generate flashcards');
-            
-            const data = await response.json();
-            this.flashcards = data.flashcards || [];
-            localStorage.setItem('flashcards', JSON.stringify(this.flashcards));
-            this.render();
-            
-            document.getElementById('flashcardsLearnedStat').textContent = this.flashcards.length;
-        } catch (error) {
-            // Fallback to mock data
-            this.flashcards = Array.from({ length: count }, (_, i) => ({
-                id: Date.now() + i,
-                front: `${topic} - Concept ${i + 1}`,
-                back: `This is the explanation for concept ${i + 1} in ${subject}`,
-                subject,
-                topic
-            }));
-            localStorage.setItem('flashcards', JSON.stringify(this.flashcards));
-            this.render();
-        } finally {
-            document.getElementById('loadingModal')?.classList.add('hidden');
-            document.getElementById('loadingModal')?.classList.remove('flex');
-        }
-    },
-    
-    render() {
-        const container = document.getElementById('flashcardsList');
-        if (!container) return;
-        
-        if (this.flashcards.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <i data-lucide="credit-card" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                    <p>No flashcards yet. Generate some!</p>
-                </div>
-            `;
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-            return;
-        }
-        
-        container.innerHTML = this.flashcards.map(card => `
-            <div class="flashcard" onclick="this.classList.toggle('flipped')">
-                <div class="flashcard-inner">
-                    <div class="flashcard-front">
-                        <p class="font-semibold text-lg">${card.front}</p>
-          </div>
-                    <div class="flashcard-back">
-                        <p>${card.back}</p>
-        </div>
-        </div>
-          </div>
-        `).join('');
-    },
-    
-    showError(message) {
-        document.getElementById('errorMessage').textContent = message;
-        document.getElementById('errorModal')?.classList.remove('hidden');
-        document.getElementById('errorModal')?.classList.add('flex');
-    }
-};
-
-// Chat Management
-const ChatManager = {
-    messages: JSON.parse(localStorage.getItem('chatMessages') || '[]'),
-    
-    init() {
-        document.getElementById('sendChatBtn')?.addEventListener('click', () => {
-            this.sendMessage();
-        });
-        
-        document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-                this.sendMessage();
+    updateDOM() {
+        document.querySelectorAll('[data-en]').forEach(el => {
+            const en = el.dataset.en;
+            const si = el.dataset.si;
+            if (this.current === 'si' && si !== undefined) {
+                el.textContent = si;
+            } else if (en !== undefined) {
+                el.textContent = en;
             }
         });
-        
-        if (this.messages.length === 0) {
-            this.addMessage('Hello! I\'m your AI study assistant. Ask me anything about your subjects!', 'bot');
+
+        // placeholders
+        document.querySelectorAll('[data-si-placeholder]').forEach(el => {
+            const si = el.dataset.siPlaceholder;
+            if (this.current === 'si' && si !== undefined) el.placeholder = si;
+        });
+    },
+
+    init() {
+        // Initialize language selector
+        const sel = document.getElementById('lang-selector');
+        if (sel) {
+            sel.value = this.current;
+            sel.addEventListener('change', (e) => this.setLanguage(e.target.value));
         }
-        
-        this.render();
-    },
-    
-    async sendMessage() {
-        const input = document.getElementById('chatInput');
-        const message = input?.value.trim();
-        
-        if (!message) return;
-        
-        this.addMessage(message, 'user');
-        input.value = '';
-        
-        // Show loading
-        const loadingMsg = this.addMessage('Thinking...', 'bot');
-        
-        try {
-            const apiBase = window.TASKMASTER_API_BASE || '';
-            const response = await fetch(`${apiBase}/api/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
-            });
-            
-            if (!response.ok) throw new Error('Failed to get response');
-            
-            const data = await response.json();
-            this.removeMessage(loadingMsg);
-            this.addMessage(data.response || 'I apologize, but I couldn\'t process your request.', 'bot');
-        } catch (error) {
-            this.removeMessage(loadingMsg);
-            this.addMessage('I apologize, but I\'m having trouble right now. Please try again later.', 'bot');
+        // Set initial lang attribute
+        document.documentElement.setAttribute('lang', this.current);
+        document.body.setAttribute('lang', this.current);
+        this.updateDOM();
+        // apply font for current language
+        if (this.current === 'si') {
+            document.body.style.fontFamily = "'Noto Sans Sinhala', 'Noto Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial";
         }
-    },
-    
-    addMessage(text, type) {
-        const id = Date.now();
-        const message = { id, text, type, timestamp: new Date().toISOString() };
-        this.messages.push(message);
-        localStorage.setItem('chatMessages', JSON.stringify(this.messages));
-        this.render();
-        return id;
-    },
-    
-    removeMessage(id) {
-        this.messages = this.messages.filter(m => m.id !== id);
-        localStorage.setItem('chatMessages', JSON.stringify(this.messages));
-        this.render();
-    },
-    
-    render() {
-        const container = document.getElementById('chatMessages');
-        if (!container) return;
-        
-        container.innerHTML = this.messages.map(msg => `
-            <div class="chat-message ${msg.type}">
-                <div class="message-content">
-                    <p>${msg.text}</p>
-                </div>
-            </div>
-        `).join('');
-        
-        container.scrollTop = container.scrollHeight;
     }
 };
 
-// Timer Management
-const TimerManager = {
-    duration: 25 * 60, // 25 minutes in seconds
+// ===== THEME MANAGEMENT =====
+const THEME = {
+    current: localStorage.getItem('theme') || 'dark',
+
+    toggle() {
+        this.current = this.current === 'dark' ? 'light' : 'dark';
+        this.apply();
+        localStorage.setItem('theme', this.current);
+    },
+
+    apply() {
+        document.body.classList.remove('light-theme', 'dark-theme');
+        document.body.classList.add(this.current + '-theme');
+        const icon = document.getElementById('theme-icon');
+        if (icon) {
+            icon.textContent = this.current === 'dark' ? '🌙' : '☀️';
+        }
+    },
+
+    init() {
+        this.apply();
+        document.getElementById('theme-btn')?.addEventListener('click', () => this.toggle());
+    }
+};
+
+// ===== NAVIGATION =====
+const NAV = {
+    switchTab(tabName) {
+        document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view'));
+        document.getElementById(`view-${tabName}`)?.classList.add('active-view');
+        document.querySelectorAll('.dock-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+            btn.setAttribute('aria-selected', btn.dataset.tab === tabName ? 'true' : 'false');
+        });
+    },
+
+    init() {
+        document.querySelectorAll('.dock-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
+        });
+    }
+};
+
+// ===== TIMER =====
+const TIMER = {
+    duration: 25 * 60,
     remaining: 25 * 60,
-    isRunning: false,
+    running: false,
     interval: null,
-    circumference: 283,
-    
+    circle: null,
+    circumference: 0,
+
     init() {
-        document.getElementById('startTimerBtn')?.addEventListener('click', () => {
-            this.start();
-        });
-        
-        document.getElementById('pauseTimerBtn')?.addEventListener('click', () => {
-            this.pause();
-        });
-        
-        document.getElementById('resetTimerBtn')?.addEventListener('click', () => {
-            this.reset();
-        });
-        
+        this.circle = document.getElementById('timer-circle');
+        if (this.circle && this.circle.r) {
+            const radius = this.circle.r.baseVal.value;
+            this.circumference = radius * 2 * Math.PI;
+            this.circle.style.strokeDasharray = `${this.circumference} ${this.circumference}`;
+            this.circle.style.strokeDashoffset = this.circumference;
+        }
         this.updateDisplay();
+        document.getElementById('btn-timer-start')?.addEventListener('click', () => this.start());
+        document.getElementById('btn-timer-reset')?.addEventListener('click', () => this.reset());
     },
-    
+
     start() {
-        if (this.isRunning) {
-            this.pause();
-            return;
-        }
-        
-        this.isRunning = true;
-        document.getElementById('startTimerBtn')?.classList.add('hidden');
-        document.getElementById('pauseTimerBtn')?.classList.remove('hidden');
-        
-        this.interval = setInterval(() => {
-            this.remaining--;
-            this.updateDisplay();
-            
-            if (this.remaining <= 0) {
-                this.complete();
-            }
-        }, 1000);
+        if (this.running) return this.pause();
+        this.running = true;
+        this.interval = setInterval(() => this.tick(), 1000);
     },
-    
+
+    tick() {
+        this.remaining--;
+        this.updateDisplay();
+        if (this.remaining <= 0) this.complete();
+    },
+
+    updateDisplay() {
+        const mins = Math.floor(this.remaining / 60);
+        const secs = this.remaining % 60;
+        const display = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const textEl = document.getElementById('timer-text');
+        if (textEl) textEl.textContent = display;
+
+        if (this.circle && this.circumference > 0) {
+            const progress = 1 - (this.remaining / this.duration);
+            const offset = this.circumference - (progress * this.circumference);
+            this.circle.style.strokeDashoffset = offset;
+        }
+    },
+
     pause() {
-        this.isRunning = false;
-        document.getElementById('startTimerBtn')?.classList.remove('hidden');
-        document.getElementById('pauseTimerBtn')?.classList.add('hidden');
-        
-        if (this.interval) {
-            clearInterval(this.interval);
-            this.interval = null;
-        }
+        this.running = false;
+        if (this.interval) { clearInterval(this.interval); this.interval = null; }
     },
-    
+
     reset() {
         this.pause();
         this.remaining = this.duration;
         this.updateDisplay();
     },
-    
+
     complete() {
         this.pause();
-        alert('Session Complete! Take a break!');
-        
-        // Update stats
-        const completed = parseInt(document.getElementById('sessionsCompleted')?.textContent || '0');
-        document.getElementById('sessionsCompleted').textContent = completed + 1;
-        
-        // Reset for next session
+        try { window.navigator.vibrate?.(200); } catch (e) {}
+        alert('Session Complete!');
         this.reset();
-    },
-    
-    updateDisplay() {
-        const mins = Math.floor(this.remaining / 60);
-        const secs = this.remaining % 60;
-        const display = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        
-        document.getElementById('timerDisplay').textContent = display;
-        
-        // Update progress circle
-        const progress = (this.duration - this.remaining) / this.duration;
-        const offset = this.circumference - (progress * this.circumference);
-        document.getElementById('timerProgress').style.strokeDashoffset = offset;
     }
 };
 
-// Language Toggle
-const LanguageManager = {
-    current: localStorage.getItem('language') || 'en',
-    
+// ===== TASKS =====
+const TASKS = {
+    tasks: JSON.parse(localStorage.getItem('tasks') || '[]'),
+
     init() {
-        document.getElementById('languageToggle')?.addEventListener('click', () => {
-            this.current = this.current === 'en' ? 'si' : 'en';
-            localStorage.setItem('language', this.current);
-            document.getElementById('languageToggle').querySelector('span').textContent = 
-                this.current === 'en' ? 'EN' : 'SI';
+        document.getElementById('btn-add-task')?.addEventListener('click', () => {
+            document.getElementById('task-modal')?.classList.add('active');
+        });
+
+        document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => btn?.addEventListener('click', () => {
+            document.getElementById('task-modal')?.classList.remove('active');
+        }));
+
+        document.getElementById('btn-save-task')?.addEventListener('click', () => this.saveTask());
+        this.render();
+    },
+
+    saveTask() {
+        const titleEl = document.getElementById('inp-task-title');
+        const descEl = document.getElementById('inp-task-desc');
+        const subjEl = document.getElementById('inp-task-subj');
+        const priorityEl = document.getElementById('inp-task-priority');
+        const title = titleEl?.value?.trim();
+        if (!title) return;
+
+        const task = {
+            id: Date.now(),
+            title,
+            desc: descEl?.value || '',
+            subject: subjEl?.value || '',
+            priority: priorityEl?.value || 'medium',
+            completed: false,
+            createdAt: new Date().toISOString()
+        };
+
+        this.tasks.push(task);
+        this._save();
+        document.getElementById('task-modal')?.classList.remove('active');
+        if (titleEl) titleEl.value = '';
+        if (descEl) descEl.value = '';
+        this.render();
+    },
+
+    _save() {
+        localStorage.setItem('tasks', JSON.stringify(this.tasks));
+    },
+
+    toggleComplete(id) {
+        const t = this.tasks.find(x => x.id === id);
+        if (!t) return;
+        t.completed = !t.completed;
+        this._save();
+        this.render();
+    },
+
+    deleteTask(id) {
+        this.tasks = this.tasks.filter(x => x.id !== id);
+        this._save();
+        this.render();
+    },
+
+    render() {
+        const container = document.getElementById('tasks-list');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (this.tasks.length === 0) {
+            container.innerHTML = `<div class="empty-state"><p data-en="No tasks yet. Create one!" data-si="තවමත් කාර්යයක් නොමැත. එකක් නිර්මාණය කරන්න!">No tasks yet. Create one!</p></div>`;
+            document.getElementById('stat-tasks').textContent = '0';
+        return;
+      }
+      
+        this.tasks.forEach(task => {
+      const el = document.createElement('div');
+            el.className = 'task-card';
+      el.innerHTML = `
+                <div class="task-card-main ${task.completed ? 'completed' : ''}">
+                    <div class="task-checkbox-wrapper">
+                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} data-id="${task.id}">
+        <div class="task-content">
+                            <div class="task-title">${escapeHtml(task.title)}</div>
+                            ${task.desc ? `<div class="task-desc">${escapeHtml(task.desc)}</div>` : ''}
+          <div class="task-meta">
+                                <span class="task-subject">${escapeHtml(task.subject)}</span>
+                                <span class="task-priority priority-${task.priority}">${escapeHtml(task.priority)}</span>
+          </div>
+        </div>
+                    </div>
+        <div class="task-actions">
+                        <button class="btn-task-action btn-complete" data-id="${task.id}" title="${task.completed ? (LANGUAGE.current === 'si' ? 'අහෝසි කරන්න' : 'Undo') : (LANGUAGE.current === 'si' ? 'සම්පූර්ණ කරන්න' : 'Complete')}">
+                            ${task.completed ? '↩️' : '✅'}
+          </button>
+                        <button class="btn-task-action btn-delete" data-id="${task.id}" title="${LANGUAGE.current === 'si' ? 'මකන්න' : 'Delete'}">
+                            🗑️
+          </button>
+        </div>
+          </div>
+        `;
+
+            container.appendChild(el);
+        });
+
+        // attach listeners
+        container.querySelectorAll('.task-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => this.toggleComplete(Number(cb.dataset.id)));
+        });
+        container.querySelectorAll('.btn-complete').forEach(btn => {
+            btn.addEventListener('click', () => this.toggleComplete(Number(btn.dataset.id)));
+        });
+        container.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (confirm(LANGUAGE.current === 'si' ? 'මෙම කාර්යය මකා දැමීමට අවශ්‍යද?' : 'Are you sure you want to delete this task?')) {
+                    this.deleteTask(Number(btn.dataset.id));
+                }
+      });
+    });
+    
+        const completed = this.tasks.filter(t => t.completed).length;
+        document.getElementById('stat-tasks').textContent = String(completed);
+    }
+};
+
+function escapeHtml(s = '') {
+    return String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+// ===== FLASHCARDS =====
+const FLASHCARDS = {
+    cards: [],
+
+    init() {
+        document.getElementById('btn-generate')?.addEventListener('click', () => this.generate());
+    },
+
+    async simulateAIRequest({ subject, topic, count }) {
+        // Try real API first
+        try {
+            const apiBase = window.TASKMASTER_API_BASE || '';
+            if (apiBase) {
+                const response = await fetch(`${apiBase}/api/generate-flashcards`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject, topic, count })
+                });
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+                return data.flashcards || [];
+        }
+      } catch (err) {
+            // API failed, throw error to show failure message
+            throw new Error('AI Service Error');
+        }
+        
+        // Fallback simulation (only if no API base is configured)
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // For testing: simulate 10% failure rate
+                if (Math.random() < 0.1) {
+                    reject(new Error('AI Service Error'));
+        return;
+      }
+                const cards = [];
+                for (let i = 0; i < count; i++) {
+                    cards.push({ id: Date.now() + i, front: `${topic} - Concept ${i + 1}`, back: `Explanation for ${topic} (${subject}) — concept ${i + 1}` });
+                }
+                resolve(cards);
+            }, 900);
+        });
+    },
+
+    async generate() {
+        const subject = document.getElementById('fc-subject')?.value || 'General';
+        const topic = document.getElementById('fc-topic')?.value?.trim();
+        const count = parseInt(document.getElementById('fc-count')?.value || '5');
+
+        const errEl = document.getElementById('generator-error');
+        if (errEl) errEl.textContent = '';
+
+        if (!topic) {
+            if (errEl) errEl.textContent = (LANGUAGE.current === 'si') ? 'කරුණාකර මාතෘකාවක් ඇතුළත් කරන්න' : 'Please enter a topic';
+            return;
+        }
+
+        const overlay = document.getElementById('loader-overlay');
+        if (overlay) overlay.style.display = 'flex';
+
+        try {
+            const cards = await this.simulateAIRequest({ subject, topic, count });
+            this.cards = cards;
+            this.render();
+            document.getElementById('stat-cards').textContent = String(this.cards.length);
+            if (errEl) {
+                errEl.style.display = 'none';
+                errEl.textContent = '';
+            }
+        } catch (err) {
+            if (errEl) {
+                errEl.textContent = AI_FAILURE_MSG;
+                errEl.style.display = 'block';
+            }
+        } finally {
+            if (overlay) overlay.style.display = 'none';
+        }
+    },
+
+    render() {
+        const container = document.getElementById('cards-grid');
+        if (!container) return;
+        container.innerHTML = '';
+        this.cards.forEach(card => {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'flashcard';
+            cardEl.innerHTML = `<div class="fc-front">${escapeHtml(card.front)}</div><div class="fc-back">${escapeHtml(card.back)}</div>`;
+            cardEl.addEventListener('click', () => cardEl.classList.toggle('flipped'));
+            container.appendChild(cardEl);
         });
     }
 };
 
-// Error Modal
-document.getElementById('closeErrorBtn')?.addEventListener('click', () => {
-    document.getElementById('errorModal')?.classList.add('hidden');
-    document.getElementById('errorModal')?.classList.remove('flex');
-});
+// ===== CHAT =====
+const CHAT = {
+    messages: [],
 
-// Initialize everything
-document.addEventListener('DOMContentLoaded', () => {
-    ThemeManager.init();
-    TabManager.init();
-    TaskManager.init();
-    FlashcardManager.init();
-    ChatManager.init();
-    TimerManager.init();
-    LanguageManager.init();
-    
-    // Initialize Lucide icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+    async simulateAIReply(userMessage, subject) {
+        // Try real API call first
+        try {
+            const apiBase = window.TASKMASTER_API_BASE || '';
+            if (apiBase) {
+                const response = await fetch(`${apiBase}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userMessage, subject })
+                });
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+                return data.response || data.message || `Response for "${userMessage}" about ${subject}`;
+      }
+    } catch (err) {
+            // API failed, throw error to show failure message
+            throw new Error('AI Service Error');
+        }
+        // Fallback simulation (only if no API base is configured)
+        return new Promise((resolve, reject) => {
+      setTimeout(() => {
+                // For testing: simulate 10% failure rate
+                if (Math.random() < 0.1) {
+                    reject(new Error('AI Service Error'));
+                } else {
+                    resolve(`Simulated AI reply for "${userMessage}" about ${subject}`);
+                }
+            }, 600);
+        });
+    },
+
+    init() {
+        document.getElementById('btn-send')?.addEventListener('click', () => this.send());
+        document.getElementById('chat-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); }
+        });
+    },
+
+    async send() {
+        const input = document.getElementById('chat-input');
+        const message = input?.value?.trim();
+        if (!message) return;
+        this.addMessage(message, 'user');
+        if (input) input.value = '';
+
+        const subject = document.getElementById('chat-subject')?.value || 'General';
+
+        try {
+            const reply = await this.simulateAIReply(message, subject);
+            this.addMessage(reply, 'bot');
+        } catch (err) {
+            this.addMessage(AI_FAILURE_MSG, 'bot');
+        }
+    },
+
+    addMessage(text, type) {
+        const container = document.getElementById('chat-messages');
+        if (!container) return;
+        const msgEl = document.createElement('div');
+        msgEl.className = `chat-msg ${type}-msg`;
+        msgEl.innerHTML = `<div class="msg-avatar">${type === 'user' ? '👤' : '🤖'}</div><div class="msg-bubble"><p>${escapeHtml(text)}</p></div>`;
+        container.appendChild(msgEl);
+        container.scrollTop = container.scrollHeight;
+        this.messages.push({ text, type });
     }
+};
+
+// ===== REDUCED MOTION =====
+const REDUCED_MOTION = {
+    init() {
+        const btn = document.getElementById('reduce-motion-btn');
+        btn?.addEventListener('click', () => {
+            document.body.classList.toggle('reduce-motion');
+            localStorage.setItem('reduceMotion', document.body.classList.contains('reduce-motion'));
+        });
+        
+        if (localStorage.getItem('reduceMotion') === 'true') {
+            document.body.classList.add('reduce-motion');
+        }
+    }
+};
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', () => {
+    THEME.init();
+    LANGUAGE.init();
+    NAV.init();
+    TIMER.init();
+    TASKS.init();
+    FLASHCARDS.init();
+    CHAT.init();
+
+    // Reduced motion
+    const rm = localStorage.getItem('reduceMotion') === 'true';
+    if (rm) document.body.classList.add('reduce-motion');
+
+    // Update completed count
+    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    document.getElementById('stat-tasks').textContent = String(tasks.filter(t => t.completed).length || 0);
 });
