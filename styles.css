@@ -6,9 +6,9 @@
 ================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* CSS Custom Properties */
+/* CSS Custom Properties - iOS 26 / HyperOS 3 Standards */
 :root {
-  /* Primary Colors */
+  /* Semantic Color Tokens */
   --color-primary: #667eea;
   --color-secondary: #764ba2;
   --color-success: #10b981;
@@ -16,19 +16,29 @@
   --color-warning: #f59e0b;
   --color-info: #3b82f6;
   
-  /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.16);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  --glass-blur: blur(24px);
+  /* Glassmorphism - iOS 26 Premium */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-blur-webkit: blur(20px) saturate(180%);
   
-  /* Text Colors - Dark Theme */
+  /* Depth System - Multi-layer shadows */
+  --shadow-ambient: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-direct: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-specular: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+  
+  /* Text Colors - WCAG AA Compliant */
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.8);
-  --text-tertiary: rgba(255, 255, 255, 0.6);
+  --text-primary-dark: #0b1220;
+  --text-secondary: rgba(255, 255, 255, 0.85);
+  --text-secondary-dark: rgba(11, 18, 32, 0.85);
+  --text-tertiary: rgba(255, 255, 255, 0.65);
+  --text-tertiary-dark: rgba(11, 18, 32, 0.65);
   
   /* Background */
-  --bg-base: #0f172a;
+  --bg-base: #0f0f0f;
+  --bg-base-light: #f7f8fc;
   
   /* Spacing */
   --space-xs: 0.25rem;
@@ -36,16 +46,35 @@
   --space-md: 0.75rem;
   --space-lg: 1rem;
   --space-xl: 1.5rem;
+  --space-2xl: 2rem;
   
   /* Layout */
   --dock-height: 72px;
   --dock-safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-height: 72px;
   
-  /* Motion */
-  --transition-fast: 120ms ease;
-  --transition-med: 220ms ease;
-  --transition-slow: 360ms ease;
+  /* Motion - iOS Standard Easing */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --transition-fast: 150ms var(--ease-standard);
+  --transition-med: 300ms var(--ease-standard);
+  --transition-slow: 500ms var(--ease-decelerate);
+  
+  /* Border Radius - Squircle Design */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  
+  /* Z-Index Hierarchy */
+  --z-base: 1;
+  --z-elevated: 10;
+  --z-sticky: 100;
+  --z-header: 900;
+  --z-dock: 1000;
+  --z-modal-backdrop: 2000;
+  --z-modal: 2001;
 }
 
 html, body {
@@ -56,9 +85,35 @@ html, body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* Prefer color scheme */
+/* System Theme Detection */
 @media (prefers-color-scheme: light) {
-  :root { --bg-base: #f7f8fc; --text-primary: #0b1220; --text-secondary: rgba(11,18,32,.8); --text-tertiary: rgba(11,18,32,.6); }
+  :root { 
+    --bg-base: var(--bg-base-light);
+    --text-primary: var(--text-primary-dark);
+    --text-secondary: var(--text-secondary-dark);
+    --text-tertiary: var(--text-tertiary-dark);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Theme Classes */
+body.light-theme {
+  --bg-base: var(--bg-base-light);
+  --text-primary: var(--text-primary-dark);
+  --text-secondary: var(--text-secondary-dark);
+  --text-tertiary: var(--text-tertiary-dark);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.1);
+}
+
+body.dark-theme {
+  --bg-base: #0f0f0f;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.85);
+  --text-tertiary: rgba(255, 255, 255, 0.65);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
 }
 
 /* ================================================
@@ -97,98 +152,110 @@ ion-icon svg {
   display: block;
 }
 
-/* Logo Icon */
+/* Icon Sizing - iOS 26 Standard */
+/* Logo Icon - 2.2rem */
 .app-logo .logo-emoji ion-icon,
 .logo-emoji ion-icon {
-  font-size: 1.8rem;
-  width: 1.8rem;
-  height: 1.8rem;
+  font-size: 2.2rem !important;
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  line-height: 1;
 }
 
-/* Header Actions Ionicons */
+/* Header Actions Ionicons - 1.4rem */
 .header-actions ion-icon,
 .app-header .header-control ion-icon {
-  font-size: 1.4rem;
-  width: 1.4rem;
-  height: 1.4rem;
+  font-size: 1.4rem !important;
+  width: 1.4rem !important;
+  height: 1.4rem !important;
   margin: 0;
+  line-height: 1;
 }
 
-/* View Title Icons */
+/* View Title Icons - 1.5rem */
 .view-title ion-icon {
-  font-size: 1.5rem;
-  width: 1.5rem;
-  height: 1.5rem;
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
   margin-right: 0.5rem;
   vertical-align: middle;
+  line-height: 1;
 }
 
-/* Bottom Dock Ionicons - Consistent sizing */
+/* Bottom Dock Ionicons - 1.6rem (iOS Standard) */
 .dock-btn ion-icon,
 .bottom-dock .dock-emoji ion-icon {
-  font-size: 1.5rem;
-  width: 1.5rem;
-  height: 1.5rem;
+  font-size: 1.6rem !important;
+  width: 1.6rem !important;
+  height: 1.6rem !important;
   margin: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
 }
 
-/* Stats Panel Ionicons - Bold and clear */
+/* Stats Panel Ionicons - 2.5rem (Bold) */
 .stat-box ion-icon,
 .stat-emoji ion-icon {
-  font-size: 2.4rem;
-  width: 2.4rem;
-  height: 2.4rem;
+  font-size: 2.5rem !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
   margin-bottom: 12px;
   display: block;
   color: var(--color-primary);
+  line-height: 1;
 }
 
-/* Main action buttons */
+/* Main action buttons - 1.5rem */
 .btn-primary ion-icon {
-  font-size: 1.3rem;
-  width: 1.3rem;
-  height: 1.3rem;
+  font-size: 1.5rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
   margin-right: 0.4rem;
+  line-height: 1;
 }
 
-/* Timer buttons */
+/* Timer buttons - 1.4rem */
 .btn-timer ion-icon {
-  font-size: 1.4rem;
-  width: 1.4rem;
-  height: 1.4rem;
+  font-size: 1.4rem !important;
+  width: 1.4rem !important;
+  height: 1.4rem !important;
   margin-right: 0.4rem;
+  line-height: 1;
 }
 
-/* Chat send button */
+/* Chat send button - 1.4rem */
 .btn-send-chat ion-icon {
-  font-size: 1.4rem;
-  width: 1.4rem;
-  height: 1.4rem;
+  font-size: 1.4rem !important;
+  width: 1.4rem !important;
+  height: 1.4rem !important;
   margin: 0;
+  line-height: 1;
 }
 
-/* Chat avatar icons */
+/* Chat avatar icons - 1.6rem */
 .msg-avatar ion-icon {
-  font-size: 1.6rem;
-  width: 1.6rem;
-  height: 1.6rem;
+  font-size: 1.6rem !important;
+  width: 1.6rem !important;
+  height: 1.6rem !important;
+  line-height: 1;
 }
 
-/* Modal close button */
+/* Modal close button - 1.6rem */
 .modal-x ion-icon {
-  font-size: 1.6rem;
-  width: 1.6rem;
-  height: 1.6rem;
+  font-size: 1.6rem !important;
+  width: 1.6rem !important;
+  height: 1.6rem !important;
+  line-height: 1;
 }
 
-/* Task delete button */
+/* Task delete button - 1.3rem */
 .task-del ion-icon {
-  font-size: 1.3rem;
-  width: 1.3rem;
-  height: 1.3rem;
+  font-size: 1.3rem !important;
+  width: 1.3rem !important;
+  height: 1.3rem !important;
+  line-height: 1;
 }
 
 /* Ensure buttons have proper sizing for tap targets */
@@ -215,21 +282,46 @@ ion-icon svg {
 
 .header-wrapper { display:flex; align-items:center; justify-content:space-between; gap: var(--space-md); }
 .header-actions { display:flex; align-items:center; gap: var(--space-sm); }
-.header-control { min-width: 40px; min-height: 40px; border-radius: 12px; }
+.header-control { min-width: 44px; min-height: 44px; border-radius: var(--radius-sm); }
 
 /* Main padding ensures no overlap with header & dock */
 .app-main { padding: calc(var(--header-height) + var(--space-xl)) var(--space-md) calc(var(--dock-height) + var(--space-xl)); }
 
-/* Glass surface utility - ENHANCED visibility */
+/* Glass surface utility - iOS 26 Premium Glassmorphism */
 .glass-surface {
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  /* Critical: backdrop-filter for glass effect */
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Background with proper opacity */
+  background: var(--glass-bg);
+  background: linear-gradient(180deg, 
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  
+  /* Border with proper contrast */
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  border-radius: 18px;
+  
+  /* Multi-layer depth system */
+  box-shadow: 
+    var(--shadow-ambient),
+    var(--shadow-direct),
+    var(--shadow-glass),
+    var(--shadow-specular);
+  
+  /* Squircle border radius */
+  border-radius: var(--radius-lg);
+  
   position: relative;
   overflow: hidden;
+  
+  /* GPU acceleration */
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  
+  /* Smooth transitions */
+  transition: all var(--transition-med);
 }
 
 /* Additional glass effect overlay */
@@ -237,15 +329,55 @@ ion-icon svg {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.15) 0%, 
+    transparent 50%
+  );
   pointer-events: none;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
   z-index: 0;
 }
 
 .glass-surface > * {
   position: relative;
   z-index: 1;
+}
+
+/* High contrast overlay for text readability (WCAG AA) */
+.glass-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  border-radius: var(--radius-lg);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+/* Enhanced text contrast on glass */
+.glass-surface p,
+.glass-surface .task-title,
+.glass-surface .view-title,
+.glass-surface h2,
+.glass-surface h3 {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Reduced transparency mode */
+.reduce-transparency .glass-surface,
+[data-reduce-transparency="true"] .glass-surface {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.dark-theme .reduce-transparency .glass-surface,
+body.dark-theme [data-reduce-transparency="true"] .glass-surface {
+  background: rgba(15, 15, 15, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Bottom dock stabilization - ENHANCED */
@@ -270,14 +402,58 @@ ion-icon svg {
   contain: layout paint;
 }
 
-.bottom-dock .dock-inner { display:flex; gap: var(--space-md); padding: var(--space-sm) var(--space-md); background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 18px; }
+.bottom-dock .dock-inner { display:flex; gap: var(--space-md); padding: var(--space-sm) var(--space-md); background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); }
 
-/* Prevent reflow on hover: promote buttons to their own layer */
-.dock-btn, .button, button, .btn { will-change: transform; transform: translateZ(0); backface-visibility: hidden; }
-.button, button, .btn { position: relative; transition: transform var(--transition-med), background-color var(--transition-med), box-shadow var(--transition-med); }
-.button:hover, button:hover, .btn:hover, .dock-btn:hover { transform: translateY(-1px); }
-.button:active, button:active, .btn:active, .dock-btn:active { transform: translateY(0); }
-.button:focus-visible, button:focus-visible, .btn:focus-visible, .dock-btn:focus-visible { outline: 2px solid color-mix(in srgb, var(--color-primary) 60%, white); outline-offset: 2px; border-radius: 12px; }
+/* Buttons - Micro-interactions & GPU Acceleration */
+.dock-btn, 
+.button, 
+button, 
+.btn {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  position: relative;
+  transition: all var(--transition-med);
+}
+
+/* Hover lift effect */
+.button:hover, 
+button:hover, 
+.btn:hover:not(:disabled), 
+.dock-btn:hover:not(:disabled) {
+  transform: translateY(-2px) translateZ(0);
+}
+
+/* Active press scale */
+.button:active, 
+button:active, 
+.btn:active:not(:disabled), 
+.dock-btn:active:not(:disabled) {
+  transform: scale(0.98) translateZ(0);
+  transition: transform 100ms var(--ease-accelerate);
+}
+
+/* Focus indicators - WCAG AA Compliant */
+.button:focus-visible, 
+button:focus-visible, 
+.btn:focus-visible, 
+.dock-btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+}
+
+/* Focus glow effect */
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+  border-color: var(--color-primary);
+}
 
 /* Dock active indicator (pop-in) */
 .dock-btn { 
@@ -288,14 +464,14 @@ ion-icon svg {
   justify-content: center;
   gap: 0.25rem; 
   padding: 0.5rem 0.75rem; 
-  border-radius: 12px; 
+  border-radius: var(--radius-md); 
   color: var(--text-secondary); 
   background: transparent; 
   border: 0; 
   min-width: 64px;
-  min-height: 64px;
+  min-height: 64px; /* iOS minimum 44px, using 64px for comfort */
   cursor: pointer;
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+  transition: all var(--transition-med);
 }
 
 .dock-btn .indicator { 
@@ -331,14 +507,32 @@ ion-icon svg {
   white-space: nowrap;
 }
 
-/* Reduced motion preferences */
+/* Reduced motion preferences - WCAG Compliance */
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-/* Class-based overrides to force reduced motion and transparency when toggled in app */
-.reduce-motion * { animation: none !important; transition: none !important; }
-.reduce-transparency, .high-contrast-surface { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: #0b1220 !important; border-color: rgba(255,255,255,0.24) !important; }
+/* Class-based overrides to force reduced motion when toggled in app */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+body.reduce-motion {
+  --transition-fast: 0ms;
+  --transition-med: 0ms;
+  --transition-slow: 0ms;
+}
 
 /* Accessibility patches */
 .hidden-visually { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
@@ -362,7 +556,7 @@ ion-icon svg {
 
 .task-item {
   padding: var(--space-lg);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   display: flex;
@@ -414,7 +608,7 @@ ion-icon svg {
   width: 100%;
   height: 100%;
   padding: var(--space-lg);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--glass-border);
   backface-visibility: hidden;
@@ -468,7 +662,7 @@ ion-icon svg {
 .msg-bubble {
   max-width: 70%;
   padding: var(--space-md);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--glass-border);
 }
@@ -511,7 +705,7 @@ ion-icon svg {
 .stat-box {
   padding: var(--space-xl);
   text-align: center;
-  border-radius: 18px;
+  border-radius: var(--radius-lg);
 }
 
 .stat-num {
@@ -555,8 +749,8 @@ ion-icon svg {
   }
   
   .header-control {
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 44px; /* iOS minimum touch target */
+    min-height: 44px;
     padding: 0.5rem;
   }
   
@@ -597,7 +791,8 @@ ion-icon svg {
   }
   
   .dock-btn {
-    min-width: 56px;
+    min-width: 44px; /* iOS minimum touch target */
+    min-height: 44px;
     padding: 0.4rem 0.5rem;
   }
   
@@ -672,7 +867,7 @@ ion-icon svg {
   resize: vertical; 
   min-height: 44px; 
   max-height: 120px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: var(--space-md);
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.05);
@@ -690,7 +885,7 @@ ion-icon svg {
 .btn-send-chat { 
   min-width: 48px; 
   min-height: 44px; 
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 0;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
@@ -804,20 +999,36 @@ ion-icon svg {
   color: var(--text-tertiary);
 }
 
-/* App View Management */
+/* App View Management - Smooth Transitions */
 .app-view {
   display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transition-med), transform var(--transition-med);
 }
 
 .app-view.active-view,
 .app-view[aria-hidden="false"] {
   display: block;
-  animation: fadeIn 0.2s ease;
+  opacity: 1;
+  transform: translateY(0);
+  animation: fadeIn var(--transition-med) var(--ease-decelerate);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(8px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Ensure only one view is visible */
+.app-view:not(.active-view):not([aria-hidden="false"]) {
+  display: none !important;
 }
 
 /* ARIA state helpers for focus within */
@@ -856,7 +1067,7 @@ ion-icon svg {
 
 .modal-container {
   position: relative;
-  z-index: 2001;
+  z-index: var(--z-modal);
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
@@ -864,6 +1075,13 @@ ion-icon svg {
   padding: 0;
   display: flex;
   flex-direction: column;
+  border-radius: var(--radius-xl);
+  transform: scale(0.95);
+  transition: transform var(--transition-med) var(--ease-decelerate);
+}
+
+.app-modal.open .modal-container {
+  transform: scale(1);
 }
 
 .modal-top {
@@ -883,7 +1101,7 @@ ion-icon svg {
 .modal-x {
   min-width: 44px;
   min-height: 44px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   border: 0;
   background: transparent;
   color: var(--text-primary);
@@ -934,7 +1152,7 @@ ion-icon svg {
 .input-field {
   width: 100%;
   padding: 0.75rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
@@ -954,7 +1172,7 @@ ion-icon svg {
 .btn-primary,
 .btn-secondary {
   padding: 0.75rem 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 0;
   font-size: 1rem;
   font-weight: 600;
@@ -1031,7 +1249,7 @@ ion-icon svg {
   padding: var(--space-md);
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: #fca5a5;
   margin-top: var(--space-md);
   display: none;

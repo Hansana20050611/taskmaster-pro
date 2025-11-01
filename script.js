@@ -160,24 +160,41 @@
         }
       });
 
-      // Update all panels
+      // Update all panels - ENSURE ONLY ONE IS VISIBLE
       panels.forEach(p => {
         const show = p.id === tabId;
-        p.hidden = !show;
-        p.setAttribute('aria-hidden', String(!show));
         
         if (show) {
+          // Show this panel
+          p.hidden = false;
+          p.setAttribute('aria-hidden', 'false');
           p.classList.add('active-view');
           const tabName = tabElement?.getAttribute('aria-label') || 'tab';
           announce(`${tabName} tab selected`);
         } else {
+          // Hide all other panels
+          p.hidden = true;
+          p.setAttribute('aria-hidden', 'true');
           p.classList.remove('active-view');
         }
       });
 
+      // Double-check only one panel is visible
+      const visiblePanels = panels.filter(p => !p.hidden && p.classList.contains('active-view'));
+      if (visiblePanels.length > 1) {
+        console.warn('Multiple panels visible, fixing...');
+        visiblePanels.forEach((p, idx) => {
+          if (idx > 0) {
+            p.hidden = true;
+            p.setAttribute('aria-hidden', 'true');
+            p.classList.remove('active-view');
+          }
+        });
+      }
+
       setTimeout(() => {
         isTransitioning = false;
-      }, 200);
+      }, 300);
     };
 
     // Attach click handlers
@@ -314,11 +331,23 @@
       if (e.target === backdrop) close();
     });
 
-    document.addEventListener('keydown', (e) => {
+    // Escape key handler - CRITICAL FIX
+    const escapeHandler = (e) => {
       if (modal.classList.contains('open') && e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
         close();
       }
-    });
+    };
+    
+    document.addEventListener('keydown', escapeHandler);
+    
+    // Cleanup on modal close
+    const originalClose = close;
+    close = () => {
+      document.removeEventListener('keydown', escapeHandler);
+      originalClose();
+    };
   }
 
   // Theme and Accessibility Toggles
