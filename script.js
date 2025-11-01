@@ -847,7 +847,7 @@
     });
   }
 
-  // Premium Sinhala Translation System
+  // Premium Sinhala Translation System - 100% Complete
   const translations = {
     en: {
       tasks: 'My Tasks',
@@ -866,7 +866,34 @@
       allSubjects: 'All Subjects',
       projects: 'Projects',
       noTasks: 'No tasks yet',
-      createFirstTask: 'Create your first task to get started'
+      createFirstTask: 'Create your first task to get started',
+      flashcardGenerator: 'Flashcard Generator',
+      aiAssistant: 'AI Study Assistant',
+      timer: 'Timer',
+      stats: 'Statistics',
+      generator: 'Generator',
+      chat: 'Chat',
+      general: 'General',
+      physics: 'Physics',
+      chemistry: 'Chemistry',
+      biology: 'Biology',
+      mathematics: 'Combined Mathematics',
+      topic: 'Topic',
+      cardCount: 'Number of Cards',
+      generateAI: 'Generate with AI',
+      chatGreeting: 'Hello! I\'m your AI study assistant. Ask me anything about your subjects!',
+      askQuestion: 'Ask a question...',
+      focusSession: 'Focus Session',
+      start: 'Start',
+      pause: 'Pause',
+      reset: 'Reset',
+      currentRound: 'Current Round',
+      sessionsDone: 'Sessions Completed',
+      progress: 'Your Progress',
+      tasksCompleted: 'Tasks Completed',
+      cardsLearned: 'Cards Learned',
+      studyTime: 'Study Time',
+      dayStreak: 'Day Streak'
     },
     si: {
       tasks: 'මගේ කාර්යයන්',
@@ -876,7 +903,7 @@
       overdue: 'ඉකුත් වූ',
       all: 'සියල්ල',
       searchTasks: 'කාර්යයන් සොයන්න...',
-      priority: 'අයිතිය',
+      priority: 'ප්‍රමුඛතාව',
       urgent: 'හදිසි',
       high: 'ඉහළ',
       medium: 'මධ්‍යම',
@@ -885,44 +912,132 @@
       allSubjects: 'සියලුම විෂයන්',
       projects: 'ව්‍යාපෘති',
       noTasks: 'තවමත් කාර්යයන් නැත',
-      createFirstTask: 'ආරම්භ කිරීමට ඔබේ පළමු කාර්යය සාදන්න'
+      createFirstTask: 'ආරම්භ කිරීමට ඔබේ පළමු කාර්යය සාදන්න',
+      flashcardGenerator: 'ෆ්ලෑෂ්කාර්ඩ් උත්පාදක',
+      aiAssistant: 'AI අධ්‍යයන දඳුවා',
+      timer: 'ටයිමරය',
+      stats: 'සංඛ්‍යාවට',
+      generator: 'ජනක',
+      chat: 'සබඳතාව',
+      general: 'සාමාන්‍ය',
+      physics: 'භෞතික විද්‍යාව',
+      chemistry: 'රසායන විද්‍යාව',
+      biology: 'ජීව විද්‍යාව',
+      mathematics: 'සංයුක්ත ගණිතය',
+      topic: 'මාතෘකා',
+      cardCount: 'කාඩ්පත් ගණන',
+      generateAI: 'AI සමඟ ජනනය කරන්න',
+      chatGreeting: 'ආයුබෝවන්! මම ඔබේ AI අධ්‍යයන දඳුවා ය. ඔබේ විෂයන් ගැන කිසිවක් විමසන්න!',
+      askQuestion: 'ප්‍රශ්නයක් ඇසීමට...',
+      focusSession: 'ගතිලතා සැසිය',
+      start: 'පටන් ගන්න',
+      pause: 'නවත්වන්න',
+      reset: 'නැවත සකසන්න',
+      currentRound: 'වර්තමාන වටය',
+      sessionsDone: 'සැසි සිදු කරන ලද',
+      progress: 'ඔබගේ ප්‍රගතිය',
+      tasksCompleted: 'කාර්යයන් සම්පූර්ණ',
+      cardsLearned: 'කාඩ්පත් ඉගෙන ගෙන',
+      studyTime: 'අධ්‍යයන කාලය',
+      dayStreak: 'දින ගණන'
     }
   };
 
-  // Initialize i18n System
+  // Initialize i18n System - Enhanced
   function initI18n() {
     const lang = localStorage.getItem('app-lang') || 'en';
     document.documentElement.setAttribute('lang', lang);
     updateTranslations(lang);
     
-    // Language selector
-    const langSelector = qs('#lang-selector');
-    if (langSelector) {
-      langSelector.value = lang;
-      langSelector.addEventListener('change', (e) => {
-        const newLang = e.target.value;
+    // Language switcher buttons
+    qsa('.lang-btn').forEach(btn => {
+      const btnLang = btn.getAttribute('data-lang');
+      btn.classList.toggle('active', btnLang === lang);
+      
+      btn.addEventListener('click', function() {
+        const newLang = this.getAttribute('data-lang');
         localStorage.setItem('app-lang', newLang);
         document.documentElement.setAttribute('lang', newLang);
+        
+        // Update active state
+        qsa('.lang-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Apply font based on language
+        if (window.initFontSwitcher) {
+          initFontSwitcher();
+        }
+        
         updateTranslations(newLang);
         announce(`Language changed to ${newLang === 'en' ? 'English' : 'Sinhala'}`);
       });
-    }
+    });
   }
 
   function updateTranslations(lang) {
     const trans = translations[lang] || translations.en;
+    
+    // Update text content
     qsa('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (trans[key]) {
         el.textContent = trans[key];
       }
     });
+    
+    // Update placeholders
     qsa('[data-i18n-placeholder]').forEach(el => {
       const key = el.getAttribute('data-i18n-placeholder');
       if (trans[key]) {
         el.placeholder = trans[key];
       }
     });
+    
+    // Update select options for subjects
+    qsa('[data-i18n-subjects]').forEach(select => {
+      qsa('option[data-i18n]', select).forEach(option => {
+        const key = option.getAttribute('data-i18n');
+        if (trans[key]) {
+          if (lang === 'si') {
+            option.textContent = trans[key];
+          } else {
+            // For English, show both
+            const enKey = translations.en[key];
+            option.textContent = enKey ? `${enKey} - ${trans[key]}` : trans[key];
+          }
+        }
+      });
+    });
+    
+    // Update chat greeting
+    const chatGreeting = qs('.bot-msg .msg-bubble');
+    if (chatGreeting && trans.chatGreeting) {
+      chatGreeting.textContent = trans.chatGreeting;
+    }
+    
+    // Update timer button text if timer is not running
+    const timerBtnText = qs('#timer-btn-text');
+    if (timerBtnText && trans.start) {
+      const isRunning = localStorage.getItem('timer-running') === 'true';
+      if (!isRunning) {
+        timerBtnText.textContent = trans.start;
+      }
+    }
+    
+    // Update reset button text
+    const resetBtn = qs('#btn-timer-reset');
+    if (resetBtn && trans.reset) {
+      const resetSpan = resetBtn.querySelector('span[data-i18n="reset"]');
+      if (resetSpan) {
+        resetSpan.textContent = trans.reset;
+      } else {
+        // If no span, update button text directly
+        const icon = resetBtn.querySelector('ion-icon');
+        if (icon && icon.nextSibling) {
+          icon.nextSibling.textContent = ' ' + trans.reset;
+        }
+      }
+    }
   }
 
   // Font Switcher - FIXED: Updates all text elements with Premium Fonts
@@ -2163,7 +2278,10 @@
         interval = null;
         running = false;
         setIcon('play-outline');
-        if (btnText) btnText.textContent = 'Start';
+        if (btnText) {
+          const lang = localStorage.getItem('app-lang') || 'en';
+          btnText.textContent = translations[lang]?.start || 'Start';
+        }
         
         completedCount++;
         if (completed) completed.textContent = String(completedCount);
@@ -2179,12 +2297,18 @@
         interval = null;
         running = false;
         setIcon('play-outline');
-        if (btnText) btnText.textContent = 'Start';
+        if (btnText) {
+          const lang = localStorage.getItem('app-lang') || 'en';
+          btnText.textContent = translations[lang]?.start || 'Start';
+        }
         announce('Timer paused');
       } else {
         running = true;
         setIcon('pause-outline');
-        if (btnText) btnText.textContent = 'Pause';
+        if (btnText) {
+          const lang = localStorage.getItem('app-lang') || 'en';
+          btnText.textContent = translations[lang]?.pause || 'Pause';
+        }
         interval = setInterval(tick, 1000);
         announce('Timer started');
       }

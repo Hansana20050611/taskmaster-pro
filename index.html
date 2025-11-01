@@ -28,20 +28,17 @@
         <span class="logo-title">TaskMaster Pro</span>
       </div>
       <div class="header-actions">
-        <div class="font-switcher">
-          <button class="font-btn active" data-font="en" aria-label="English Font" title="English Font">
-            <ion-icon name="text-outline"></ion-icon>
-            <span class="font-label">EN</span>
+        <!-- Language Switcher - Professional Design -->
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="en" aria-label="English" title="English">
+            <span class="lang-label">EN</span>
           </button>
-          <button class="font-btn" data-font="si" aria-label="Sinhala Font" title="Sinhala Font">
-            <ion-icon name="text-outline"></ion-icon>
-            <span class="font-label">සිං</span>
+          <button class="lang-btn" data-lang="si" aria-label="සිංහල" title="සිංහල">
+            <span class="lang-label">සිං</span>
           </button>
         </div>
-        <select aria-label="Language" class="header-control" id="lang-selector">
-          <option value="en">EN</option>
-          <option value="si">සිං</option>
-        </select>
+        
+        <!-- Accessibility Controls -->
         <button aria-label="Toggle reduced motion" aria-pressed="false" class="header-control" id="reduce-motion-btn" title="Reduced Motion">
           <ion-icon name="film-outline"></ion-icon>
         </button>
@@ -121,10 +118,10 @@
           <label data-i18n="subject">Subject</label>
           <select class="input-field" id="filter-subject">
             <option value="" data-i18n="allSubjects">All Subjects</option>
-            <option value="chemistry">Chemistry</option>
-            <option value="physics">Physics</option>
-            <option value="biology">Biology</option>
-            <option value="mathematics">Mathematics</option>
+            <option value="physics" data-i18n="physics">Physics - භෞතික විද්‍යාව</option>
+            <option value="chemistry" data-i18n="chemistry">Chemistry - රසායන විද්‍යාව</option>
+            <option value="biology" data-i18n="biology">Biology - ජීව විද්‍යාව</option>
+            <option value="mathematics" data-i18n="mathematics">Combined Mathematics - සංයුක්ත ගණිතය</option>
           </select>
         </div>
       </div>
@@ -195,33 +192,32 @@
     <!-- TAB 2: Generator Section (Flashcards) -->
     <section id="view-generator" class="app-view active-view" role="tabpanel" aria-labelledby="tab-generator">
       <div class="view-header">
-        <h2 class="view-title" id="title-generator"><ion-icon aria-hidden="true" name="albums-outline"></ion-icon> Flashcard Generator</h2>
+        <h2 class="view-title" id="title-generator"><ion-icon aria-hidden="true" name="albums-outline"></ion-icon> <span data-i18n="flashcardGenerator">Flashcard Generator</span></h2>
       </div>
       <div class="generator-panel glass-surface">
         <div class="input-group">
-          <label class="input-label" for="fc-subject">Subject</label>
-          <select class="input-field" id="fc-subject">
-            <option value="Chemistry">Chemistry</option>
-            <option value="Physics">Physics</option>
-            <option value="Biology">Biology</option>
-            <option value="Mathematics">Mathematics</option>
-            <option value="Computer Science">Computer Science</option>
+          <label class="input-label" for="fc-subject" data-i18n="subject">Subject</label>
+          <select class="input-field" id="fc-subject" data-i18n-subjects>
+            <option value="physics" data-i18n="physics">Physics - භෞතික විද්‍යාව</option>
+            <option value="chemistry" data-i18n="chemistry">Chemistry - රසායන විද්‍යාව</option>
+            <option value="biology" data-i18n="biology">Biology - ජීව විද්‍යාව</option>
+            <option value="mathematics" data-i18n="mathematics">Combined Mathematics - සංයුක්ත ගණිතය</option>
           </select>
         </div>
         <div class="input-group">
-          <label class="input-label" for="fc-topic">Topic</label>
-          <input class="input-field" id="fc-topic" type="text" placeholder="e.g., S-block elements, Newton's Laws" />
+          <label class="input-label" for="fc-topic" data-i18n="topic">Topic</label>
+          <input class="input-field" id="fc-topic" type="text" placeholder="e.g., S-block elements" />
         </div>
         <div class="input-group">
-          <label class="input-label" for="fc-count">Number of Cards</label>
+          <label class="input-label" for="fc-count" data-i18n="cardCount">Number of Cards</label>
           <select class="input-field" id="fc-count">
-            <option value="5">5 Cards</option>
-            <option value="10">10 Cards</option>
-            <option value="15">15 Cards</option>
-            <option value="20">20 Cards</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
           </select>
         </div>
-        <button class="btn-primary btn-full" id="btn-generate"><ion-icon aria-hidden="true" name="sparkles-outline"></ion-icon> Generate with AI</button>
+        <button class="btn-primary btn-full" id="btn-generate"><ion-icon aria-hidden="true" name="sparkles-outline"></ion-icon> <span data-i18n="generateAI">Generate with AI</span></button>
         <div class="error-message" id="generator-error" role="alert"></div>
       </div>
       <div id="cards-grid" class="flashcards-grid"></div>
@@ -231,23 +227,23 @@
     <section id="view-chat" class="app-view" role="tabpanel" aria-labelledby="tab-chat">
       <div class="chat-panel glass-surface">
         <div class="chat-top">
-          <h2 class="view-title" id="title-chat"><ion-icon aria-hidden="true" name="chatbubble-ellipses-outline"></ion-icon> AI Study Assistant</h2>
-          <select class="input-field" id="chat-subject" aria-label="Select subject for chat">
-            <option value="General">General</option>
-            <option value="Mathematics">Mathematics</option>
-            <option value="Physics">Physics</option>
-            <option value="Chemistry">Chemistry</option>
-            <option value="Biology">Biology</option>
+          <h2 class="view-title" id="title-chat"><ion-icon aria-hidden="true" name="chatbubble-ellipses-outline"></ion-icon> <span data-i18n="aiAssistant">AI Study Assistant</span></h2>
+          <select class="input-field" id="chat-subject" aria-label="Select subject for chat" data-i18n-subjects>
+            <option value="general" data-i18n="general">General</option>
+            <option value="physics" data-i18n="physics">Physics - භෞතික විද්‍යාව</option>
+            <option value="chemistry" data-i18n="chemistry">Chemistry - රසායන විද්‍යාව</option>
+            <option value="biology" data-i18n="biology">Biology - ජීව විද්‍යාව</option>
+            <option value="mathematics" data-i18n="mathematics">Combined Mathematics - සංයුක්ත ගණිතය</option>
           </select>
         </div>
         <div id="chat-messages" class="chat-messages">
           <div class="chat-msg bot-msg">
             <div class="msg-avatar" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></div>
-            <div class="msg-bubble">Hello! I'm your AI study assistant. Ask me anything about your subjects!</div>
+            <div class="msg-bubble" data-i18n="chatGreeting">Hello! I'm your AI study assistant. Ask me anything about your subjects!</div>
           </div>
         </div>
         <div class="chat-bottom">
-          <textarea id="chat-input" class="chat-textarea" rows="2" placeholder="Ask a question or describe a problem..."></textarea>
+          <textarea id="chat-input" class="chat-textarea" rows="2" placeholder="Ask a question..." data-i18n-placeholder="askQuestion"></textarea>
           <button id="btn-send" class="btn-send-chat" aria-label="Send">
             <ion-icon name="send-outline"></ion-icon>
           </button>
@@ -265,23 +261,23 @@
           </svg>
           <div class="timer-center">
             <div id="timer-text" class="timer-text">25:00</div>
-            <div class="timer-status">Focus Session</div>
+            <div class="timer-status" data-i18n="focusSession">Focus Session</div>
           </div>
         </div>
         <div class="timer-buttons">
           <button id="btn-timer-start" class="btn-timer">
-            <span id="timer-btn-icon"><ion-icon name="play-outline"></ion-icon></span> <span id="timer-btn-text">Start</span>
+            <span id="timer-btn-icon"><ion-icon name="play-outline"></ion-icon></span> <span id="timer-btn-text" data-i18n="start">Start</span>
           </button>
-          <button id="btn-timer-reset" class="btn-timer btn-secondary"><ion-icon aria-hidden="true" name="refresh-outline"></ion-icon> Reset</button>
+          <button id="btn-timer-reset" class="btn-timer btn-secondary"><ion-icon aria-hidden="true" name="refresh-outline"></ion-icon> <span data-i18n="reset">Reset</span></button>
         </div>
         <div class="timer-details">
           <div class="timer-detail-item">
             <div id="timer-round" class="detail-value">1</div>
-            <div class="detail-label">Current Round</div>
+            <div class="detail-label" data-i18n="currentRound">Current Round</div>
           </div>
           <div class="timer-detail-item">
             <div id="timer-completed" class="detail-value">0</div>
-            <div class="detail-label">Sessions Done</div>
+            <div class="detail-label" data-i18n="sessionsDone">Sessions Done</div>
           </div>
         </div>
       </div>
@@ -290,28 +286,28 @@
     <!-- TAB 5: Stats Section -->
     <section id="view-stats" class="app-view" role="tabpanel" aria-labelledby="tab-stats">
       <div class="view-header">
-        <h2 class="view-title" id="title-stats"><ion-icon aria-hidden="true" name="stats-chart-outline"></ion-icon> Your Progress</h2>
+        <h2 class="view-title" id="title-stats"><ion-icon aria-hidden="true" name="stats-chart-outline"></ion-icon> <span data-i18n="progress">Your Progress</span></h2>
       </div>
       <div class="stats-container">
         <div class="stat-box glass-surface">
           <div class="stat-emoji" aria-hidden="true"><ion-icon name="checkmark-done-circle-outline"></ion-icon></div>
           <div id="stat-tasks" class="stat-num">0</div>
-          <div class="stat-desc">Tasks Completed</div>
+          <div class="stat-desc" data-i18n="tasksCompleted">Tasks Completed</div>
         </div>
         <div class="stat-box glass-surface">
           <div class="stat-emoji" aria-hidden="true"><ion-icon name="layers-outline"></ion-icon></div>
           <div id="stat-cards" class="stat-num">0</div>
-          <div class="stat-desc">Cards Learned</div>
+          <div class="stat-desc" data-i18n="cardsLearned">Cards Learned</div>
         </div>
         <div class="stat-box glass-surface">
           <div class="stat-emoji" aria-hidden="true"><ion-icon name="stopwatch-outline"></ion-icon></div>
           <div id="stat-hours" class="stat-num">0h</div>
-          <div class="stat-desc">Study Time</div>
+          <div class="stat-desc" data-i18n="studyTime">Study Time</div>
         </div>
         <div class="stat-box glass-surface">
           <div class="stat-emoji" aria-hidden="true"><ion-icon name="flame-outline"></ion-icon></div>
           <div id="stat-streak" class="stat-num">0</div>
-          <div class="stat-desc">Day Streak</div>
+          <div class="stat-desc" data-i18n="dayStreak">Day Streak</div>
         </div>
       </div>
     </section>
@@ -321,27 +317,27 @@
   <nav class="bottom-dock glass-surface" role="tablist" aria-label="Main navigation">
     <button id="tab-tasks" class="dock-btn" role="tab" aria-controls="view-tasks" aria-label="Tasks" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="create-outline"></ion-icon></span>
-      <span class="dock-name">Tasks</span>
+      <span class="dock-name" data-i18n="tasks">Tasks</span>
       <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-generator" class="dock-btn active" role="tab" aria-controls="view-generator" aria-label="Generator" aria-selected="true">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></span>
-      <span class="dock-name">Generator</span>
+      <span class="dock-name" data-i18n="generator">Generator</span>
       <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-chat" class="dock-btn" role="tab" aria-controls="view-chat" aria-label="Chat" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="chatbubble-ellipses-outline"></ion-icon></span>
-      <span class="dock-name">Chat</span>
+      <span class="dock-name" data-i18n="chat">Chat</span>
       <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-timer" class="dock-btn" role="tab" aria-controls="view-timer" aria-label="Timer" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="timer-outline"></ion-icon></span>
-      <span class="dock-name">Timer</span>
+      <span class="dock-name" data-i18n="timer">Timer</span>
       <span class="indicator" aria-hidden="true"></span>
     </button>
     <button id="tab-stats" class="dock-btn" role="tab" aria-controls="view-stats" aria-label="Stats" aria-selected="false">
       <span class="dock-emoji" aria-hidden="true"><ion-icon name="stats-chart-outline"></ion-icon></span>
-      <span class="dock-name">Stats</span>
+      <span class="dock-name" data-i18n="stats">Stats</span>
       <span class="indicator" aria-hidden="true"></span>
     </button>
   </nav>
