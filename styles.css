@@ -79,12 +79,21 @@
 
 html, body {
   height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   background: var(--bg-base);
   color: var(--text-primary);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   -webkit-text-size-adjust: 100%;
   position: relative;
   overflow-x: hidden;
+}
+
+main.app-main {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
 }
 
 /* Animated Gradient Background - iOS 26 Style */
@@ -161,23 +170,45 @@ body.light-theme::after {
   }
 }
 
-/* Theme Classes */
+/* Theme Classes - PREVENT BLEEDING AND FLICKERING */
 body.light-theme {
-  --bg-base: var(--bg-base-light);
-  --text-primary: var(--text-primary-dark);
-  --text-secondary: var(--text-secondary-dark);
-  --text-tertiary: var(--text-tertiary-dark);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(0, 0, 0, 0.1);
+  --bg-base: var(--bg-base-light) !important;
+  --text-primary: var(--text-primary-dark) !important;
+  --text-secondary: var(--text-secondary-dark) !important;
+  --text-tertiary: var(--text-tertiary-dark) !important;
+  --glass-bg: rgba(255, 255, 255, 0.7) !important;
+  --glass-border: rgba(0, 0, 0, 0.1) !important;
+  background: #f5f5f5 !important;
+  color: #000000 !important;
+}
+
+body.light-theme .glass-surface {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #000000 !important;
+}
+
+body.light-theme ion-icon {
+  color: #000000 !important;
 }
 
 body.dark-theme {
-  --bg-base: #0f0f0f;
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.85);
-  --text-tertiary: rgba(255, 255, 255, 0.65);
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
+  --bg-base: #0f0f0f !important;
+  --text-primary: #ffffff !important;
+  --text-secondary: rgba(255, 255, 255, 0.85) !important;
+  --text-tertiary: rgba(255, 255, 255, 0.65) !important;
+  --glass-bg: rgba(255, 255, 255, 0.1) !important;
+  --glass-border: rgba(255, 255, 255, 0.2) !important;
+  background: #0f0f0f !important;
+  color: #ffffff !important;
+}
+
+body.dark-theme .glass-surface {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+body.dark-theme ion-icon {
+  color: #ffffff !important;
 }
 
 /* ================================================
@@ -1252,22 +1283,47 @@ body.reduce-motion {
   color: var(--text-tertiary);
 }
 
-/* App View Management - Smooth Transitions (iOS 26 Style) */
+/* App View Management - EMERGENCY FIX: Force Only ONE Visible */
 .app-view {
-  display: none;
-  opacity: 0;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  position: relative;
+  width: 100%;
   transform: translateY(20px) scale(0.98);
   transition: opacity 0.4s var(--ease-decelerate), 
-              transform 0.4s var(--ease-decelerate);
+              transform 0.4s var(--ease-decelerate),
+              visibility 0s 0.4s;
   will-change: opacity, transform;
 }
 
-.app-view.active-view,
-.app-view[aria-hidden="false"] {
-  display: block;
-  opacity: 1;
+.app-view.active-view {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
   transform: translateY(0) scale(1);
+  transition: opacity 0.4s var(--ease-decelerate), 
+              transform 0.4s var(--ease-decelerate),
+              visibility 0s;
   animation: fadeInSlide 0.4s var(--ease-decelerate);
+}
+
+/* Initial state: Only Generator view visible on load */
+#view-generator {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Override: If generator has active-view class, ensure it's visible */
+#view-generator.active-view {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 @keyframes fadeInSlide {
@@ -1292,9 +1348,19 @@ body.reduce-motion {
   }
 }
 
-/* Ensure only one view is visible */
-.app-view:not(.active-view):not([aria-hidden="false"]) {
+/* CRITICAL: Ensure only one view is visible - FORCE HIDE OTHERS */
+.app-view:not(.active-view) {
   display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.app-view[aria-hidden="true"]:not(.active-view) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* ARIA state helpers for focus within */

@@ -132,112 +132,127 @@
     }
   }
 
-  // Tab Management with Proper Active States
+  // Tab Management - STABLE: Only ONE Tab Visible at a Time
   function initTabs() {
     const tabs = qsa('[role="tab"]');
     const panels = qsa('[role="tabpanel"]');
-    let currentTab = null;
     let isTransitioning = false;
 
-    const selectTab = (tabId, tabElement) => {
+    // STABLE TAB SWITCHING - ONE ACTIVE AT A TIME
+    const switchTab = (tabName) => {
       if (isTransitioning) return;
       isTransitioning = true;
 
-      // Update all tabs
-      tabs.forEach(t => {
-        const controls = t.getAttribute('aria-controls');
-        const isSelected = controls === tabId;
-        
-        t.setAttribute('aria-selected', String(isSelected));
-        t.tabIndex = isSelected ? 0 : -1;
-        
-        // Update active class on dock buttons
-        if (isSelected) {
-          t.classList.add('active');
-          currentTab = t;
-        } else {
-          t.classList.remove('active');
-        }
+      // Step 1: Hide ALL views - FORCE HIDE
+      panels.forEach(view => {
+        view.classList.remove('active-view');
+        view.style.display = 'none';
+        view.setAttribute('aria-hidden', 'true');
+        view.hidden = true;
       });
 
-      // Update all panels - ENSURE ONLY ONE IS VISIBLE
-      panels.forEach(p => {
-        const show = p.id === tabId;
-        
-        if (show) {
-          // Show this panel
-          p.hidden = false;
-          p.setAttribute('aria-hidden', 'false');
-          p.classList.add('active-view');
-          const tabName = tabElement?.getAttribute('aria-label') || 'tab';
-          announce(`${tabName} tab selected`);
-        } else {
-          // Hide all other panels
-          p.hidden = true;
-          p.setAttribute('aria-hidden', 'true');
-          p.classList.remove('active-view');
-        }
-      });
-
-      // Double-check only one panel is visible
-      const visiblePanels = panels.filter(p => !p.hidden && p.classList.contains('active-view'));
-      if (visiblePanels.length > 1) {
-        console.warn('Multiple panels visible, fixing...');
-        visiblePanels.forEach((p, idx) => {
-          if (idx > 0) {
-            p.hidden = true;
-            p.setAttribute('aria-hidden', 'true');
-            p.classList.remove('active-view');
-          }
-        });
+      // Step 2: Show ONLY selected view
+      const targetView = document.getElementById(`view-${tabName}`);
+      if (targetView) {
+        targetView.classList.add('active-view');
+        targetView.style.display = 'block';
+        targetView.setAttribute('aria-hidden', 'false');
+        targetView.hidden = false;
       }
 
+      // Step 3: Update dock buttons
+      tabs.forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+        btn.tabIndex = -1;
+      });
+
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.setAttribute('aria-selected', 'true');
+        activeBtn.tabIndex = 0;
+      }
+
+      // Announce to screen reader
+      announce(`Switched to ${tabName} tab`);
+
+      // Final verification - force hide any stray visible panels
       setTimeout(() => {
+        panels.forEach(p => {
+          if (p.id !== `view-${tabName}` && !p.classList.contains('active-view')) {
+            p.style.display = 'none';
+            p.hidden = true;
+            p.setAttribute('aria-hidden', 'true');
+          }
+        });
         isTransitioning = false;
-      }, 300);
+      }, 100);
     };
 
-    // Attach click handlers
+    const selectTab = (tabId, tabElement) => {
+      // Extract tab name from ID (view-generator -> generator)
+      const tabName = tabId.replace('view-', '');
+      switchTab(tabName);
+    };
+
+    // ATTACH TAB LISTENERS - ONCE ONLY (prevent duplicates)
     tabs.forEach(t => {
-      t.addEventListener('click', (e) => {
+      // Remove any existing listeners by cloning
+      const newTab = t.cloneNode(true);
+      t.parentNode.replaceChild(newTab, t);
+      
+      newTab.addEventListener('click', (e) => {
         e.preventDefault();
-        const tabId = t.getAttribute('aria-controls');
-        selectTab(tabId, t);
+        e.stopPropagation();
+        const tabId = newTab.getAttribute('aria-controls');
+        if (tabId) {
+          // Map aria-controls to view ID correctly
+          const tabName = tabId.replace('view-', '');
+          switchTab(tabName);
+        } else {
+          // Fallback: extract from button ID (tab-tasks -> tasks)
+          const btnId = newTab.id;
+          if (btnId) {
+            const tabName = btnId.replace('tab-', '');
+            switchTab(tabName);
+          }
+        }
       });
 
       // Keyboard navigation
-      t.addEventListener('keydown', (e) => {
-        const i = tabs.indexOf(t);
+      newTab.addEventListener('keydown', (e) => {
+        const allTabs = qsa('[role="tab"]');
+        const i = allTabs.indexOf(newTab);
         let nextTab = null;
 
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault();
-          nextTab = tabs[(i + 1) % tabs.length];
+          nextTab = allTabs[(i + 1) % allTabs.length];
         } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
           e.preventDefault();
-          nextTab = tabs[(i - 1 + tabs.length) % tabs.length];
+          nextTab = allTabs[(i - 1 + allTabs.length) % allTabs.length];
         } else if (e.key === 'Home') {
           e.preventDefault();
-          nextTab = tabs[0];
+          nextTab = allTabs[0];
         } else if (e.key === 'End') {
           e.preventDefault();
-          nextTab = tabs[tabs.length - 1];
+          nextTab = allTabs[allTabs.length - 1];
         }
 
         if (nextTab) {
           nextTab.focus();
           const tabId = nextTab.getAttribute('aria-controls');
-          selectTab(tabId, nextTab);
+          if (tabId) {
+            const tabName = tabId.replace('view-', '');
+            switchTab(tabName);
+          }
         }
       });
     });
 
-    // Initialize with first active tab
-    const active = tabs.find(t => t.classList.contains('active') || t.getAttribute('aria-selected') === 'true') || tabs[0];
-    if (active) {
-      const tabId = active.getAttribute('aria-controls');
-      selectTab(tabId, active);
-    }
+    // Initialize: Start with Generator tab visible (CRITICAL)
+    switchTab('generator');
   }
 
   // Modal with Focus Trapping
@@ -424,21 +439,54 @@
       });
     }
 
-    // Theme toggle
-    themeBtn?.addEventListener('click', () => {
+    // STABLE THEME MANAGEMENT - NO LOOPS
+    let isTogglingTheme = false;
+    
+    const toggleTheme = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      if (isTogglingTheme) return; // Prevent rapid re-triggering
+      
+      isTogglingTheme = true;
+      
       const isDark = root.classList.contains('dark-theme');
-      root.classList.toggle('dark-theme');
-      root.classList.toggle('light-theme');
       
-      const newTheme = isDark ? 'light' : 'dark';
-      localStorage.setItem('app-theme', newTheme);
+      if (isDark) {
+        root.classList.remove('dark-theme');
+        root.classList.add('light-theme');
+        localStorage.setItem('app-theme', 'light');
+      } else {
+        root.classList.remove('light-theme');
+        root.classList.add('dark-theme');
+        localStorage.setItem('app-theme', 'dark');
+      }
       
-      // Sync icon immediately
+      // Update icon
       syncThemeIcon();
       
-      // Announce with proper theme name
+      // Announce to screen reader
       announce(`Theme changed to ${isDark ? 'Light' : 'Dark'} mode`);
-    });
+      
+      // Reset flag after a brief delay
+      setTimeout(() => {
+        isTogglingTheme = false;
+      }, 300);
+    };
+
+    // Remove any existing listeners and attach fresh one
+    if (themeBtn) {
+      const newBtn = themeBtn.cloneNode(true);
+      themeBtn.parentNode.replaceChild(newBtn, themeBtn);
+      
+      // Update reference
+      const freshThemeBtn = qs('#theme-btn');
+      if (freshThemeBtn) {
+        freshThemeBtn.addEventListener('click', toggleTheme);
+      }
+    }
 
     // Motion toggle
     motionBtn?.addEventListener('click', () => {
@@ -1009,36 +1057,66 @@
     }, 200);
   }
 
-  // Initialize everything - ENHANCED with icon priority
+  // Initialize everything - STABLE VERSION (No Duplicates)
   function init() {
+    // Prevent duplicate initialization
+    if (window.appInitialized) {
+      console.warn('App already initialized, skipping duplicate call');
+      return;
+    }
+    window.appInitialized = true;
+    
     ensureLive();
     
-    // Load Ionicons IMMEDIATELY and wait for them
+    // Load Ionicons IMMEDIATELY
     ensureIonicons();
     
-    // Initialize core functionality first
-    initTabs();
+    // Initialize core functionality first (CRITICAL ORDER)
+    initTabs(); // MUST be first - sets initial tab state
+    initA11yToggles(); // Theme must be set early
     initModal();
-    initA11yToggles();
     initGenerator();
     initChat();
     initTasks();
     initTimer();
     initStats();
     
-    // Then ensure icons render properly
+    // Force generator view visible after initialization
+    setTimeout(() => {
+      const allViews = qsa('.app-view');
+      const generatorView = qs('#view-generator');
+      
+      // Hide ALL views first
+      allViews.forEach(v => {
+        if (v.id !== 'view-generator') {
+          v.classList.remove('active-view');
+          v.style.display = 'none';
+          v.setAttribute('aria-hidden', 'true');
+          v.hidden = true;
+        }
+      });
+      
+      // Show ONLY generator
+      if (generatorView) {
+        generatorView.classList.add('active-view');
+        generatorView.style.display = 'block';
+        generatorView.setAttribute('aria-hidden', 'false');
+        generatorView.hidden = false;
+      }
+    }, 100);
+    
+    // Ensure icons render properly
     waitForIonicons(() => {
       replaceIcons();
       forceRenderIcons();
       
-      // Final check after a short delay
       setTimeout(() => {
         forceRenderIcons();
         announce('Application ready');
       }, 500);
     }, 150);
     
-    // Also try rendering icons after page fully loads
+    // Final icon check after page fully loads
     if (document.readyState === 'complete') {
       setTimeout(() => {
         waitForIonicons(() => {
@@ -1081,13 +1159,59 @@
     return allGood;
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      init();
-      setTimeout(verifyApp, 1000);
-    });
-  } else {
+  // Initialize ONCE - prevent duplicates (CRITICAL SAFEGUARD)
+  if (window.appInitialized) {
+    console.warn('⚠️ Script already initialized - preventing duplicate');
+    return;
+  }
+
+  // Single initialization wrapper
+  const initializeApp = () => {
+    if (window.appInitialized) {
+      console.warn('⚠️ Duplicate initialization prevented');
+      return;
+    }
+    
     init();
     setTimeout(verifyApp, 1000);
+    
+    // Final safeguard: Force ONLY generator visible
+    setTimeout(() => {
+      const allViews = qsa('.app-view');
+      allViews.forEach(v => {
+        if (v.id !== 'view-generator') {
+          v.style.display = 'none';
+          v.classList.remove('active-view');
+          v.setAttribute('aria-hidden', 'true');
+          v.hidden = true;
+        }
+      });
+      
+      const genView = qs('#view-generator');
+      if (genView) {
+        genView.style.display = 'block';
+        genView.classList.add('active-view');
+        genView.setAttribute('aria-hidden', 'false');
+        genView.hidden = false;
+      }
+      
+      // Update dock button
+      const genBtn = qs('#tab-generator');
+      if (genBtn) {
+        qsa('.dock-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        genBtn.classList.add('active');
+        genBtn.setAttribute('aria-selected', 'true');
+      }
+    }, 200);
+  };
+
+  // Execute initialization
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp, { once: true });
+  } else {
+    initializeApp();
   }
 })();
