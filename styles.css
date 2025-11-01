@@ -6,39 +6,43 @@
 ================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* CSS Custom Properties - iOS 26 / HyperOS 3 Standards */
+/* CSS Custom Properties - Premium Light UI System */
 :root {
-  /* Semantic Color Tokens */
-  --color-primary: #667eea;
-  --color-secondary: #764ba2;
+  /* Premium Color System - Light Theme */
+  --color-primary: #6366f1; /* Indigo Blue */
+  --color-secondary: #7e3ff2; /* Vivid Purple */
+  --color-accent-gold: #ffd740;
+  --color-accent-rose: #f87171;
+  --color-accent-mint: #00e676;
   --color-success: #10b981;
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-info: #3b82f6;
   
-  /* Glassmorphism - iOS 26 Premium */
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-blur: blur(20px) saturate(180%);
-  --glass-blur-webkit: blur(20px) saturate(180%);
+  /* Premium Glassmorphism - Perfect Light UI */
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.32);
+  --glass-blur: blur(18px) saturate(180%);
+  --glass-blur-webkit: blur(18px) saturate(180%);
   
-  /* Depth System - Multi-layer shadows */
-  --shadow-ambient: 0 2px 8px rgba(0, 0, 0, 0.12);
-  --shadow-direct: 0 4px 16px rgba(0, 0, 0, 0.1);
-  --shadow-specular: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+  /* Premium Depth System - Multi-layer shadows */
+  --shadow-ambient: 0 2.5px 8px rgba(60, 80, 170, 0.06);
+  --shadow-direct: 0 1.8px 3.5px rgba(60, 80, 170, 0.10);
+  --shadow-glass: 0 10px 32px rgba(60, 80, 170, 0.10);
+  --shadow-focus: 0 0 0 3px rgba(165, 180, 252, 0.27);
   
-  /* Text Colors - WCAG AA Compliant */
-  --text-primary: #ffffff;
-  --text-primary-dark: #0b1220;
-  --text-secondary: rgba(255, 255, 255, 0.85);
-  --text-secondary-dark: rgba(11, 18, 32, 0.85);
-  --text-tertiary: rgba(255, 255, 255, 0.65);
-  --text-tertiary-dark: rgba(11, 18, 32, 0.65);
+  /* Text Colors - Premium Light UI (WCAG AA Compliant) */
+  --text-primary: #161725; /* Dark text on light */
+  --text-primary-dark: #ffffff; /* White text on dark */
+  --text-secondary: rgba(22, 23, 37, 0.85);
+  --text-secondary-dark: rgba(255, 255, 255, 0.85);
+  --text-tertiary: rgba(22, 23, 37, 0.65);
+  --text-tertiary-dark: rgba(255, 255, 255, 0.65);
+  --text-muted: #adb3bd;
   
-  /* Background */
-  --bg-base: #0f0f0f;
-  --bg-base-light: #f7f8fc;
+  /* Premium Background - Soft tinted base */
+  --bg-base: #f5f6fa; /* Slightly blue-tinted white */
+  --bg-base-light: #f9fafc; /* Warmer white */
   
   /* Spacing */
   --space-xs: 0.25rem;
@@ -53,13 +57,13 @@
   --dock-safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-height: 72px;
   
-  /* Motion - iOS Standard Easing */
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Premium Motion - Perfect Timing */
+  --ease-standard: cubic-bezier(0.42, 0, 0.58, 1);
   --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
   --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
   --transition-fast: 150ms var(--ease-standard);
-  --transition-med: 300ms var(--ease-standard);
-  --transition-slow: 500ms var(--ease-decelerate);
+  --transition-med: 180ms var(--ease-standard);
+  --transition-slow: 300ms var(--ease-decelerate);
   
   /* Border Radius - Squircle Design (iOS 26 Standard) */
   --radius-sm: 16px;
@@ -141,21 +145,25 @@ body::after {
   -webkit-backdrop-filter: blur(20px);
 }
 
-/* Light theme gradient */
+/* Premium Light Theme - Subtle Dynamic Gradients */
 body.light-theme::before {
   background: linear-gradient(
     135deg,
-    #f7f8fc 0%,
-    #e0e7ff 25%,
-    #ddd6fe 50%,
-    #e0f2fe 75%,
-    #f7f8fc 100%
+    #f5f6fa 0%,
+    #f0f4ff 20%,
+    #fef3f2 40%,
+    #fff7ed 60%,
+    #f0fdf4 80%,
+    #f5f6fa 100%
   );
-  opacity: 1;
+  opacity: 0.9;
+  animation: gradientShift 20s ease infinite;
 }
 
 body.light-theme::after {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 /* System Theme Detection */
@@ -170,25 +178,56 @@ body.light-theme::after {
   }
 }
 
-/* Theme Classes - PREVENT BLEEDING AND FLICKERING */
+/* Premium Light Theme - Perfect Color System */
 body.light-theme {
-  --bg-base: var(--bg-base-light) !important;
-  --text-primary: var(--text-primary-dark) !important;
-  --text-secondary: var(--text-secondary-dark) !important;
-  --text-tertiary: var(--text-tertiary-dark) !important;
-  --glass-bg: rgba(255, 255, 255, 0.7) !important;
-  --glass-border: rgba(0, 0, 0, 0.1) !important;
-  background: #f5f5f5 !important;
-  color: #000000 !important;
+  --bg-base: #f5f6fa !important;
+  --text-primary: #161725 !important;
+  --text-secondary: rgba(22, 23, 37, 0.85) !important;
+  --text-tertiary: rgba(22, 23, 37, 0.65) !important;
+  --glass-bg: rgba(255, 255, 255, 0.68) !important;
+  --glass-border: rgba(255, 255, 255, 0.32) !important;
+  --shadow-glass: 0 10px 32px rgba(60, 80, 170, 0.10) !important;
+  background: #f5f6fa !important;
+  color: #161725 !important;
 }
 
 body.light-theme .glass-surface {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #000000 !important;
+  background: rgba(255, 255, 255, 0.68) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  box-shadow: 0 10px 32px rgba(60, 80, 170, 0.10) !important;
+  color: #161725 !important;
 }
 
 body.light-theme ion-icon {
-  color: #000000 !important;
+  color: #161725 !important;
+}
+
+body.light-theme .btn-primary {
+  background: linear-gradient(135deg, #6366f1, #7e3ff2) !important;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3) !important;
+}
+
+body.light-theme .btn-primary:active {
+  background: linear-gradient(135deg, #4f46e5, #6d28d9) !important;
+  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.27) !important;
+  transform: scale(0.98) translateZ(0);
+}
+
+body.light-theme .btn-primary:focus-visible {
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px;
+  box-shadow: 
+    0 0 0 3px rgba(165, 180, 252, 0.27),
+    0 4px 16px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Premium Active States */
+body.light-theme button:active:not(:disabled),
+body.light-theme .btn:active:not(:disabled) {
+  background: #eef2ff !important;
+  transform: scale(0.98) translateZ(0);
 }
 
 body.dark-theme {
@@ -452,7 +491,7 @@ ion-icon svg {
   width: 100%;
 }
 
-/* Glass surface utility - iOS 26 Premium Glassmorphism - ENHANCED */
+/* Premium Glass Surface - Perfect Light UI Glassmorphism */
 .glass-surface,
 .generator-panel,
 .chat-panel,
@@ -465,34 +504,24 @@ ion-icon svg {
 .layout-switcher,
 .filters-panel,
 .calendar-container,
-.calendar-sidebar {
-  /* CRITICAL: backdrop-filter for frosted glass effect */
-  backdrop-filter: blur(40px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+.calendar-sidebar,
+.tasks-filter-bar,
+.tasks-search {
+  /* Premium glassmorphism with backdrop-filter */
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
   
-  /* Background with proper opacity - multi-layer gradient */
-  background: 
-    linear-gradient(135deg, 
-      rgba(255, 255, 255, 0.15) 0%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(255, 255, 255, 0.05) 100%
-    ) !important;
+  /* Perfect light UI background */
+  background: rgba(255, 255, 255, 0.68) !important;
   
-  /* Fallback for browsers without backdrop-filter */
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  /* Premium border */
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
   
-  /* Border with proper contrast */
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  /* Premium shadow system */
+  box-shadow: 0 10px 32px rgba(60, 80, 170, 0.10) !important;
   
-  /* Multi-layer depth system - enhanced shadows */
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.05) !important;
-  
-  /* Squircle border radius - larger for iOS feel */
-  border-radius: var(--radius-lg) !important;
+  /* Premium border radius */
+  border-radius: 24px !important;
   
   position: relative;
   overflow: hidden;
@@ -501,11 +530,20 @@ ion-icon svg {
   will-change: transform, opacity;
   transform: translateZ(0);
   
-  /* Smooth transitions */
-  transition: all var(--transition-med);
+  /* Perfect transitions */
+  transition: all 180ms cubic-bezier(0.42, 0, 0.58, 1);
   
   /* Ensure proper stacking context */
   isolation: isolate;
+}
+
+/* Dark theme glass override */
+body.dark-theme .glass-surface {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Stat boxes with enhanced glass */
@@ -628,12 +666,13 @@ button,
   transition: all var(--transition-med);
 }
 
-/* Hover lift effect */
+/* Premium Hover Lift - Subtle & Smooth */
 .button:hover, 
 button:hover, 
 .btn:hover:not(:disabled), 
 .dock-btn:hover:not(:disabled) {
-  transform: translateY(-2px) translateZ(0);
+  transform: translateY(-1px) translateZ(0);
+  transition: transform 180ms cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 /* Active press scale */
@@ -645,7 +684,7 @@ button:active,
   transition: transform 100ms var(--ease-accelerate);
 }
 
-/* Focus indicators - WCAG AA Compliant - ENHANCED */
+/* Premium Focus Indicators - WCAG AA Compliant */
 .button:focus-visible, 
 button:focus-visible, 
 .btn:focus-visible, 
@@ -659,27 +698,28 @@ textarea:focus-visible,
 .label-btn:focus-visible,
 .task-action-btn:focus-visible,
 .font-btn:focus-visible,
-.header-control:focus-visible {
-  outline: 3px solid var(--color-primary) !important;
-  outline-offset: 3px !important;
-  border-radius: var(--radius-sm) !important;
-  box-shadow: 
-    0 0 0 4px rgba(102, 126, 234, 0.3) !important,
-    0 0 0 8px rgba(102, 126, 234, 0.1) !important;
+.header-control:focus-visible,
+.group-toggle:focus-visible,
+.btn-icon:focus-visible,
+.filter-option-btn:focus-visible {
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.27) !important;
   z-index: 10;
   position: relative;
 }
 
-/* Focus glow effect - Enhanced */
+/* Premium Input Focus - Perfect Light UI */
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 
-    0 0 0 4px rgba(102, 126, 234, 0.2),
-    0 8px 24px rgba(102, 126, 234, 0.3);
-  border-color: var(--color-primary);
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.27) !important;
   transform: translateZ(0);
-  transition: all var(--transition-med);
+  transition: all 180ms cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 /* Dock active indicator (pop-in) */
@@ -2386,16 +2426,498 @@ body.light-theme ion-icon {
   color: #000000 !important;
 }
 
+/* ================================================
+   ENHANCED TASKS SECTION - Premium Styles
+   ================================================ */
+
+/* Task Filter Bar */
+.tasks-filter-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tasks-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tasks-filter-bar .filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 180ms cubic-bezier(0.42, 0, 0.58, 1);
+  min-height: 44px;
+}
+
+body.light-theme .tasks-filter-bar .filter-btn {
+  background: rgba(99, 102, 241, 0.08);
+  color: rgba(22, 23, 37, 0.7);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.tasks-filter-bar .filter-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+body.light-theme .tasks-filter-bar .filter-btn:hover {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.tasks-filter-bar .filter-btn.active {
+  background: linear-gradient(135deg, #6366f1, #7e3ff2);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.tasks-filter-bar .filter-btn ion-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Task Search */
+.tasks-search {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.tasks-search input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all 180ms;
+}
+
+body.light-theme .tasks-search input {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #161725;
+}
+
+.tasks-search input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.tasks-search input:focus {
+  outline: 2px solid #6366f1;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.27);
+}
+
+body.light-theme .tasks-search input:focus {
+  background: white;
+}
+
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 180ms;
+  flex-shrink: 0;
+}
+
+body.light-theme .btn-icon {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #6366f1;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+body.light-theme .btn-icon:hover {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.btn-icon:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.btn-icon ion-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* Task Groups */
+.tasks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.task-group {
+  margin-bottom: 0;
+}
+
+.task-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 180ms;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.light-theme .task-group-header {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.task-group-header:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+body.light-theme .task-group-header:hover {
+  background: white;
+}
+
+.header-icon {
+  font-size: 1.4rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  color: #6366f1;
+}
+
+.group-title {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.group-count {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+body.light-theme .group-count {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.group-toggle {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 180ms;
+  border-radius: 8px;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.group-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.group-toggle ion-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.group-toggle[aria-expanded="false"] {
+  transform: rotate(-90deg);
+}
+
+/* Task Group Content */
+.task-group-content {
+  max-height: 2000px;
+  overflow: hidden;
+  transition: max-height 300ms cubic-bezier(0.42, 0, 0.58, 1);
+  padding-top: 8px;
+}
+
+.task-group[data-collapsed="true"] .task-group-content {
+  max-height: 0;
+  padding-top: 0;
+}
+
+/* Enhanced Task Item */
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  transition: all 180ms;
+}
+
+body.light-theme .task-item {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.task-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(60, 80, 170, 0.08);
+}
+
+body.light-theme .task-item:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(60, 80, 170, 0.12);
+}
+
+.task-item.completed {
+  opacity: 0.7;
+}
+
+.task-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 180ms;
+  position: relative;
+  margin-top: 2px;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.task-checkbox.completed {
+  background: #6366f1;
+  border-color: #6366f1;
+}
+
+.task-checkbox.completed::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.task-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.task-desc {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.task-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+}
+
+.task-meta-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 6px;
+  color: #c7d2fe;
+  font-weight: 500;
+}
+
+body.light-theme .task-meta-tag {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+}
+
+.task-meta-tag.priority-high,
+.task-meta-tag.priority-urgent {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+body.light-theme .task-meta-tag.priority-high,
+body.light-theme .task-meta-tag.priority-urgent {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.task-meta-tag.priority-low {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+body.light-theme .task-meta-tag.priority-low {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.task-meta-tag ion-icon {
+  font-size: 0.875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Task Actions (Sub-Icons) */
+.task-item .task-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.task-action-btn {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 100ms;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+body.light-theme .task-action-btn {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.task-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+body.light-theme .task-action-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.task-action-btn ion-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Filter Option Buttons */
+.filter-option-btn {
+  padding: 6px 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 180ms;
+  font-size: 0.875rem;
+  min-height: 32px;
+}
+
+body.light-theme .filter-option-btn {
+  background: rgba(99, 102, 241, 0.08);
+  color: #161725;
+}
+
+.filter-option-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.light-theme .filter-option-btn:hover {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.filter-option-btn.active {
+  background: #6366f1;
+  color: white;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .task-categories {
-    padding: var(--space-sm);
-    margin: var(--space-sm);
+  .tasks-filter-bar {
+    padding: 8px;
+    gap: 6px;
   }
 
-  .category-btn {
-    padding: var(--space-sm) var(--space-md);
-    font-size: 0.875rem;
+  .tasks-filter-bar .filter-btn {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .tasks-search {
+    padding: 8px;
+  }
+
+  .task-group-header {
+    padding: 10px 12px;
+  }
+
+  .task-item {
+    padding: 12px;
   }
 
   .input-row {

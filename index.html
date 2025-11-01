@@ -59,122 +59,137 @@
   <main class="app-main">
     <div id="aria-live" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"></div>
 
-    <!-- TAB 1: Tasks Section -->
+    <!-- TAB 1: Tasks Section (Enhanced Premium) -->
     <section id="view-tasks" class="app-view" role="tabpanel" aria-labelledby="tab-tasks">
       <div class="view-header">
-        <h2 class="view-title" id="title-tasks"><ion-icon aria-hidden="true" name="create-outline"></ion-icon> My Tasks</h2>
-        <div class="header-actions-tasks">
-          <button class="btn-secondary btn-small" id="btn-filter-tasks" aria-label="Filter tasks">
-            <ion-icon name="filter-outline"></ion-icon>
-          </button>
-          <button class="btn-secondary btn-small" id="btn-sort-tasks" aria-label="Sort tasks">
-            <ion-icon name="swap-vertical-outline"></ion-icon>
-          </button>
-          <button class="btn-primary" id="btn-add-task"><span class="sr-only">Add</span> <ion-icon aria-hidden="true" name="add-outline"></ion-icon> New Task</button>
-        </div>
+        <h2 class="view-title" id="title-tasks">
+          <ion-icon aria-hidden="true" name="list-outline"></ion-icon> 
+          <span data-i18n="tasks">My Tasks</span>
+        </h2>
+        <button class="btn-primary" id="btn-add-task">
+          <ion-icon aria-hidden="true" name="add-outline"></ion-icon> 
+          <span data-i18n="newTask">New Task</span>
+        </button>
       </div>
       
-      <!-- Task Categories -->
-      <div class="task-categories glass-surface">
-        <button class="category-btn active" data-category="today" aria-label="Today tasks">
-          <ion-icon name="today-outline"></ion-icon> Today
+      <!-- Task Filter/Tab Navigation -->
+      <div class="tasks-filter-bar glass-surface">
+        <button class="filter-btn active" data-filter="today" aria-label="Today tasks">
+          <ion-icon name="today-outline"></ion-icon> 
+          <span data-i18n="today">Today</span>
         </button>
-        <button class="category-btn" data-category="upcoming" aria-label="Upcoming tasks">
-          <ion-icon name="calendar-outline"></ion-icon> Upcoming
+        <button class="filter-btn" data-filter="upcoming" aria-label="Upcoming tasks">
+          <ion-icon name="calendar-outline"></ion-icon> 
+          <span data-i18n="upcoming">Upcoming</span>
         </button>
-        <button class="category-btn" data-category="overdue" aria-label="Overdue tasks">
-          <ion-icon name="alert-circle-outline"></ion-icon> Overdue
+        <button class="filter-btn" data-filter="overdue" aria-label="Overdue tasks">
+          <ion-icon name="alert-circle-outline"></ion-icon> 
+          <span data-i18n="overdue">Overdue</span>
         </button>
-        <button class="category-btn" data-category="home" aria-label="Home tasks">
-          <ion-icon name="home-outline"></ion-icon> Home
-        </button>
-        <button class="category-btn" data-category="routines" aria-label="Routines">
-          <ion-icon name="repeat-outline"></ion-icon> Routines
-        </button>
-        <button class="category-btn" data-category="inspiration" aria-label="Inspiration">
-          <ion-icon name="sparkles-outline"></ion-icon> Inspiration
+        <button class="filter-btn" data-filter="all" aria-label="All tasks">
+          <ion-icon name="list-outline"></ion-icon> 
+          <span data-i18n="all">All</span>
         </button>
       </div>
 
-      <!-- Layout Switcher -->
-      <div class="layout-switcher glass-surface">
-        <button class="layout-btn active" data-layout="list" title="List View" aria-label="List View">
-          <ion-icon name="list-outline"></ion-icon>
-        </button>
-        <button class="layout-btn" data-layout="agenda" title="Agenda View" aria-label="Agenda View">
-          <ion-icon name="document-text-outline"></ion-icon>
-        </button>
-        <button class="layout-btn" data-layout="3day" title="3-Day View" aria-label="3-Day View">
-          <ion-icon name="calendar-number-outline"></ion-icon>
-        </button>
-        <button class="layout-btn" data-layout="calendar" title="Calendar" aria-label="Calendar View">
-          <ion-icon name="calendar-outline"></ion-icon>
+      <!-- Search & Advanced Filters -->
+      <div class="tasks-search glass-surface">
+        <input 
+          type="text" 
+          id="task-search" 
+          class="input-field" 
+          placeholder="Search tasks..." 
+          aria-label="Search tasks"
+          data-i18n-placeholder="searchTasks">
+        <button class="btn-icon" id="btn-advanced-filters" aria-label="Advanced filters">
+          <ion-icon name="funnel-outline"></ion-icon>
         </button>
       </div>
 
-      <!-- Filters Panel (Hidden by default) -->
+      <!-- Advanced Filters Panel (Hidden by default) -->
       <div id="filters-panel" class="filters-panel glass-surface" style="display: none;">
         <div class="filter-group">
-          <label>Status</label>
+          <label data-i18n="priority">Priority</label>
           <div class="filter-options">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="completed">Completed</button>
-            <button class="filter-btn" data-filter="incomplete">Incomplete</button>
-            <button class="filter-btn" data-filter="overdue">Overdue</button>
+            <button class="filter-option-btn" data-filter="priority-urgent">🔥 <span data-i18n="urgent">Urgent</span></button>
+            <button class="filter-option-btn" data-filter="priority-high">🔴 <span data-i18n="high">High</span></button>
+            <button class="filter-option-btn" data-filter="priority-medium">🟡 <span data-i18n="medium">Medium</span></button>
+            <button class="filter-option-btn" data-filter="priority-low">🟢 <span data-i18n="low">Low</span></button>
           </div>
         </div>
         <div class="filter-group">
-          <label>Priority</label>
-          <div class="filter-options">
-            <button class="filter-btn" data-filter="priority-urgent">🔥 Urgent</button>
-            <button class="filter-btn" data-filter="priority-high">🔴 High</button>
-            <button class="filter-btn" data-filter="priority-medium">🟡 Medium</button>
-            <button class="filter-btn" data-filter="priority-low">🟢 Low</button>
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Subject</label>
+          <label data-i18n="subject">Subject</label>
           <select class="input-field" id="filter-subject">
-            <option value="">All Subjects</option>
+            <option value="" data-i18n="allSubjects">All Subjects</option>
             <option value="chemistry">Chemistry</option>
             <option value="physics">Physics</option>
             <option value="biology">Biology</option>
             <option value="mathematics">Mathematics</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>Date Range</label>
-          <input type="date" class="input-field" id="filter-date-start">
-          <input type="date" class="input-field" id="filter-date-end">
-        </div>
       </div>
 
-      <!-- Tasks Container -->
-      <div class="tasks-wrapper glass-surface">
-        <div id="tasks-list" class="tasks-grid"></div>
-      </div>
-
-      <!-- Calendar View (Hidden by default) -->
-      <section id="view-calendar" class="calendar-view" style="display: none;">
-        <div class="view-header">
-          <div class="calendar-controls">
-            <button id="prev-month" aria-label="Previous month">
-              <ion-icon name="chevron-back-outline"></ion-icon>
-            </button>
-            <h3 id="current-month">October 2025</h3>
-            <button id="next-month" aria-label="Next month">
-              <ion-icon name="chevron-forward-outline"></ion-icon>
+      <!-- Task Groups by Time Period -->
+      <div id="tasks-grouped" class="tasks-container">
+        <!-- Overdue Section -->
+        <div class="task-group" id="group-overdue">
+          <div class="task-group-header">
+            <ion-icon name="alert-circle-outline" class="header-icon"></ion-icon>
+            <h3 class="group-title" data-i18n="overdue">Overdue</h3>
+            <span class="group-count">0</span>
+            <button class="group-toggle" aria-expanded="true" aria-label="Toggle overdue tasks">
+              <ion-icon name="chevron-up-outline"></ion-icon>
             </button>
           </div>
+          <div class="task-group-content"></div>
         </div>
-        <div class="calendar-container glass-surface">
-          <div id="calendar-grid" class="calendar-grid"></div>
+
+        <!-- Today Section -->
+        <div class="task-group" id="group-today">
+          <div class="task-group-header">
+            <ion-icon name="calendar-today-outline" class="header-icon"></ion-icon>
+            <h3 class="group-title" data-i18n="today">Today</h3>
+            <span class="group-count">0</span>
+            <button class="group-toggle" aria-expanded="true" aria-label="Toggle today tasks">
+              <ion-icon name="chevron-up-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="task-group-content"></div>
         </div>
-        <div class="calendar-sidebar glass-surface">
-          <h3 id="calendar-selected-date">Select a date</h3>
-          <div id="date-tasks-list" class="date-tasks-list"></div>
+
+        <!-- Upcoming Section -->
+        <div class="task-group" id="group-upcoming">
+          <div class="task-group-header">
+            <ion-icon name="calendar-outline" class="header-icon"></ion-icon>
+            <h3 class="group-title" data-i18n="upcoming">Upcoming</h3>
+            <span class="group-count">0</span>
+            <button class="group-toggle" aria-expanded="true" aria-label="Toggle upcoming tasks">
+              <ion-icon name="chevron-up-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="task-group-content"></div>
         </div>
-      </section>
+
+        <!-- Projects/Categories Section -->
+        <div class="task-group" id="group-projects">
+          <div class="task-group-header">
+            <ion-icon name="folder-outline" class="header-icon"></ion-icon>
+            <h3 class="group-title" data-i18n="projects">Projects</h3>
+            <span class="group-count">0</span>
+            <button class="group-toggle" aria-expanded="false" aria-label="Toggle projects">
+              <ion-icon name="chevron-down-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="task-group-content"></div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="tasks-empty" class="empty-state" style="display: none;">
+        <ion-icon name="checkmark-done-outline" class="empty-icon"></ion-icon>
+        <h3 data-i18n="noTasks">No tasks yet</h3>
+        <p data-i18n="createFirstTask">Create your first task to get started</p>
+      </div>
     </section>
 
     <!-- TAB 2: Generator Section (Flashcards) -->

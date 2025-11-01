@@ -851,26 +851,112 @@
     });
   }
 
-  // Font Switcher - FIXED: Updates all text elements
+  // Premium Sinhala Translation System
+  const translations = {
+    en: {
+      tasks: 'My Tasks',
+      newTask: 'New Task',
+      today: 'Today',
+      upcoming: 'Upcoming',
+      overdue: 'Overdue',
+      all: 'All',
+      searchTasks: 'Search tasks...',
+      priority: 'Priority',
+      urgent: 'Urgent',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
+      subject: 'Subject',
+      allSubjects: 'All Subjects',
+      projects: 'Projects',
+      noTasks: 'No tasks yet',
+      createFirstTask: 'Create your first task to get started'
+    },
+    si: {
+      tasks: 'මගේ කාර්යයන්',
+      newTask: 'නව කාර්යය',
+      today: 'අද',
+      upcoming: 'ඉදිරියට එන',
+      overdue: 'ඉකුත් වූ',
+      all: 'සියල්ල',
+      searchTasks: 'කාර්යයන් සොයන්න...',
+      priority: 'අයිතිය',
+      urgent: 'හදිසි',
+      high: 'ඉහළ',
+      medium: 'මධ්‍යම',
+      low: 'පහළ',
+      subject: 'විෂය',
+      allSubjects: 'සියලුම විෂයන්',
+      projects: 'ව්‍යාපෘති',
+      noTasks: 'තවමත් කාර්යයන් නැත',
+      createFirstTask: 'ආරම්භ කිරීමට ඔබේ පළමු කාර්යය සාදන්න'
+    }
+  };
+
+  // Initialize i18n System
+  function initI18n() {
+    const lang = localStorage.getItem('app-lang') || 'en';
+    document.documentElement.setAttribute('lang', lang);
+    updateTranslations(lang);
+    
+    // Language selector
+    const langSelector = qs('#lang-selector');
+    if (langSelector) {
+      langSelector.value = lang;
+      langSelector.addEventListener('change', (e) => {
+        const newLang = e.target.value;
+        localStorage.setItem('app-lang', newLang);
+        document.documentElement.setAttribute('lang', newLang);
+        updateTranslations(newLang);
+        announce(`Language changed to ${newLang === 'en' ? 'English' : 'Sinhala'}`);
+      });
+    }
+  }
+
+  function updateTranslations(lang) {
+    const trans = translations[lang] || translations.en;
+    qsa('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (trans[key]) {
+        el.textContent = trans[key];
+      }
+    });
+    qsa('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (trans[key]) {
+        el.placeholder = trans[key];
+      }
+    });
+  }
+
+  // Font Switcher - FIXED: Updates all text elements with Premium Fonts
   function initFontSwitcher() {
     const fontBtns = qsa('.font-btn');
     const savedFont = localStorage.getItem('fontType') || 'en';
     document.body.setAttribute('data-font', savedFont);
     document.documentElement.setAttribute('data-font', savedFont);
     
-    // Apply font immediately to all elements
+    // Apply font immediately to all elements with Premium Font System
     const applyFont = (fontType) => {
       document.body.setAttribute('data-font', fontType);
       document.documentElement.setAttribute('data-font', fontType);
       
+      // Premium font application
+      const fontFamily = fontType === 'si' 
+        ? "'Noto Sans Sinhala', 'Iskoola Pota', 'Malithi Web', sans-serif"
+        : "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif";
+      
       // Force update on all text elements
-      qsa('input, textarea, select, button, h1, h2, h3, h4, p, span, div').forEach(el => {
-        if (fontType === 'si') {
-          el.style.fontFamily = "'Noto Sans Sinhala', sans-serif";
-        } else {
-          el.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif";
-        }
+      qsa('input, textarea, select, button, h1, h2, h3, h4, p, span, div, label').forEach(el => {
+        el.style.fontFamily = fontFamily;
       });
+      
+      // Update font weights for headings in Sinhala
+      if (fontType === 'si') {
+        qsa('h1, h2, h3, h4, h5, h6').forEach(el => {
+          el.style.fontWeight = '600';
+        });
+      }
     };
     
     fontBtns.forEach(btn => {
@@ -885,6 +971,7 @@
         fontBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
+        const lang = localStorage.getItem('app-lang') || 'en';
         announce(`Font switched to ${fontType === 'en' ? 'English' : 'Sinhala'}`);
       });
     });
@@ -1277,15 +1364,222 @@
     }
   }
 
-  // Tasks Management - ENHANCED
+  // Premium Task Manager with Grouping & Filtering
+  const TaskManager = {
+    tasks: [],
+    currentFilter: 'today',
+    searchQuery: '',
+    
+    loadTasks() {
+      try {
+        this.tasks = JSON.parse(localStorage.getItem('app-tasks') || '[]');
+        if (!Array.isArray(this.tasks)) {
+          this.tasks = [];
+        }
+      } catch (err) {
+        console.error('Error loading tasks:', err);
+        this.tasks = [];
+      }
+    },
+    
+    saveTasks() {
+      localStorage.setItem('app-tasks', JSON.stringify(this.tasks));
+    },
+    
+    groupTasksByDate() {
+      const groups = {
+        overdue: [],
+        today: [],
+        upcoming: [],
+        projects: []
+      };
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      this.tasks.forEach(task => {
+        // Apply search filter
+        if (this.searchQuery) {
+          const query = this.searchQuery.toLowerCase();
+          if (!task.title.toLowerCase().includes(query) && 
+              !(task.desc && task.desc.toLowerCase().includes(query))) {
+            return;
+          }
+        }
+        
+        const taskDate = task.date ? new Date(task.date) : null;
+        
+        if (!taskDate || isNaN(taskDate.getTime())) {
+          groups.projects.push(task);
+          return;
+        }
+        
+        taskDate.setHours(0, 0, 0, 0);
+        
+        if (taskDate < today && !task.done) {
+          groups.overdue.push(task);
+        } else if (taskDate.getTime() === today.getTime()) {
+          groups.today.push(task);
+        } else if (taskDate > today) {
+          groups.upcoming.push(task);
+        }
+      });
+      
+      return groups;
+    },
+    
+    renderTasks() {
+      const groups = this.groupTasksByDate();
+      const container = qs('#tasks-grouped');
+      const emptyState = qs('#tasks-empty');
+      
+      if (!container) return;
+      
+      let totalTasks = 0;
+      
+      Object.keys(groups).forEach(groupName => {
+        const groupEl = qs(`#group-${groupName}`);
+        if (!groupEl) return;
+        
+        const contentEl = groupEl.querySelector('.task-group-content');
+        const countEl = groupEl.querySelector('.group-count');
+        
+        const tasks = groups[groupName];
+        const count = tasks.length;
+        totalTasks += count;
+        
+        if (countEl) countEl.textContent = String(count);
+        if (contentEl) {
+          contentEl.innerHTML = '';
+          
+          if (count === 0) {
+            // Hide empty groups
+            if (groupName !== 'projects') {
+              groupEl.style.display = 'none';
+            }
+          } else {
+            groupEl.style.display = 'block';
+            tasks.forEach(task => {
+              const taskEl = this.createTaskElement(task);
+              contentEl.appendChild(taskEl);
+            });
+          }
+        }
+      });
+      
+      // Show/hide empty state
+      if (emptyState) {
+        if (totalTasks === 0) {
+          emptyState.style.display = 'flex';
+          container.style.display = 'none';
+        } else {
+          emptyState.style.display = 'none';
+          container.style.display = 'flex';
+        }
+      }
+      
+      waitForIonicons(() => replaceIcons());
+    },
+    
+    createTaskElement(task) {
+      const el = document.createElement('div');
+      el.className = `task-item ${task.done ? 'completed' : ''}`;
+      
+      const priority = task.priority || 'medium';
+      const priorityClass = `priority-${priority}`;
+      
+      el.innerHTML = `
+        <div class="task-checkbox ${task.done ? 'completed' : ''}" 
+             onclick="TaskManager.toggleTask('${task.id}')"
+             aria-label="${task.done ? 'Mark as incomplete' : 'Mark as complete'}"></div>
+        
+        <div class="task-content">
+          <div class="task-title">${this.escapeHtml(task.title || 'Untitled Task')}</div>
+          ${task.desc ? `<div class="task-desc">${this.escapeHtml(task.desc)}</div>` : ''}
+          <div class="task-meta">
+            ${task.subject ? `<span class="task-meta-tag"><ion-icon name="school-outline"></ion-icon>${this.escapeHtml(task.subject)}</span>` : ''}
+            ${priority ? `<span class="task-meta-tag ${priorityClass}"><ion-icon name="flag-outline"></ion-icon>${this.escapeHtml(priority)}</span>` : ''}
+            ${task.date ? `<span class="task-meta-tag"><ion-icon name="calendar-outline"></ion-icon>${new Date(task.date).toLocaleDateString()}</span>` : ''}
+          </div>
+        </div>
+        
+        <div class="task-actions">
+          <button class="task-action-btn" onclick="TaskManager.editTask('${task.id}')" aria-label="Edit task">
+            <ion-icon name="create-outline"></ion-icon>
+          </button>
+          <button class="task-action-btn" onclick="TaskManager.deleteTask('${task.id}')" aria-label="Delete task">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+      `;
+      
+      return el;
+    },
+    
+    escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    },
+    
+    toggleTask(id) {
+      const task = this.tasks.find(t => t.id === id || t.id === id.toString());
+      if (task) {
+        task.done = !task.done;
+        this.saveTasks();
+        this.renderTasks();
+        updateStats();
+        announce(task.done ? 'Task completed' : 'Task uncompleted');
+      }
+    },
+    
+    deleteTask(id) {
+      if (!confirm('Are you sure you want to delete this task?')) return;
+      this.tasks = this.tasks.filter(t => t.id !== id || t.id !== id.toString());
+      this.saveTasks();
+      this.renderTasks();
+      updateStats();
+      announce('Task deleted');
+    },
+    
+    editTask(id) {
+      const task = this.tasks.find(t => t.id === id || t.id === id.toString());
+      if (!task) return;
+      
+      taskEditId = id;
+      qs('#inp-task-title').value = task.title || '';
+      qs('#inp-task-desc').value = task.desc || '';
+      qs('#inp-task-subj').value = task.subject || 'general';
+      qs('#inp-task-priority').value = task.priority || 'medium';
+      if (qs('#inp-task-date')) qs('#inp-task-date').value = task.date || '';
+      if (qs('#inp-task-time')) qs('#inp-task-time').value = task.time || '';
+      if (qs('#inp-task-deadline')) qs('#inp-task-deadline').value = task.deadline || '';
+      
+      qs('#task-modal')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  };
+
+  // Make TaskManager methods global
+  window.TaskManager = TaskManager;
+  window.toggleTaskComplete = (id) => TaskManager.toggleTask(id);
+  window.editTask = (id) => TaskManager.editTask(id);
+  window.deleteTask = (id) => TaskManager.deleteTask(id);
+
+  // Tasks Management - ENHANCED with Grouping
   function initTasks() {
-    const list = qs('#tasks-list');
+    TaskManager.loadTasks();
+    
     const addBtn = qs('#btn-add-task');
     const saveBtn = qs('#btn-save-task');
     const title = qs('#inp-task-title');
     const desc = qs('#inp-task-desc');
     const subj = qs('#inp-task-subj');
     const prio = qs('#inp-task-priority');
+    const searchInput = qs('#task-search');
+    const filterBtns = qsa('.tasks-filter-bar .filter-btn');
+    const advancedFiltersBtn = qs('#btn-advanced-filters');
+    const filtersPanel = qs('#filters-panel');
 
     function updateStats() {
       const items = JSON.parse(localStorage.getItem('app-tasks') || '[]');
@@ -1295,6 +1589,9 @@
         stat.textContent = String(items.length);
       }
     }
+    
+    // Make updateStats globally accessible
+    window.updateStats = updateStats;
 
     // Helper function for label colors
     function getLabelColor(label) {
@@ -1308,115 +1605,56 @@
       return colors[label] || '#667eea';
     }
 
-    function render() {
-      if (!list) {
-        console.error('Tasks list container not found');
-        return;
-      }
-      
-      try {
-        const items = JSON.parse(localStorage.getItem('app-tasks') || '[]');
-        list.innerHTML = '';
-
-        if (!Array.isArray(items)) {
-          console.error('Tasks data is not an array');
-          list.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
-              <ion-icon name="alert-circle-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
-              <p style="font-size: 1.1rem; color: var(--text-secondary);">Error loading tasks.</p>
-              <button class="btn-secondary" onclick="window.location.reload()" style="margin-top: 1rem;">Reload Page</button>
-            </div>
-          `;
-          waitForIonicons(() => {
-            replaceIcons();
-            forceRenderIcons();
-          });
-          return;
-        }
-
-        if (items.length === 0) {
-          list.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
-              <ion-icon name="create-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
-              <p style="font-size: 1.1rem; color: var(--text-secondary);">No tasks yet.</p>
-              <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 0.5rem;">Click "New Task" to get started!</p>
-            </div>
-          `;
-          waitForIonicons(() => {
-            replaceIcons();
-            forceRenderIcons();
-          });
-          updateStats();
-          return;
-        }
-      } catch (err) {
-        console.error('Error rendering tasks:', err);
-        list.innerHTML = `
-          <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem;">
-            <ion-icon name="alert-circle-outline" style="font-size: 4rem; width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;"></ion-icon>
-            <p style="font-size: 1.1rem; color: var(--text-secondary);">Error loading tasks.</p>
-            <p style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 0.5rem;">${err.message}</p>
-            <button class="btn-secondary" onclick="window.location.reload()" style="margin-top: 1rem;">Reload Page</button>
-          </div>
-        `;
-        waitForIonicons(() => {
-          replaceIcons();
-          forceRenderIcons();
-        });
-        announce('Error loading tasks. Please try reloading the page.');
-        return;
-      }
-
-      // Store render function globally for category/filter/sort
-      window.renderTasks = render;
-
-      items.forEach((t, idx) => {
-        const el = document.createElement('div');
-        el.className = 'task-card';
-        el.setAttribute('data-task-id', t.id || idx);
-        
-        const priorityEmoji = {
-          'urgent': '🔥',
-          'high': '🔴',
-          'medium': '🟡',
-          'low': '🟢'
-        }[t.priority] || '🟡';
-        
-        el.innerHTML = `
-          <div class="task-header">
-            <input type="checkbox" class="task-checkbox" ${t.done ? 'checked' : ''} onchange="toggleTaskComplete('${t.id || idx}')">
-            <h4 class="task-title">${t.title || 'Untitled Task'}</h4>
-            ${t.priority ? `<div class="task-priority" data-priority="${t.priority}">${priorityEmoji} ${t.priority}</div>` : ''}
-          </div>
-          ${t.desc ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin: 8px 0;">${t.desc}</p>` : ''}
-          <div class="task-meta">
-            ${t.date ? `<span class="meta-item"><ion-icon name="calendar-outline"></ion-icon> ${new Date(t.date).toLocaleDateString()}</span>` : ''}
-            ${t.time ? `<span class="meta-item"><ion-icon name="time-outline"></ion-icon> ${t.time}</span>` : ''}
-            ${t.location ? `<span class="meta-item"><ion-icon name="location-outline"></ion-icon> ${t.location}</span>` : ''}
-          </div>
-          ${t.labels && t.labels.length > 0 ? `<div class="task-labels">${t.labels.map(l => `<span class="task-label" style="background: ${getLabelColor(l)}">${l}</span>`).join('')}</div>` : ''}
-          <div class="task-actions">
-            <button class="task-action-btn" title="Edit" onclick="editTask('${t.id || idx}')">
-              <ion-icon name="create-outline"></ion-icon>
-            </button>
-            <button class="task-action-btn" title="Duplicate" onclick="duplicateTask('${t.id || idx}')">
-              <ion-icon name="copy-outline"></ion-icon>
-            </button>
-            <button class="task-action-btn" title="Delete" onclick="deleteTask('${t.id || idx}')">
-              <ion-icon name="trash-outline"></ion-icon>
-            </button>
-          </div>
-        `;
-
-        list.appendChild(el);
+    // Use TaskManager render instead
+    window.renderTasks = () => TaskManager.renderTasks();
+    
+    // Initialize search
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        TaskManager.searchQuery = e.target.value;
+        TaskManager.renderTasks();
       });
-
-      waitForIonicons(() => {
-        replaceIcons();
-        forceRenderIcons();
-      });
-      updateStats();
     }
+    
+    // Initialize filter buttons
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        TaskManager.currentFilter = this.getAttribute('data-filter');
+        TaskManager.renderTasks();
+        announce(`Filtered to ${TaskManager.currentFilter}`);
+      });
+    });
+    
+    // Advanced filters toggle
+    if (advancedFiltersBtn && filtersPanel) {
+      advancedFiltersBtn.addEventListener('click', () => {
+        const isVisible = filtersPanel.style.display !== 'none';
+        filtersPanel.style.display = isVisible ? 'none' : 'block';
+        announce(isVisible ? 'Advanced filters hidden' : 'Advanced filters shown');
+      });
+    }
+    
+    // Group toggles
+    qsa('.group-toggle').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const group = this.closest('.task-group');
+        const isCollapsed = group.getAttribute('data-collapsed') === 'true';
+        group.setAttribute('data-collapsed', !isCollapsed);
+        this.setAttribute('aria-expanded', !isCollapsed);
+        
+        // Update icon
+        const icon = this.querySelector('ion-icon');
+        if (icon) {
+          icon.name = isCollapsed ? 'chevron-up-outline' : 'chevron-down-outline';
+        }
+      });
+    });
+    
+    // Initial render
+    TaskManager.renderTasks();
 
     saveBtn?.addEventListener('click', () => {
       const titleVal = (title?.value || '').trim();
@@ -1433,30 +1671,6 @@
       const dateVal = qs('#inp-task-date')?.value || '';
       const timeVal = qs('#inp-task-time')?.value || '';
       const deadlineVal = qs('#inp-task-deadline')?.value || '';
-      const locationVal = (qs('#inp-task-location')?.value || '').trim();
-      const assigneeVal = qs('#inp-task-assignee')?.value || 'self';
-      const reminderVal = qs('#inp-task-reminder')?.value || 'none';
-      const recurringVal = qs('#inp-task-recurring')?.value || 'none';
-      
-      // Get selected labels
-      const selectedLabels = [];
-      qsa('.label-btn.active').forEach(btn => {
-        selectedLabels.push(btn.getAttribute('data-label'));
-      });
-      
-      // Get subtasks
-      const subtasks = [];
-      qsa('.subtask-item').forEach(item => {
-        const input = qs('input[type="text"]', item);
-        if (input && input.value.trim()) {
-          subtasks.push({
-            title: input.value.trim(),
-            done: qs('.subtask-checkbox', item)?.checked || false
-          });
-        }
-      });
-
-      const arr = JSON.parse(localStorage.getItem('app-tasks') || '[]');
       
       const taskData = {
         id: taskEditId || Date.now().toString(),
@@ -1467,36 +1681,26 @@
         date: dateVal,
         time: timeVal,
         deadline: deadlineVal,
-        location: locationVal,
-        assignee: assigneeVal,
-        labels: selectedLabels,
-        reminder: reminderVal,
-        recurring: recurringVal,
-        subtasks: subtasks,
-        done: false,
-        created: new Date().toISOString()
+        done: taskEditId ? TaskManager.tasks.find(t => t.id === taskEditId)?.done || false : false,
+        created: taskEditId ? TaskManager.tasks.find(t => t.id === taskEditId)?.created || new Date().toISOString() : new Date().toISOString()
       };
 
       const isEditing = taskEditId !== null;
       
       if (isEditing) {
-        // Update existing task
-        const index = arr.findIndex(t => t.id === taskEditId);
+        const index = TaskManager.tasks.findIndex(t => t.id === taskEditId);
         if (index !== -1) {
-          arr[index] = { ...arr[index], ...taskData };
+          TaskManager.tasks[index] = { ...TaskManager.tasks[index], ...taskData };
         }
-      } else {
-        // Add new task
-        arr.push(taskData);
-      }
-      
-      localStorage.setItem('app-tasks', JSON.stringify(arr));
-      render();
-      announce(isEditing ? 'Task updated' : 'Task saved');
-      
-      if (isEditing) {
         taskEditId = null;
+      } else {
+        TaskManager.tasks.push(taskData);
       }
+      
+      TaskManager.saveTasks();
+      TaskManager.renderTasks();
+      updateStats();
+      announce(isEditing ? 'Task updated' : 'Task saved');
 
       // Close modal
       const modal = qs('#task-modal');
@@ -1513,29 +1717,26 @@
       const dateInput = qs('#inp-task-date');
       const timeInput = qs('#inp-task-time');
       const deadlineInput = qs('#inp-task-deadline');
-      const locationInput = qs('#inp-task-location');
       if (dateInput) dateInput.value = '';
       if (timeInput) timeInput.value = '';
       if (deadlineInput) deadlineInput.value = '';
-      if (locationInput) locationInput.value = '';
       
-      // Clear labels and subtasks
+      // Clear labels
       qsa('.label-btn').forEach(btn => btn.classList.remove('active'));
-      const subtasksList = qs('#subtasks-list');
-      if (subtasksList) subtasksList.innerHTML = '';
-      
-      // Re-render to show new/updated task
-      render();
     });
 
     addBtn?.addEventListener('click', () => {
+      taskEditId = null;
       if (title) title.value = '';
       if (desc) desc.value = '';
       if (subj) subj.value = 'general';
       if (prio) prio.value = 'medium';
+      const dateInput = qs('#inp-task-date');
+      const timeInput = qs('#inp-task-time');
+      if (dateInput) dateInput.value = '';
+      if (timeInput) timeInput.value = '';
+      qsa('.label-btn').forEach(btn => btn.classList.remove('active'));
     });
-
-    render();
   }
 
   // Timer
@@ -1746,6 +1947,7 @@
     // Initialize core functionality first (CRITICAL ORDER)
     initTabs(); // MUST be first - sets initial tab state
     initA11yToggles(); // Theme must be set early
+    initI18n(); // Translation system
     initFontSwitcher(); // Font switching
     initModal();
     initTaskModal(); // Enhanced task modal with labels/subtasks
