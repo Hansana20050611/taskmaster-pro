@@ -1,470 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#667eea" />
-  <title>TaskMaster Pro - AI Study Assistant</title>
-  <link rel="stylesheet" href="styles.css" />
-  <!-- Premium Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6366f1">
+    <title>TaskMaster Pro - AI Study Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <!-- iOS Haptic Trigger (hidden) -->
-  <input id="haptic-trigger" style="display:none;" type="checkbox" />
-  <label for="haptic-trigger" id="haptic-label" style="display:none;"></label>
+<body class="dark-theme">
+    <!-- iOS Haptic Trigger -->
+    <input type="checkbox" switch style="display:none;" id="haptic-trigger"/>
+    <label for="haptic-label" id="haptic-label" style="display:none;"></label>
+    
+    <!-- ARIA Live Region -->
+    <div id="aria-live" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;"></div>
 
-  <!-- Floating App Header -->
-  <header class="app-header glass-surface">
-    <div class="header-wrapper">
-      <div class="app-logo">
-        <span aria-hidden="true" class="logo-emoji"><ion-icon name="school-outline"></ion-icon></span>
-        <span class="logo-title">TaskMaster Pro</span>
-      </div>
-      <div class="header-actions">
-        <!-- Language Switcher - Professional Design -->
-        <div class="lang-switcher">
-          <button class="lang-btn active" data-lang="en" aria-label="English" title="English">
-            <span class="lang-label">EN</span>
-          </button>
-          <button class="lang-btn" data-lang="si" aria-label="සිංහල" title="සිංහල">
-            <span class="lang-label">සිං</span>
-          </button>
+    <!-- Header -->
+    <header class="app-header glass-surface">
+        <div class="header-wrapper">
+            <div class="app-logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">TaskMaster Pro</span>
+            </div>
+            <div class="header-controls">
+                <select id="lang-selector" class="header-btn" aria-label="Language selection">
+                    <option value="en">EN</option>
+                    <option value="si">සිং</option>
+                </select>
+                <button id="theme-btn" class="header-btn" aria-label="Theme toggle" title="Toggle dark/light mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <button id="reduce-motion-btn" class="header-btn" aria-label="Toggle reduced motion" title="Reduce animations">
+                    <span>⏱️</span>
+                </button>
+                <button id="notifications-btn" class="header-btn" aria-label="Notifications">
+                    <span>🔔</span>
+                </button>
+            </div>
         </div>
-        
-        <!-- Accessibility Controls -->
-        <button aria-label="Toggle reduced motion" aria-pressed="false" class="header-control" id="reduce-motion-btn" title="Reduced Motion">
-          <ion-icon name="film-outline"></ion-icon>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main">
+
+        <!-- TASKS VIEW -->
+        <section id="view-tasks" class="app-view">
+            <div class="view-header">
+                <h2 class="view-title" data-en="My Tasks" data-si="මගේ කාර්යයන්">My Tasks</h2>
+                <button class="btn-primary" id="btn-add-task" data-en="New Task" data-si="නව කාර්ය">
+                    <span>+</span> New Task
+                </button>
+            </div>
+            <div class="tasks-wrapper glass-surface">
+                <div id="tasks-list" class="tasks-grid"></div>
+            </div>
+        </section>
+
+        <!-- GENERATOR VIEW -->
+        <section id="view-generator" class="app-view active-view">
+            <div class="view-header">
+                <h2 class="view-title" data-en="Flashcard Generator" data-si="ෆ්ලැෂ්කාඩ් ජනකය">Flashcard Generator</h2>
+            </div>
+            <div class="generator-panel glass-surface">
+                <div class="input-group">
+                    <label for="fc-subject" class="input-label" data-en="Subject" data-si="විෂය">Subject</label>
+                    <select id="fc-subject" class="input-field">
+                        <option value="Physics" data-si="භෞතික විද්‍යාව">Physics</option>
+                        <option value="Chemistry" data-si="රසායන විද්‍යාව">Chemistry</option>
+                        <option value="Biology" data-si="ජීව විද්‍යාව">Biology</option>
+                        <option value="Mathematics" data-si="සංයුක්ත ගණිතය">Combined Mathematics</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="fc-topic" class="input-label" data-en="Topic" data-si="මාතෘකා">Topic</label>
+                    <input type="text" id="fc-topic" class="input-field" placeholder="e.g., Newton's Laws" data-si-placeholder="උදා. නිউටන්ගේ නීති">
+                </div>
+                <div class="input-group">
+                    <label for="fc-count" class="input-label" data-en="Number of Cards" data-si="කාඩ්පත් ගණන">Number of Cards</label>
+                    <select id="fc-count" class="input-field">
+                        <option value="5">5 Cards</option>
+                        <option value="10">10 Cards</option>
+                        <option value="15">15 Cards</option>
+                        <option value="20">20 Cards</option>
+                    </select>
+                </div>
+                <button class="btn-primary btn-full" id="btn-generate" data-en="Generate with AI" data-si="AI සමඟ ජනිත කරන්න">
+                    <span>✨</span> Generate with AI
+                </button>
+            </div>
+            <div id="cards-grid" class="flashcards-grid"></div>
+        </section>
+
+        <!-- CHAT VIEW -->
+        <section id="view-chat" class="app-view">
+            <div class="chat-panel glass-surface">
+                <div class="chat-top">
+                    <h2 class="view-title" data-en="AI Study Assistant" data-si="AI අධ්‍යාපන ලේකම">AI Study Assistant</h2>
+                    <select id="chat-subject" class="input-field">
+                        <option value="General" data-si="සාමාන්‍ය">General</option>
+                        <option value="Physics" data-si="භෞතික විද්‍යාව">Physics</option>
+                        <option value="Chemistry" data-si="රසායන විද්‍යාව">Chemistry</option>
+                        <option value="Biology" data-si="ජීව විද්‍යාව">Biology</option>
+                        <option value="Mathematics" data-si="සංයුක්ත ගණිතය">Mathematics</option>
+                    </select>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                    <div class="chat-msg bot-msg">
+                        <div class="msg-avatar">🤖</div>
+                        <div class="msg-bubble">
+                            <p data-en="Hello! I'm your AI study assistant. Ask me anything about your subjects!" data-si="ආයුබෝවන්! මම ඔබගේ AI අධ්‍යාපන ලේකම. ඔබගේ විෂයන් ගැන ඕනෑම දෙයක් ඇසින්න!">Hello! I'm your AI study assistant. Ask me anything!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-bottom">
+                    <textarea id="chat-input" class="chat-textarea" placeholder="Ask a question..." data-si-placeholder="ප්‍රශ්නයක් ඇසින්න..."></textarea>
+                    <button id="btn-send" class="btn-send-chat" aria-label="Send message">
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TIMER VIEW -->
+        <section id="view-timer" class="app-view">
+            <div class="timer-panel glass-surface">
+                <div class="timer-visual">
+                    <svg class="timer-svg" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="85" class="timer-track"></circle>
+                        <circle cx="100" cy="100" r="85" class="timer-path" id="timer-circle"></circle>
+                    </svg>
+                    <div class="timer-center">
+                        <div class="timer-text" id="timer-text">25:00</div>
+                        <div class="timer-status" data-en="Focus Session" data-si="අවධානය දැරීමේ සැසිය">Focus Session</div>
+                    </div>
+                </div>
+                <div class="timer-buttons">
+                    <button class="btn-timer" id="btn-timer-start" data-en="Start" data-si="ආරම්භ කරන්න">
+                        <span>▶️</span> Start
+                    </button>
+                    <button class="btn-timer btn-secondary" id="btn-timer-reset" data-en="Reset" data-si="නැවත සකසන්න">
+                        <span>↻</span> Reset
+                    </button>
+                </div>
+                <div class="timer-details">
+                    <div class="timer-detail-item">
+                        <div class="detail-value" id="timer-round">1</div>
+                        <div class="detail-label" data-en="Current Round" data-si="වර්තමාන වටය">Current Round</div>
+                    </div>
+                    <div class="timer-detail-item">
+                        <div class="detail-value" id="timer-completed">0</div>
+                        <div class="detail-label" data-en="Sessions Done" data-si="සම්පූර්ණ සැසි">Sessions Done</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS VIEW -->
+        <section id="view-stats" class="app-view">
+            <div class="view-header">
+                <h2 class="view-title" data-en="Your Progress" data-si="ඔබගේ ප්‍රගතිය">Your Progress</h2>
+            </div>
+            <div class="stats-container">
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">✅</div>
+                    <div class="stat-num" id="stat-tasks">0</div>
+                    <div class="stat-desc" data-en="Tasks Completed" data-si="සම්පූර්ණ කරන ලද කාර්යයන්">Tasks Completed</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">🎴</div>
+                    <div class="stat-num" id="stat-cards">0</div>
+                    <div class="stat-desc" data-en="Cards Learned" data-si="ඉගෙන ගත් කාඩ්පත්">Cards Learned</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">⏱️</div>
+                    <div class="stat-num" id="stat-hours">0h</div>
+                    <div class="stat-desc" data-en="Study Time" data-si="අධ්‍යාපන කාලය">Study Time</div>
+                </div>
+                <div class="stat-box glass-surface">
+                    <div class="stat-emoji">🔥</div>
+                    <div class="stat-num" id="stat-streak">0</div>
+                    <div class="stat-desc" data-en="Day Streak" data-si="දිනේ ස්ට්‍රීක">Day Streak</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-dock glass-surface" role="tablist" aria-label="Main navigation">
+        <button id="tab-tasks" class="dock-btn" data-tab="tasks" role="tab" aria-selected="false" aria-controls="view-tasks" data-en="Tasks" data-si="කාර්යයන්">
+            <span class="dock-icon">📝</span>
+            <span class="dock-label">Tasks</span>
         </button>
-        <button aria-label="Toggle reduced transparency" aria-pressed="false" class="header-control" id="reduce-transparency-btn" title="Reduced Transparency">
-          <ion-icon name="sparkles-outline"></ion-icon>
+        <button id="tab-generator" class="dock-btn active-tab" data-tab="generator" role="tab" aria-selected="true" aria-controls="view-generator" data-en="Generator" data-si="ජනකය">
+            <span class="dock-icon">🎴</span>
+            <span class="dock-label">Generator</span>
         </button>
-        <button aria-label="Toggle theme" class="header-control theme-toggle" id="theme-btn">
-          <ion-icon id="theme-icon" name="moon-outline"></ion-icon>
+        <button id="tab-chat" class="dock-btn" data-tab="chat" role="tab" aria-selected="false" aria-controls="view-chat" data-en="Chat" data-si="සංවාදය">
+            <span class="dock-icon">💬</span>
+            <span class="dock-label">Chat</span>
         </button>
-      </div>
+        <button id="tab-timer" class="dock-btn" data-tab="timer" role="tab" aria-selected="false" aria-controls="view-timer" data-en="Timer" data-si="ටයිමර්">
+            <span class="dock-icon">⏱️</span>
+            <span class="dock-label">Timer</span>
+        </button>
+        <button id="tab-stats" class="dock-btn" data-tab="stats" role="tab" aria-selected="false" aria-controls="view-stats" data-en="Stats" data-si="සංඛ්‍යාංකන">
+            <span class="dock-icon">📊</span>
+            <span class="dock-label">Stats</span>
+        </button>
+    </nav>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="app-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container glass-surface" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+            <div class="modal-top">
+                <h3 id="task-modal-title" data-en="Create New Task" data-si="නව කාර්යයක් සකසන්න">Create New Task</h3>
+                <button class="modal-close" aria-label="Close" data-en="Close" data-si="වසන්න">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="inp-task-title" class="input-label" data-en="Task Title" data-si="කාර්ය සිරැසි">Task Title</label>
+                    <input type="text" id="inp-task-title" class="input-field" placeholder="Enter task title" data-si-placeholder="කාර්ය සිරැසි ඇතුළත් කරන්න" required>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-desc" class="input-label" data-en="Description" data-si="විස්තරණය">Description</label>
+                    <textarea id="inp-task-desc" class="input-field" rows="3" placeholder="Add details..." data-si-placeholder="විස්තර එකතු කරන්න..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-subj" class="input-label" data-en="Subject" data-si="විෂය">Subject</label>
+                    <select id="inp-task-subj" class="input-field">
+                        <option value="Physics" data-si="භෞතික විද්‍යාව">Physics</option>
+                        <option value="Chemistry" data-si="රසායන විද්‍යාව">Chemistry</option>
+                        <option value="Biology" data-si="ජීව විද්‍යාව">Biology</option>
+                        <option value="Mathematics" data-si="සංයුක්ත ගණිතය">Mathematics</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="inp-task-priority" class="input-label" data-en="Priority" data-si="ප්‍රමුඛතාව">Priority</label>
+                    <select id="inp-task-priority" class="input-field">
+                        <option value="low" data-si="අඩු">Low</option>
+                        <option value="medium" selected data-si="මධ්‍යම">Medium</option>
+                        <option value="high" data-si="ඉහළ">High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary modal-cancel" data-en="Cancel" data-si="අවලංගු කරන්න">Cancel</button>
+                <button class="btn-primary" id="btn-save-task" data-en="Save Task" data-si="කාර්ය සුරකින්න">Save Task</button>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <!-- Main App Content -->
-  <main class="app-main">
-    <div id="aria-live" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"></div>
-
-    <!-- TAB 1: Tasks Section (Enhanced Premium) -->
-    <section id="view-tasks" class="app-view" role="tabpanel" aria-labelledby="tab-tasks">
-      <div class="view-header">
-        <h2 class="view-title" id="title-tasks">
-          <ion-icon aria-hidden="true" name="list-outline"></ion-icon> 
-          <span data-i18n="tasks">My Tasks</span>
-        </h2>
-        <button class="btn-primary" id="btn-add-task">
-          <ion-icon aria-hidden="true" name="add-outline"></ion-icon> 
-          <span data-i18n="newTask">New Task</span>
-        </button>
-      </div>
-      
-      <!-- Task Filter/Tab Navigation -->
-      <div class="tasks-filter-bar glass-surface">
-        <button class="filter-btn active" data-filter="today" aria-label="Today tasks">
-          <ion-icon name="today-outline"></ion-icon> 
-          <span data-i18n="today">Today</span>
-        </button>
-        <button class="filter-btn" data-filter="upcoming" aria-label="Upcoming tasks">
-          <ion-icon name="calendar-outline"></ion-icon> 
-          <span data-i18n="upcoming">Upcoming</span>
-        </button>
-        <button class="filter-btn" data-filter="overdue" aria-label="Overdue tasks">
-          <ion-icon name="alert-circle-outline"></ion-icon> 
-          <span data-i18n="overdue">Overdue</span>
-        </button>
-        <button class="filter-btn" data-filter="all" aria-label="All tasks">
-          <ion-icon name="list-outline"></ion-icon> 
-          <span data-i18n="all">All</span>
-        </button>
-      </div>
-
-      <!-- Search & Advanced Filters -->
-      <div class="tasks-search glass-surface">
-        <input 
-          type="text" 
-          id="task-search" 
-          class="input-field" 
-          placeholder="Search tasks..." 
-          aria-label="Search tasks"
-          data-i18n-placeholder="searchTasks">
-        <button class="btn-icon" id="btn-advanced-filters" aria-label="Advanced filters">
-          <ion-icon name="funnel-outline"></ion-icon>
-        </button>
-      </div>
-
-      <!-- Advanced Filters Panel (Hidden by default) -->
-      <div id="filters-panel" class="filters-panel glass-surface" style="display: none;">
-        <div class="filter-group">
-          <label data-i18n="priority">Priority</label>
-          <div class="filter-options">
-            <button class="filter-option-btn" data-filter="priority-urgent">🔥 <span data-i18n="urgent">Urgent</span></button>
-            <button class="filter-option-btn" data-filter="priority-high">🔴 <span data-i18n="high">High</span></button>
-            <button class="filter-option-btn" data-filter="priority-medium">🟡 <span data-i18n="medium">Medium</span></button>
-            <button class="filter-option-btn" data-filter="priority-low">🟢 <span data-i18n="low">Low</span></button>
-          </div>
-        </div>
-        <div class="filter-group">
-          <label data-i18n="subject">Subject</label>
-          <select class="input-field" id="filter-subject">
-            <option value="" data-i18n="allSubjects">All Subjects</option>
-            <option value="physics" data-i18n="physics">Physics - භෞතික විද්‍යාව</option>
-            <option value="chemistry" data-i18n="chemistry">Chemistry - රසායන විද්‍යාව</option>
-            <option value="biology" data-i18n="biology">Biology - ජීව විද්‍යාව</option>
-            <option value="mathematics" data-i18n="mathematics">Combined Mathematics - සංයුක්ත ගණිතය</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Task Groups by Time Period -->
-      <div id="tasks-grouped" class="tasks-container">
-        <!-- Overdue Section -->
-        <div class="task-group" id="group-overdue">
-          <div class="task-group-header">
-            <ion-icon name="alert-circle-outline" class="header-icon"></ion-icon>
-            <h3 class="group-title" data-i18n="overdue">Overdue</h3>
-            <span class="group-count">0</span>
-            <button class="group-toggle" aria-expanded="true" aria-label="Toggle overdue tasks">
-              <ion-icon name="chevron-up-outline"></ion-icon>
-            </button>
-          </div>
-          <div class="task-group-content"></div>
-        </div>
-
-        <!-- Today Section -->
-        <div class="task-group" id="group-today">
-          <div class="task-group-header">
-            <ion-icon name="calendar-today-outline" class="header-icon"></ion-icon>
-            <h3 class="group-title" data-i18n="today">Today</h3>
-            <span class="group-count">0</span>
-            <button class="group-toggle" aria-expanded="true" aria-label="Toggle today tasks">
-              <ion-icon name="chevron-up-outline"></ion-icon>
-            </button>
-          </div>
-          <div class="task-group-content"></div>
-        </div>
-
-        <!-- Upcoming Section -->
-        <div class="task-group" id="group-upcoming">
-          <div class="task-group-header">
-            <ion-icon name="calendar-outline" class="header-icon"></ion-icon>
-            <h3 class="group-title" data-i18n="upcoming">Upcoming</h3>
-            <span class="group-count">0</span>
-            <button class="group-toggle" aria-expanded="true" aria-label="Toggle upcoming tasks">
-              <ion-icon name="chevron-up-outline"></ion-icon>
-            </button>
-          </div>
-          <div class="task-group-content"></div>
-        </div>
-
-        <!-- Projects/Categories Section -->
-        <div class="task-group" id="group-projects">
-          <div class="task-group-header">
-            <ion-icon name="folder-outline" class="header-icon"></ion-icon>
-            <h3 class="group-title" data-i18n="projects">Projects</h3>
-            <span class="group-count">0</span>
-            <button class="group-toggle" aria-expanded="false" aria-label="Toggle projects">
-              <ion-icon name="chevron-down-outline"></ion-icon>
-            </button>
-          </div>
-          <div class="task-group-content"></div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div id="tasks-empty" class="empty-state" style="display: none;">
-        <ion-icon name="checkmark-done-outline" class="empty-icon"></ion-icon>
-        <h3 data-i18n="noTasks">No tasks yet</h3>
-        <p data-i18n="createFirstTask">Create your first task to get started</p>
-      </div>
-    </section>
-
-    <!-- TAB 2: Generator Section (Flashcards) -->
-    <section id="view-generator" class="app-view active-view" role="tabpanel" aria-labelledby="tab-generator">
-      <div class="view-header">
-        <h2 class="view-title" id="title-generator"><ion-icon aria-hidden="true" name="albums-outline"></ion-icon> <span data-i18n="flashcardGenerator">Flashcard Generator</span></h2>
-      </div>
-      <div class="generator-panel glass-surface">
-        <div class="input-group">
-          <label class="input-label" for="fc-subject" data-i18n="subject">Subject</label>
-          <select class="input-field" id="fc-subject" data-i18n-subjects>
-            <option value="physics" data-i18n="physics">Physics - භෞතික විද්‍යාව</option>
-            <option value="chemistry" data-i18n="chemistry">Chemistry - රසායන විද්‍යාව</option>
-            <option value="biology" data-i18n="biology">Biology - ජීව විද්‍යාව</option>
-            <option value="mathematics" data-i18n="mathematics">Combined Mathematics - සංයුක්ත ගණිතය</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="fc-topic" data-i18n="topic">Topic</label>
-          <input class="input-field" id="fc-topic" type="text" placeholder="e.g., S-block elements" />
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="fc-count" data-i18n="cardCount">Number of Cards</label>
-          <select class="input-field" id="fc-count">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="15">15</option>
-            <option value="20">20</option>
-          </select>
-        </div>
-        <button class="btn-primary btn-full" id="btn-generate"><ion-icon aria-hidden="true" name="sparkles-outline"></ion-icon> <span data-i18n="generateAI">Generate with AI</span></button>
-        <div class="error-message" id="generator-error" role="alert"></div>
-      </div>
-      <div id="cards-grid" class="flashcards-grid"></div>
-    </section>
-
-    <!-- TAB 3: AI Chat Section -->
-    <section id="view-chat" class="app-view" role="tabpanel" aria-labelledby="tab-chat">
-      <div class="chat-panel glass-surface">
-        <div class="chat-top">
-          <h2 class="view-title" id="title-chat"><ion-icon aria-hidden="true" name="chatbubble-ellipses-outline"></ion-icon> <span data-i18n="aiAssistant">AI Study Assistant</span></h2>
-          <select class="input-field" id="chat-subject" aria-label="Select subject for chat" data-i18n-subjects>
-            <option value="general" data-i18n="general">General</option>
-            <option value="physics" data-i18n="physics">Physics - භෞතික විද්‍යාව</option>
-            <option value="chemistry" data-i18n="chemistry">Chemistry - රසායන විද්‍යාව</option>
-            <option value="biology" data-i18n="biology">Biology - ජීව විද්‍යාව</option>
-            <option value="mathematics" data-i18n="mathematics">Combined Mathematics - සංයුක්ත ගණිතය</option>
-          </select>
-        </div>
-        <div id="chat-messages" class="chat-messages">
-          <div class="chat-msg bot-msg">
-            <div class="msg-avatar" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></div>
-            <div class="msg-bubble" data-i18n="chatGreeting">Hello! I'm your AI study assistant. Ask me anything about your subjects!</div>
-          </div>
-        </div>
-        <div class="chat-bottom">
-          <textarea id="chat-input" class="chat-textarea" rows="2" placeholder="Ask a question..." data-i18n-placeholder="askQuestion"></textarea>
-          <button id="btn-send" class="btn-send-chat" aria-label="Send">
-            <ion-icon name="send-outline"></ion-icon>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 4: Timer Section (Pomodoro) -->
-    <section id="view-timer" class="app-view" role="tabpanel" aria-labelledby="tab-timer">
-      <div class="timer-panel glass-surface">
-        <div class="timer-visual">
-          <svg class="timer-svg" viewBox="0 0 200 200">
-            <circle class="timer-track" cx="100" cy="100" r="85"></circle>
-            <circle class="timer-path" id="timer-circle" cx="100" cy="100" r="85"></circle>
-          </svg>
-          <div class="timer-center">
-            <div id="timer-text" class="timer-text">25:00</div>
-            <div class="timer-status" data-i18n="focusSession">Focus Session</div>
-          </div>
-        </div>
-        <div class="timer-buttons">
-          <button id="btn-timer-start" class="btn-timer">
-            <span id="timer-btn-icon"><ion-icon name="play-outline"></ion-icon></span> <span id="timer-btn-text" data-i18n="start">Start</span>
-          </button>
-          <button id="btn-timer-reset" class="btn-timer btn-secondary"><ion-icon aria-hidden="true" name="refresh-outline"></ion-icon> <span data-i18n="reset">Reset</span></button>
-        </div>
-        <div class="timer-details">
-          <div class="timer-detail-item">
-            <div id="timer-round" class="detail-value">1</div>
-            <div class="detail-label" data-i18n="currentRound">Current Round</div>
-          </div>
-          <div class="timer-detail-item">
-            <div id="timer-completed" class="detail-value">0</div>
-            <div class="detail-label" data-i18n="sessionsDone">Sessions Done</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 5: Stats Section -->
-    <section id="view-stats" class="app-view" role="tabpanel" aria-labelledby="tab-stats">
-      <div class="view-header">
-        <h2 class="view-title" id="title-stats"><ion-icon aria-hidden="true" name="stats-chart-outline"></ion-icon> <span data-i18n="progress">Your Progress</span></h2>
-      </div>
-      <div class="stats-container">
-        <div class="stat-box glass-surface">
-          <div class="stat-emoji" aria-hidden="true"><ion-icon name="checkmark-done-circle-outline"></ion-icon></div>
-          <div id="stat-tasks" class="stat-num">0</div>
-          <div class="stat-desc" data-i18n="tasksCompleted">Tasks Completed</div>
-        </div>
-        <div class="stat-box glass-surface">
-          <div class="stat-emoji" aria-hidden="true"><ion-icon name="layers-outline"></ion-icon></div>
-          <div id="stat-cards" class="stat-num">0</div>
-          <div class="stat-desc" data-i18n="cardsLearned">Cards Learned</div>
-        </div>
-        <div class="stat-box glass-surface">
-          <div class="stat-emoji" aria-hidden="true"><ion-icon name="stopwatch-outline"></ion-icon></div>
-          <div id="stat-hours" class="stat-num">0h</div>
-          <div class="stat-desc" data-i18n="studyTime">Study Time</div>
-        </div>
-        <div class="stat-box glass-surface">
-          <div class="stat-emoji" aria-hidden="true"><ion-icon name="flame-outline"></ion-icon></div>
-          <div id="stat-streak" class="stat-num">0</div>
-          <div class="stat-desc" data-i18n="dayStreak">Day Streak</div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Bottom Floating Navigation -->
-  <nav class="bottom-dock glass-surface" role="tablist" aria-label="Main navigation">
-    <button id="tab-tasks" class="dock-btn" role="tab" aria-controls="view-tasks" aria-label="Tasks" aria-selected="false">
-      <span class="dock-emoji" aria-hidden="true"><ion-icon name="create-outline"></ion-icon></span>
-      <span class="dock-name" data-i18n="tasks">Tasks</span>
-      <span class="indicator" aria-hidden="true"></span>
-    </button>
-    <button id="tab-generator" class="dock-btn active" role="tab" aria-controls="view-generator" aria-label="Generator" aria-selected="true">
-      <span class="dock-emoji" aria-hidden="true"><ion-icon name="sparkles-outline"></ion-icon></span>
-      <span class="dock-name" data-i18n="generator">Generator</span>
-      <span class="indicator" aria-hidden="true"></span>
-    </button>
-    <button id="tab-chat" class="dock-btn" role="tab" aria-controls="view-chat" aria-label="Chat" aria-selected="false">
-      <span class="dock-emoji" aria-hidden="true"><ion-icon name="chatbubble-ellipses-outline"></ion-icon></span>
-      <span class="dock-name" data-i18n="chat">Chat</span>
-      <span class="indicator" aria-hidden="true"></span>
-    </button>
-    <button id="tab-timer" class="dock-btn" role="tab" aria-controls="view-timer" aria-label="Timer" aria-selected="false">
-      <span class="dock-emoji" aria-hidden="true"><ion-icon name="timer-outline"></ion-icon></span>
-      <span class="dock-name" data-i18n="timer">Timer</span>
-      <span class="indicator" aria-hidden="true"></span>
-    </button>
-    <button id="tab-stats" class="dock-btn" role="tab" aria-controls="view-stats" aria-label="Stats" aria-selected="false">
-      <span class="dock-emoji" aria-hidden="true"><ion-icon name="stats-chart-outline"></ion-icon></span>
-      <span class="dock-name" data-i18n="stats">Stats</span>
-      <span class="indicator" aria-hidden="true"></span>
-    </button>
-  </nav>
-
-  <!-- Task Creation Modal -->
-  <div id="task-modal" class="app-modal">
-    <div class="modal-backdrop"></div>
-    <div class="modal-container glass-surface" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" aria-describedby="task-modal-desc">
-      <div class="modal-top">
-        <h3 id="task-modal-title">Create New Task</h3>
-        <button class="modal-x" aria-label="Close modal" id="modal-close">×</button>
-      </div>
-      <div id="task-modal-desc" class="modal-mid modal-scroll">
-        <div class="input-group">
-          <label class="input-label" for="inp-task-title">Task Title *</label>
-          <input class="input-field" id="inp-task-title" type="text" placeholder="Enter task title" required />
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-desc">Description</label>
-          <textarea class="input-field" id="inp-task-desc" rows="3" placeholder="Add details..."></textarea>
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-subj">Subject/Project</label>
-          <select class="input-field" id="inp-task-subj">
-            <option value="general">General</option>
-            <option value="chemistry">Chemistry</option>
-            <option value="physics">Physics</option>
-            <option value="biology">Biology</option>
-            <option value="mathematics">Mathematics</option>
-            <option value="computer-science">Computer Science</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-priority">Priority</label>
-          <select class="input-field" id="inp-task-priority">
-            <option value="low">🟢 Low</option>
-            <option value="medium" selected>🟡 Medium</option>
-            <option value="high">🔴 High</option>
-            <option value="urgent">🔥 Urgent</option>
-          </select>
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label class="input-label" for="inp-task-date">Date</label>
-            <input class="input-field" id="inp-task-date" type="date" />
-          </div>
-          <div class="input-group">
-            <label class="input-label" for="inp-task-time">Time</label>
-            <input class="input-field" id="inp-task-time" type="time" />
-          </div>
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-deadline">Deadline</label>
-          <input class="input-field" id="inp-task-deadline" type="date" />
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-location">Location</label>
-          <input class="input-field" id="inp-task-location" type="text" placeholder="e.g., Library, Home" />
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-assignee">Assign To</label>
-          <select class="input-field" id="inp-task-assignee">
-            <option value="self">Myself</option>
-            <option value="team">Team Member</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Labels</label>
-          <div class="label-selector" id="label-selector">
-            <button type="button" class="label-btn" data-label="urgent" style="background: #ef4444;">Urgent</button>
-            <button type="button" class="label-btn" data-label="important" style="background: #f59e0b;">Important</button>
-            <button type="button" class="label-btn" data-label="work" style="background: #3b82f6;">Work</button>
-            <button type="button" class="label-btn" data-label="personal" style="background: #8b5cf6;">Personal</button>
-            <button type="button" class="label-btn" data-label="study" style="background: #10b981;">Study</button>
-          </div>
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-reminder">Reminder</label>
-          <select class="input-field" id="inp-task-reminder">
-            <option value="none">No Reminder</option>
-            <option value="ontime">On Time</option>
-            <option value="5min">5 Minutes Before</option>
-            <option value="15min">15 Minutes Before</option>
-            <option value="1hour">1 Hour Before</option>
-            <option value="1day">1 Day Before</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label" for="inp-task-recurring">Recurring</label>
-          <select class="input-field" id="inp-task-recurring">
-            <option value="none">One-time Task</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Bi-weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Sub-tasks</label>
-          <div id="subtasks-list" class="subtasks-list"></div>
-          <button type="button" class="btn-secondary btn-small" id="add-subtask-btn">
-            <ion-icon name="add-outline"></ion-icon> Add Sub-task
-          </button>
-        </div>
-      </div>
-      <div class="modal-bot">
-        <button class="btn-secondary modal-cancel">Cancel</button>
-        <button id="btn-save-task" class="btn-primary">Save Task</button>
-      </div>
+    <!-- Loading Overlay -->
+    <div id="loader-overlay" class="loader-screen">
+        <div class="loader-spin"></div>
     </div>
-  </div>
 
-  <!-- Loading Spinner Overlay -->
-  <div id="loader-overlay" class="loader-screen" aria-live="polite" aria-busy="false">
-    <div class="loader-spin" role="status" aria-label="Loading"></div>
-  </div>
-
-  <!-- AI Loading Indicator -->
-  <div id="loading-indicator" class="loading-indicator" aria-live="polite" aria-busy="false">
-    <div class="spinner"></div>
-    <p>Generating with AI...</p>
-  </div>
-
-  <!-- Ionicons and App Scripts -->
-  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
