@@ -2,6 +2,7 @@
    TaskMaster Pro - Ultra-Modern CSS
    iOS 18 + HyperOS 3 Glassmorphism Design
    Stabilized dock, motion, accessibility, and mobile layout
+   Enhanced Ionicons Support
 ================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -14,33 +15,33 @@
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-info: #3b82f6;
-
+  
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.16);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   --glass-blur: blur(24px);
-
+  
   /* Text Colors - Dark Theme */
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.8);
   --text-tertiary: rgba(255, 255, 255, 0.6);
-
+  
   /* Background */
   --bg-base: #0f172a;
-
+  
   /* Spacing */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 0.75rem;
   --space-lg: 1rem;
   --space-xl: 1.5rem;
-
+  
   /* Layout */
   --dock-height: 72px;
   --dock-safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-height: 72px;
-
+  
   /* Motion */
   --transition-fast: 120ms ease;
   --transition-med: 220ms ease;
@@ -60,6 +61,62 @@ html, body {
   :root { --bg-base: #f7f8fc; --text-primary: #0b1220; --text-secondary: rgba(11,18,32,.8); --text-tertiary: rgba(11,18,32,.6); }
 }
 
+/* ================================================
+   IONICON STYLING - PREMIUM iOS DESIGN
+================================================ */
+
+/* Base Ionicon styling */
+ion-icon {
+  vertical-align: middle;
+  display: inline-flex;
+  color: inherit;
+}
+
+/* Header Ionicons - Large and prominent */
+.logo ion-icon,
+.header-actions ion-icon,
+.app-header ion-icon {
+  font-size: 2.2rem;
+  vertical-align: middle;
+}
+
+/* Bottom Dock Ionicons */
+.bottom-dock ion-icon,
+.dock-btn ion-icon {
+  font-size: 1.6rem;
+  margin-right: 0.25rem;
+  margin-left: 0.05rem;
+  vertical-align: middle;
+}
+
+/* Stats Panel Ionicons - Bold and clear */
+.stat-box ion-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: block;
+  color: var(--color-primary);
+}
+
+/* Main action buttons, timer, and chat buttons */
+button ion-icon,
+.btn-primary ion-icon,
+.btn-timer ion-icon,
+.btn-send-chat ion-icon {
+  font-size: 1.5rem;
+  vertical-align: middle;
+}
+
+/* Ensure buttons have proper sizing for tap targets */
+.dock-btn,
+.btn-primary,
+.btn-timer {
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /* Floating header sizing & compaction */
 .app-header {
   position: fixed;
@@ -69,6 +126,7 @@ html, body {
   height: var(--header-height);
   z-index: 900;
 }
+
 .header-wrapper { display:flex; align-items:center; justify-content:space-between; gap: var(--space-md); }
 .header-actions { display:flex; align-items:center; gap: var(--space-sm); }
 .header-control { min-width: 40px; min-height: 40px; border-radius: 12px; }
@@ -103,6 +161,7 @@ html, body {
   /* Prevent layout shift when safe-area changes */
   contain: layout paint;
 }
+
 .bottom-dock .dock-inner { display:flex; gap: var(--space-md); padding: var(--space-sm) var(--space-md); background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 18px; }
 
 /* Prevent reflow on hover: promote buttons to their own layer */
@@ -118,17 +177,11 @@ html, body {
 .dock-btn.active-tab .indicator, .dock-btn[aria-selected="true"] .indicator { opacity:1; transform: translateX(-50%) scaleX(1); }
 .dock-name { display:inline-block; font-size:.9rem; }
 
-/* Ionicon sizing improvements */
-ion-icon, .ionicon, .icon ion-icon { width: 1.25em; height: 1.25em; vertical-align: -0.2em; flex: 0 0 auto; }
-.dock-btn ion-icon, .button ion-icon, .btn ion-icon { margin-inline: 0.25em; }
-
-/* Ensure emoji icons align with text */
-.dock-emoji { display:inline-block; line-height: 1; font-size: 1.2rem; transform: translateY(1px); }
-
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
 /* Class-based overrides to force reduced motion and transparency when toggled in app */
 .reduce-motion * { animation: none !important; transition: none !important; }
 .reduce-transparency, .high-contrast-surface { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: #0b1220 !important; border-color: rgba(255,255,255,0.24) !important; }
