@@ -460,15 +460,15 @@ const CHAT = {
     },
 
     async verifyMessage(text, subject) {
-        // Simulate verification with 2-minute processing
+        // Verify facts against PDFs with 2-minute processing
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
             
-            const response = await fetch(`${API_BASE_URL}/apiverify`, {
+            const response = await fetch(`${API_BASE_URL}/apichat/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text, subject }),
+                body: JSON.stringify({ claim: text, subject }),
                 signal: controller.signal
             });
             
@@ -482,21 +482,7 @@ const CHAT = {
             return data;
         } catch (err) {
             console.error('Verify API Error:', err);
-            // Return mock data if API fails
-            return {
-                verified: true,
-                sources: [
-                    { 
-                        type: 'PDF',
-                        title: 'A/L Syllabus Document',
-                        page: 15,
-                        paragraph: 3,
-                        text: 'Reference text from syllabus',
-                        url: '#'
-                    }
-                ],
-                confidence: 0.95
-            };
+            throw err;
         }
     },
 
@@ -574,14 +560,17 @@ const CHAT = {
                 </div>
             `;
         } else {
-            // Bot message actions: Copy, Verify
+            // Bot message actions: Copy, Verify Sources, Regenerate
             actionsHTML = `
                 <div class="msg-actions">
                     <button class="action-btn btn-copy" onclick="CHAT.copyMessage('${msgId}')" title="Copy to clipboard">
                         <span>📋</span> Copy
                     </button>
-                    <button class="action-btn btn-verify verify-btn" onclick="CHAT.verifyMessageAction('${msgId}')" title="Verify information">
-                        <span>✓</span> Verify
+                    <button class="action-btn btn-verify verify-btn" onclick="verifyFacts(this)" title="Verify Sources">
+                        <span>✓</span> Verify Sources
+                    </button>
+                    <button class="action-btn btn-regenerate" onclick="CHAT.regenerateResponse('${msgId}')" title="Regenerate response">
+                        <span>🔄</span> Regenerate
                     </button>
                 </div>
             `;
@@ -745,104 +734,90 @@ const CHAT = {
         });
     },
 
-    async verifyMessageAction(msgId) {
+    async regenerateResponse(msgId) {
         const msgEl = document.getElementById(msgId);
         if (!msgEl) return;
         
-        const textEl = msgEl.querySelector('.msg-bubble p');
-        const text = textEl.textContent;
-        const subject = document.getElementById('chat-subject')?.value || 'General';
+        // Find the paired user message
+        const pairedId = this.messagePairs.get(msgId);
+        if (!pairedId) return;
         
-        // Show verification modal
-        const modal = this.showVerifyModal();
-        const resultEl = modal.querySelector('#verify-result');
+        const userMsgEl = document.getElementById(pairedId);
+        if (!userMsgEl) return;
         
-        // Show loading state
-        resultEl.innerHTML = `
-            <div class="verify-loading">
-                <div class="loader-spin"></div>
-                <p style="margin-top: 1rem; text-align: center;">Verifying information... This may take up to 2 minutes.</p>
-            </div>
-        `;
+        const userTextEl = userMsgEl.querySelector('.msg-bubble p');
+        const userMessage = userTextEl.textContent;
         
-        try {
-            const result = await this.verifyMessage(text, subject);
-            
-            // Display verification results with sources
-            let sourcesHTML = '';
-            if (result.sources && result.sources.length > 0) {
-                sourcesHTML = '<div class="verify-sources" style="margin-top: 1.5rem;"><h4>Sources:</h4><ul>';
-                result.sources.forEach(source => {
-                    sourcesHTML += `
-                        <li>
-                            <strong>${escapeHtml(source.title || 'Document')}</strong>
-                            ${source.page ? ` - Page ${source.page}` : ''}
-                            ${source.paragraph ? `, Paragraph ${source.paragraph}` : ''}
-                            ${source.url ? `<br><a href="${source.url}" target="_blank" style="color: var(--color-primary);">View Source →</a>` : ''}
-                            ${source.text ? `<br><small style="opacity: 0.7;">${escapeHtml(source.text)}</small>` : ''}
-                        </li>
-                    `;
-                });
-                sourcesHTML += '</ul></div>';
-            }
-            
-            resultEl.innerHTML = `
-                <div class="verify-success" style="background: rgba(16, 185, 129, 0.15); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--color-success);">
-                    <h3 style="margin: 0 0 1rem 0; color: var(--color-success); display: flex; align-items: center; gap: 0.5rem;">
-                        <span>✓</span> Verification Complete
-                    </h3>
-                    <p style="margin: 0 0 0.5rem 0; line-height: 1.6;">
-                        This information has been verified against available resources.
-                    </p>
-                    ${result.confidence ? `<p style="margin: 0; opacity: 0.8; font-size: 0.9rem;">Confidence: ${(result.confidence * 100).toFixed(0)}%</p>` : ''}
-                    ${sourcesHTML}
-                </div>
-            `;
-        } catch (err) {
-            resultEl.innerHTML = `
-                <div class="verify-error" style="background: rgba(239, 68, 68, 0.15); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--color-danger);">
-                    <h3 style="margin: 0 0 1rem 0; color: var(--color-danger);">Verification Failed</h3>
-                    <p style="margin: 0; line-height: 1.6;">${escapeHtml(err.message || 'Could not verify information. Please try again later.')}</p>
-                </div>
-            `;
-        }
-    },
-
-    showVerifyModal() {
-        let modal = document.getElementById('verify-modal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'verify-modal';
-            modal.className = 'verify-modal';
-            modal.innerHTML = `
-                <div class="modal-backdrop verify-backdrop"></div>
-                <div class="modal-container verify-content">
-                    <div class="modal-top">
-                        <h3>Fact Verification</h3>
-                        <button class="modal-close" onclick="CHAT.closeVerifyModal()">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="verify-result"></div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            
-            // Close on backdrop click
-            modal.querySelector('.verify-backdrop').addEventListener('click', () => this.closeVerifyModal());
-        }
-        
-        modal.classList.add('active');
-        return modal;
+        // Regenerate by sending the same user message again
+        await this.send(userMessage, pairedId);
     },
 
     closeVerifyModal() {
-        const modal = document.getElementById('verify-modal');
+        const modal = document.getElementById('verifyModal');
         if (modal) {
             modal.classList.remove('active');
         }
     }
 };
+
+// ===== GLOBAL VERIFICATION FUNCTION =====
+async function verifyFacts(button) {
+    const modal = document.getElementById('verifyModal');
+    const resultsDiv = document.getElementById('verifyResults');
+    
+    if (!modal || !resultsDiv) {
+        console.error('Verify modal elements not found');
+        return;
+    }
+    
+    // Get the claim to verify
+    const messageElement = button.closest('.chat-msg');
+    if (!messageElement) {
+        console.error('Message element not found');
+        return;
+    }
+    
+    const claim = messageElement.querySelector('.msg-bubble p')?.innerText || 
+                  messageElement.querySelector('.msg-content p')?.innerText || '';
+    const subject = document.getElementById('chat-subject')?.value || 'General';
+    
+    // Show modal
+    modal.classList.add('active');
+    resultsDiv.innerHTML = '<p class="loading">🔍 Searching PDFs... (up to 2 minutes)</p>';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/apichat/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ claim, subject })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Display verification result
+        const verificationText = result.verification || result.message || result.response || 'Verification complete.';
+        resultsDiv.innerHTML = `
+            <div class="verification-result">
+                <h4>✓ Verification Complete</h4>
+                <div class="result-text">${verificationText.replace(/\n/g, '<br>')}</div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Verification failed:', error);
+        resultsDiv.innerHTML = '<p class="error">❌ Verification failed. Please try again later.</p>';
+    }
+}
+
+function closeVerifyModal() {
+    const modal = document.getElementById('verifyModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
 
 // ===== REDUCED MOTION =====
 const REDUCED_MOTION = {

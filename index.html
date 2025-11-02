@@ -253,6 +253,25 @@
         <div class="loader-spin"></div>
     </div>
 
+    <!-- Verification Modal -->
+    <div id="verifyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-top">
+                <h3>📚 Fact Verification Results</h3>
+                <button class="modal-close" onclick="closeVerifyModal()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="verifyResults" class="verify-results">
+                    <p class="loading">🔍 Searching PDFs... (up to 2 minutes)</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeVerifyModal()" class="btn-close btn-secondary">Close</button>
+            </div>
+        </div>
+        <div class="modal-backdrop" onclick="closeVerifyModal()"></div>
+    </div>
+
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="script.js"></script>
