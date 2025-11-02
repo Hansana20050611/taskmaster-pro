@@ -1,5 +1,5 @@
 // ===== API CONFIGURATION =====
-const API_BASE_URL = 'https://cf4e438a-918a-4688-b580-7ffdddc8aeb6-00-1yt01c3w3vp09.sisko.replit.dev';
+const API_BASE_URL = 'https://9775a511-d1ff-4bc7-8280-e6b1cfe8960c-00-1ky1ar9hjwcfy.sisko.replit.dev';
 
 // ===== LANGUAGE & TRANSLATION =====
 const AI_FAILURE_MSG = 'Respond Failed ( AI සේවා දෝෂයක්. කරුණාකර පසුව නැවත උත්සාහ කරන්න. )';
